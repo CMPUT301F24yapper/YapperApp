@@ -1,0 +1,190 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Back Button and Title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:src="@drawable/backbutton" />
+
+        <!-- New Event Title -->
+        <TextView
+            android:id="@+id/new_event_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Event"
+            android:textSize="24sp"
+            android:layout_marginStart="10dp"
+            android:textStyle="bold"
+            android:layout_gravity="center_vertical"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- Poster Image -->
+    <ImageView
+        android:id="@+id/poster_image"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:src="@drawable/event_poster"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="16dp" />
+
+    <!-- Choose Poster Text -->
+    <TextView
+        android:id="@+id/choose_poster_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose Poster"
+        android:textColor="#9C27B0"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:layout_gravity="center_horizontal"
+        android:padding="8dp" />
+
+    <!-- Event Name Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Event Name:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" />
+
+        <EditText
+            android:id="@+id/event_name_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:hint="Event Name"
+            android:textSize="20dp"
+            android:inputType="textPersonName" />
+    </LinearLayout>
+
+    <!-- Date Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Date:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" />
+
+        <EditText
+            android:id="@+id/date_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:hint="dd/mm/yyyy"
+            android:inputType="date" />
+    </LinearLayout>
+
+    <!-- Number of Attendees Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="No. Attendees:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" />
+
+        <EditText
+            android:id="@+id/attendees_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:textSize="20dp"
+            android:hint="Optional"
+            android:inputType="number" />
+    </LinearLayout>
+
+    <!-- Deadline Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Deadline:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" />
+
+        <EditText
+            android:id="@+id/deadline_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:textSize="20dp"
+            android:hint="mm/dd/yyyy"
+            android:inputType="date" />
+    </LinearLayout>
+
+    <!-- Geo Location Toggle -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+>
+
+        <TextView
+            android:id="@+id/geo_location_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Geo Location:"
+            android:textSize="16sp"
+            android:paddingEnd="8dp" />
+
+        <Switch
+            android:id="@+id/geo_location_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- Save Event Button -->
+    <Button
+        android:id="@+id/save_event_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save Event"
+        android:backgroundTint="#9C27B0"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="60dp"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>
