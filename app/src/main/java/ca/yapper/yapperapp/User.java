@@ -7,7 +7,7 @@ public class User {
     private String deviceId;
     private String email;
     private String phoneNum;
-    private ArrayList<Role>;
+    private ArrayList<Role> roles;
     private ProfilePic profilePic;
     private ProfilePic generatedProfilePic;
 
@@ -69,22 +69,22 @@ public class User {
     }
 
     // other methods (specific to User) beyond Gs & Ss: can be moved around in package but for now I am placing them here
-    public Boolean checkIsEntrant() {
-        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-        return roles[0];
-    }
+//    public Boolean checkIsEntrant() {
+//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
+//        return roles.get(0);
+//    }
+//
+//    public Boolean checkIsOrganizer() {
+//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
+//        return roles[1];
+//    }
+//
+//    public Boolean checkIsAdmin() {
+//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
+//        return roles[2];
+//    }
 
-    public Boolean checkIsOrganizer() {
-        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-        return roles[1];
-    }
-
-    public Boolean checkIsAdmin() {
-        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-        return roles[2];
-    }
-
-    public void uploadProfilePic(ProfilePic) {
+    public void uploadProfilePic(ProfilePic profilePic) {
         // method logic
     }
 
@@ -92,7 +92,7 @@ public class User {
         // method logic
     }
 
-    public ProfilePic generateProfilePic(String name) {
-        // method logic
-    }
+//    public ProfilePic generateProfilePic(String name) {
+//        // method logic
+//    }
 }

@@ -19,9 +19,9 @@ public class Entrant extends Role {
     public void declineInvite(Event event) {
         // method logic
     }
-    public Event scanQRCode(qrCode) {
-        // method logic
-    }
+//    public Event scanQRCode(qrCode qrCode) {
+//        // method logic
+//    }
     //  // other methods (specific to Event) beyond Gs & Ss: can be moved around in package but for now I am placing them here
     public void addEntrantToEvent(Entrant entrant) {
         // adds Entrant to eventsList
