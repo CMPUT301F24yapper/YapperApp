@@ -72,14 +72,14 @@ public class MainActivity extends AppCompatActivity {
         // Using a lambda expression to define what occurs once a result is given from the
         // barcode view decoder. Once we have a result, the next sequence of code is executed.
 
-        BarcodeCallback result = QRScanResult -> {
-                scannerResult.setText(QRScanResult.toString());
+        //BarcodeCallback result = QRScanResult -> {
+          //      scannerResult.setText(QRScanResult.toString());
                 //barcodeView.pause(); // Once a QR code is found we stop the scanner and clear it from the screen
                 //barcodeView.setVisibility(View.GONE);
-        };
+        //};
 
-        barcodeView.resume();
-        barcodeView.decodeContinuous(result); // This will run until a QR code is found
+        //barcodeView.resume();
+        //barcodeView.decodeContinuous(result); // This will run until a QR code is found
 
         //OPTION 2 - scanner is faster but less customizable
 /*
@@ -122,17 +122,21 @@ public class MainActivity extends AppCompatActivity {
 
 
     ///////////////// DELETE LATER - FOR TESTING how a qr code looks
-    private Bitmap bitMatrixToBitmap(BitMatrix bitMatrix) {
-        int width = bitMatrix.getWidth();
-        int height = bitMatrix.getHeight();
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    private Bitmap bitMatrixToBitmap(BitMatrix qrcode) {
+        Bitmap img = Bitmap.createBitmap(qrcode.getWidth(), qrcode.getHeight(), Bitmap.Config.ARGB_8888);
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                bitmap.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+        for (int i = 0; i < qrcode.getHeight(); i++) {
+            for (int j = 0; j < qrcode.getWidth(); j++) {
+                if (qrcode.get(i, j)){
+                    img.setPixel(i, j, 0xFF000000);
+                }
+                else{
+                    img.setPixel(i, j, 0xFFFFFFFF);
+                }
+                //img.setPixel(i, j, qrcode.get(i, j) ? 0xFF000000 : 0xFFFFFFFF); // for testing purposes
             }
         }
-        return bitmap;
+        return img;
     }
     ///////////////// DELETE LATER - FOR TESTING  how a qr code looks
 }
