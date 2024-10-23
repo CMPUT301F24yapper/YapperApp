@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="16dp">
+
+        <!-- Event Title and Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/event_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Event 1"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black" />
+
+            <!-- Event Date and Time -->
+            <TextView
+                android:id="@+id/event_date_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="mm/dd/yyyy hh:mm"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Space between Title/Date and Geo Location -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="35dp" />
+
+        <!-- Geo Location Requirement with Switch -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="16dp">
+
+            <!-- Geo Location Text -->
+            <TextView
+                android:id="@+id/geo_location_required"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Geo Location Required"
+                android:textSize="18sp"
+                android:textColor="@android:color/black"
+                android:paddingEnd="32dp" />
+
+            <!-- Geo Location Switch -->
+            <Switch
+                android:id="@+id/geo_location_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+        <!-- Space between Geo Location and Image -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp" />
+
+        <!-- Event Poster Image -->
+        <ImageView
+            android:id="@+id/event_poster"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/event_image"
+            android:scaleType="centerInside"
+            android:layout_gravity="center_horizontal" />
+
+        <!-- Change and Remove Poster Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <!-- Change Poster -->
+            <TextView
+                android:id="@+id/change_poster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Change Poster"
+                android:textSize="14sp"
+                android:textColor="@android:color/holo_purple"
+                android:paddingEnd="32dp" />
+
+            <!-- Remove Poster -->
+            <TextView
+                android:id="@+id/remove_poster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remove Poster"
+                android:textSize="14sp"
+                android:textColor="@android:color/holo_purple" />
+        </LinearLayout>
+
+
+        <!-- Space between Poster Actions and Description -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp" />
+
+        <!-- Description Label -->
+        <TextView
+            android:id="@+id/description_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <!-- Description Input -->
+        <EditText
+            android:id="@+id/description_input"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:hint="Enter event description"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp" />
+
+        <!-- Space between Description and Attendees -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp" />
+
+        <!-- Number of Attendees -->
+        <TextView
+            android:id="@+id/num_attendees"
+            android:layout_width="wrap_content"
+            android:layout_height="31dp"
+            android:text="No. Attendees: "
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Space between Attendees and Waitlist -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <!-- Waitlist Slots -->
+        <TextView
+            android:id="@+id/waitlist_slots"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:text="Wait list Slots: Optional"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp" />
+
+        <!-- Space between Waitlist and Deadline -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <!-- Registration Deadline -->
+        <TextView
+            android:id="@+id/registration_deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Registration Deadline: mm/dd/yyyy"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <!-- Space between Deadline and Save Button -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp" />
+
+        <!-- Save Event Button -->
+        <Button
+            android:id="@+id/save_event_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save Event"
+            android:textSize="16sp"
+            android:backgroundTint="@android:color/holo_purple"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>

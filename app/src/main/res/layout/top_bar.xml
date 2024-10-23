@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- TabLayout at the top -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        app:tabTextColor="@android:color/black"
+        app:tabSelectedTextColor="@android:color/black"
+        app:tabIndicatorHeight="0dp"
+        app:tabMode="fixed"
+        app:tabGravity="fill">
+
+        <!-- Tabs -->
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_registered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Registered Events"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_joined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Joined Events" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_missed_out"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Missed Out" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <FrameLayout
+        android:id="@+id/tab_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white" />
+
+</LinearLayout>
