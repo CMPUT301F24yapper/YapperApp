@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.YapperApp"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -20,6 +21,11 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="android:screenOrientation">
         </activity>
     </application>
 

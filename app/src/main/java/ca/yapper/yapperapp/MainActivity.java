@@ -1,6 +1,5 @@
 package ca.yapper.yapperapp;
 
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,14 +33,14 @@ public class MainActivity extends AppCompatActivity {
     private String qrCodeString;
 
     // QR Code Scanner functionality --------------------------------------
-    //OPTION 1 - scanner is slightly slow but screen can look nice,
+    //OPTION 1 - scanner is slightly slow(due to portrait orientation bug) but screen can look nice,
     // also requires us to ask for permissions manually first otherwise displays black screen
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         BarcodeCallback result = QRScanResult -> {
             scannerResult.setText(QRScanResult.toString());
-            //barcodeView.pause(); // Once a QR code is found we stop the scanner and clear it from the screen
+            barcodeView.pause(); // Once a QR code is found we stop the scanner and clear it from the screen
             //barcodeView.setVisibility(View.GONE);
         };
 
@@ -64,36 +63,9 @@ public class MainActivity extends AppCompatActivity {
         scannerResult = findViewById(R.id.scanner_result);
         QRCodeImage = findViewById(R.id.image_view);
         ScanContract scanRules = new ScanContract();
-
-        // QR Code Scanner functionality --------------------------------------
-        //OPTION 1 - scanner is slightly slow but screen can look nice,
-        // also requires us to ask for permissions manually first otherwise displays black screen
-
-        // Using a lambda expression to define what occurs once a result is given from the
-        // barcode view decoder. Once we have a result, the next sequence of code is executed.
-
-        //BarcodeCallback result = QRScanResult -> {
-          //      scannerResult.setText(QRScanResult.toString());
-                //barcodeView.pause(); // Once a QR code is found we stop the scanner and clear it from the screen
-                //barcodeView.setVisibility(View.GONE);
-        //};
-
-        //barcodeView.resume();
-        //barcodeView.decodeContinuous(result); // This will run until a QR code is found
-
-        //OPTION 2 - scanner is faster but less customizable
-/*
-        ActivityResultLauncher<ScanOptions> cameraScanner = registerForActivityResult(scanRules, qrCodeValue -> {
-            // here we use a lambda expression because the registerForActivityResult method requires a lambda expression as
-            // its second parameter in order to show what we do with the results returned from the method.
-            scannerResult.setText(qrCodeValue.getContents());
-        });
-
-        ScanOptions cameraOptions = new ScanOptions()
-                .setCameraId(1) // for front facing camera by default
+        ScanOptions cameraOptions = new ScanOptions().setCameraId(1) // for front facing camera by default
                 .setDesiredBarcodeFormats(String.valueOf(BarcodeFormat.QR_CODE))
-                .setPrompt("Scanning for QR codes")
-                .setOrientationLocked(true); // our app isn't built for a changing portrait orientation*/
+                .setPrompt("Scanning for QR codes").setOrientationLocked(true); // our app isn't built for a changing portrait orientation*/
 
         // QR code Generator Functionality --------------------------------------
         Button testQRScannerButton = findViewById(R.id.QR_scanner_button);
@@ -108,8 +80,19 @@ public class MainActivity extends AppCompatActivity {
                     int hashData = qrCode.hashCode();
 
                     Log.d("QRCode", Integer.toString(hashData)); // For testing purposes -- Displays hash data in log
-                    //cameraScanner.launch(cameraOptions); - part of option 2
-                    Bitmap codeIMG = bitMatrixToBitmap(qrCode);  ///////////////// DELETE LATER - FOR TESTING
+
+                    //OPTION 2 - scanner is faster but less customizable
+                    // Here cameraScanner is the launcher for the CaptureActivity activity that is returned from
+                    // the registerForActivityResult method, where registerForActivityResult takes a set of rules
+                    // known as the scanRules in order to specify what kind of input our activity receives(the scanOptions)
+                    // and what output we get(the result of the scan).
+                    registerForActivityResult(scanRules, qrCodeValue -> {
+                        // here we use a lambda expression because the registerForActivityResult method requires a lambda expression as
+                        // its second parameter in order to show what we do with the results returned from the method.
+                        scannerResult.setText(qrCodeValue.getContents());
+                    }).launch(cameraOptions);// - part of option 2
+
+                    Bitmap codeIMG = convertingBitMatrix(qrCode);  ///////////////// DELETE LATER - FOR TESTING
                     QRCodeImage.setImageBitmap(codeIMG);
 
                 } catch (WriterException e) {
@@ -120,17 +103,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     ///////////////// DELETE LATER - FOR TESTING how a qr code looks
-    private Bitmap bitMatrixToBitmap(BitMatrix qrcode) {
+    private Bitmap convertingBitMatrix(BitMatrix qrcode) {
         Bitmap img = Bitmap.createBitmap(qrcode.getWidth(), qrcode.getHeight(), Bitmap.Config.ARGB_8888);
 
         for (int i = 0; i < qrcode.getHeight(); i++) {
             for (int j = 0; j < qrcode.getWidth(); j++) {
-                if (qrcode.get(i, j)){
+                if (qrcode.get(i, j)) {
                     img.setPixel(i, j, 0xFF000000);
-                }
-                else{
+                } else {
                     img.setPixel(i, j, 0xFFFFFFFF);
                 }
                 //img.setPixel(i, j, qrcode.get(i, j) ? 0xFF000000 : 0xFFFFFFFF); // for testing purposes
@@ -138,5 +119,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return img;
     }
-    ///////////////// DELETE LATER - FOR TESTING  how a qr code looks
+///////////////// DELETE LATER - FOR TESTING  how a qr code looks
 }
