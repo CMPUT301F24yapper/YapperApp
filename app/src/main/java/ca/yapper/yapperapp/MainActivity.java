@@ -62,10 +62,11 @@ public class MainActivity extends AppCompatActivity {
         barcodeView = findViewById(R.id.barcode_view);
         scannerResult = findViewById(R.id.scanner_result);
         QRCodeImage = findViewById(R.id.image_view);
+        //The ActivityResultLauncher lets us run the code for the ScanContract which takes the ScanOptions as input.
         ActivityResultLauncher<ScanOptions> cameraScan;
 
         ScanContract scanRules = new ScanContract();
-        ScanOptions cameraOptions = new ScanOptions().setCameraId(0) // for front facing camera by default
+        ScanOptions cameraConfig = new ScanOptions().setCameraId(0) // for front facing camera by default
                 .setDesiredBarcodeFormats(String.valueOf(BarcodeFormat.QR_CODE))
                 .setPrompt("Scanning for QR codes").setOrientationLocked(true); // our app isn't built for a changing portrait orientation*/
 
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d("QRCode", Integer.toString(hashData)); // For testing purposes -- Displays hash data in log
 
-                    cameraScan.launch(cameraOptions);// - part of option 2
+                    cameraScan.launch(cameraConfig);// - part of option 2
 
                     Bitmap codeIMG = convertingBitMatrix(qrCode);  ///////////////// DELETE LATER - FOR TESTING
                     QRCodeImage.setImageBitmap(codeIMG);
