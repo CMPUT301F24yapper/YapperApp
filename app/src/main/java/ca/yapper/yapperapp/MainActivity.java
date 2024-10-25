@@ -62,10 +62,23 @@ public class MainActivity extends AppCompatActivity {
         barcodeView = findViewById(R.id.barcode_view);
         scannerResult = findViewById(R.id.scanner_result);
         QRCodeImage = findViewById(R.id.image_view);
+        ActivityResultLauncher<ScanOptions> cameraScan;
+
         ScanContract scanRules = new ScanContract();
-        ScanOptions cameraOptions = new ScanOptions().setCameraId(1) // for front facing camera by default
+        ScanOptions cameraOptions = new ScanOptions().setCameraId(0) // for front facing camera by default
                 .setDesiredBarcodeFormats(String.valueOf(BarcodeFormat.QR_CODE))
                 .setPrompt("Scanning for QR codes").setOrientationLocked(true); // our app isn't built for a changing portrait orientation*/
+
+        //OPTION 2 - scanner is faster but less customizable
+        // Here cameraScanner is the launcher for the CaptureActivity activity that is returned from
+        // the registerForActivityResult method, where registerForActivityResult takes a set of rules
+        // known as the scanRules in order to specify what kind of input our activity receives(the scanOptions)
+        // and what output we get(the result of the scan).
+        cameraScan = registerForActivityResult(scanRules, qrCodeValue -> {
+            // here we use a lambda expression because the registerForActivityResult method requires a lambda expression as
+            // its second parameter in order to show what we do with the results returned from the method.
+            scannerResult.setText(qrCodeValue.getContents());
+        });
 
         // QR code Generator Functionality --------------------------------------
         Button testQRScannerButton = findViewById(R.id.QR_scanner_button);
@@ -81,16 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d("QRCode", Integer.toString(hashData)); // For testing purposes -- Displays hash data in log
 
-                    //OPTION 2 - scanner is faster but less customizable
-                    // Here cameraScanner is the launcher for the CaptureActivity activity that is returned from
-                    // the registerForActivityResult method, where registerForActivityResult takes a set of rules
-                    // known as the scanRules in order to specify what kind of input our activity receives(the scanOptions)
-                    // and what output we get(the result of the scan).
-                    registerForActivityResult(scanRules, qrCodeValue -> {
-                        // here we use a lambda expression because the registerForActivityResult method requires a lambda expression as
-                        // its second parameter in order to show what we do with the results returned from the method.
-                        scannerResult.setText(qrCodeValue.getContents());
-                    }).launch(cameraOptions);// - part of option 2
+                    cameraScan.launch(cameraOptions);// - part of option 2
 
                     Bitmap codeIMG = convertingBitMatrix(qrCode);  ///////////////// DELETE LATER - FOR TESTING
                     QRCodeImage.setImageBitmap(codeIMG);
