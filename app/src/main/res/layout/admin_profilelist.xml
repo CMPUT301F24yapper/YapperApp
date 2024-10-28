@@ -1,0 +1,29 @@
+<!-- res/layout/activity_profile_list.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="#FFFFFF">
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search Profile"
+        android:padding="10dp"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:backgroundTint="#D3D3D3"
+        android:inputType="text"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Profiles List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/profiles_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
+
+</LinearLayout>

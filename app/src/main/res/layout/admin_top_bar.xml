@@ -1,0 +1,50 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#FFF1F8"
+    android:weightSum="3"
+    android:paddingVertical="8dp"
+    android:divider="@android:color/darker_gray"
+    android:showDividers="middle">
+
+    <!-- Events Tab -->
+    <TextView
+        android:id="@+id/tab_events"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Events"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:padding="8dp" />
+
+    <!-- Profiles Tab -->
+    <TextView
+        android:id="@+id/tab_profiles"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Profiles"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:padding="8dp" />
+
+    <!-- Images Tab -->
+    <TextView
+        android:id="@+id/tab_images"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Images"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:padding="8dp" />
+
+    </LinearLayout>

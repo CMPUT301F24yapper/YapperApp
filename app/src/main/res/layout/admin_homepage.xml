@@ -1,0 +1,133 @@
+<!-- res/layout/activity_main_content.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#FFF1F8"> <!-- Light pink background -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Number of Total Events -->
+        <TextView
+            android:id="@+id/total_events_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Number of Total Events"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/total_events"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="X"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:paddingBottom="24dp"
+            android:textColor="#000000" />
+
+        <!-- Number of Organizers -->
+        <TextView
+            android:id="@+id/organizers_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Number of Organizers"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/organizers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Y"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:paddingBottom="24dp"
+            android:textColor="#000000" />
+
+        <!-- Number of Users -->
+        <TextView
+            android:id="@+id/users_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Number of Users"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/users"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Z"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:paddingBottom="24dp"
+            android:textColor="#000000" />
+
+        <!-- Biggest Events Title -->
+
+        <!-- Biggest Events List Header -->
+        <TextView
+            android:id="@+id/biggest_events_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp"
+            android:text="Biggest Events"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Event"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#000000" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Participants"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#000000"
+                android:gravity="end" />
+        </LinearLayout>
+
+        <!-- Biggest Events Data -->
+        <LinearLayout
+            android:id="@+id/events_list_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp">
+            <!-- Dynamic content will be added here in the Java code -->
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
