@@ -1,0 +1,28 @@
+<!-- res/layout/grid_item_image.xml -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp">
+
+    <!-- Image Placeholder -->
+    <ImageView
+        android:id="@+id/image_placeholder"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:backgroundTint="#D3D3D3"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:scaleType="centerCrop" />
+
+    <!-- Delete Icon -->
+    <ImageView
+        android:id="@+id/delete_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="4dp"
+        android:src="@android:drawable/ic_delete"
+        android:contentDescription="Delete Image"
+        app:tint="#FF0000" />
+
+</FrameLayout>
