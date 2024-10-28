@@ -1,6 +1,7 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.UMLClasses;
 
 import java.util.ArrayList;
+
 // IMPORTANT:
 // In your Activity or Fragment (for EventList stuff), set up the RecyclerView and link it with the adapter (see EventAdapter).
 public class EventList {

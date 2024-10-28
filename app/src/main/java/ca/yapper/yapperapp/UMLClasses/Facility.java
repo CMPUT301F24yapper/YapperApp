@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.UMLClasses;
 
 public class Facility {
     private String facilityName;
