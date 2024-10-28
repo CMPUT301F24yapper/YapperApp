@@ -11,14 +11,17 @@ public class User {
     private ProfilePic profilePic;
     private ProfilePic generatedProfilePic;
 
-    public User(String name, String deviceId, String email, String phoneNum, ProfilePic profilePic, ProfilePic generatedProfilePic) {
+    // Default constructor (required for Firestore deserialization)
+    public User() {}
+
+    /** public User(String name, String deviceId, String email, String phoneNum, ProfilePic profilePic, ProfilePic generatedProfilePic) {
         this.name = name;
         this.deviceId = deviceId;
         this.email = email;
         this.phoneNum = phoneNum;
         this.profilePic = profilePic;
         this.generatedProfilePic = generatedProfilePic;
-    }
+    } **/
 
     public String getName() {
         return name;
@@ -29,6 +32,7 @@ public class User {
     }
 
     public String getDeviceId() {
+
         return deviceId;
     }
 
