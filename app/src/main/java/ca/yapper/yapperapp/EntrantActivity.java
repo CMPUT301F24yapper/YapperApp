@@ -12,14 +12,23 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class EntrantActivity extends AppCompatActivity {
-
+    private FirebaseFirestore db;
+    // private CollectionReference yapperRef;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.entrant_activity_layout);
+        // Initialize Firebase connection
+        createFirebaseConnection();
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -57,5 +66,12 @@ public class EntrantActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new EntrantHomeFragment()).commit();
         }
+    }
+    private void createFirebaseConnection() {
+        db = FirebaseFirestore.getInstance();
+    }
+    // Getter for Firebase reference
+    public FirebaseFirestore getFirestoreInstance() {
+        return db;
     }
 }
