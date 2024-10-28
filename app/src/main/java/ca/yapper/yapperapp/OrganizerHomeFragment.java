@@ -15,6 +15,6 @@ public class OrganizerHomeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_organizer_home, container, false);
+        return inflater.inflate(R.layout.organizer_editevent, container, false);
     }
 }

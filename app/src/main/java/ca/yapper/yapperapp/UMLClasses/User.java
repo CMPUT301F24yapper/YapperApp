@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.UMLClasses;
 
 import java.util.ArrayList;
 
