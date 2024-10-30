@@ -4,7 +4,9 @@ public class Facility {
     private String facilityName;
     private String location;  // String?
     private FacilityPic facilityPic;
-
+    // deserialize constructor for Firebase
+    public Facility() {}
+    // constructor version with parameters
     public Facility(String facilityName, String location, FacilityPic facilityPic) {
         this.facilityName = facilityName;
         this.location = location;
