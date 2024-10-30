@@ -1,5 +1,7 @@
 package ca.yapper.yapperapp;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -30,12 +32,13 @@ public class EntrantActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.entrant_activity_layout);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.entrant_activity), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         setupBottomNavigation();
     }
 
