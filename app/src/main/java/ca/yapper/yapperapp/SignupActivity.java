@@ -55,6 +55,7 @@ public class SignupActivity extends AppCompatActivity {
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Check if user is already in the database
+
         checkUserExists();
     }
 
@@ -65,7 +66,7 @@ public class SignupActivity extends AppCompatActivity {
 
     // Check if the device ID is already in the database
     private void checkUserExists() {
-        db.collection("users").document(deviceId)
+        db.collection("Users").document(deviceId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -73,11 +74,10 @@ public class SignupActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             DocumentSnapshot document = task.getResult();
                             if (document.exists()) {
-                                // User exists, redirect to EntrantActivity
                                 launchEntrantActivity();
-                            } else {
-                                // User doesn't exist, add to Firestore
-                                createUserInFirestore();
+                            }
+                            else {
+                                setUpSignUpViews();
                             }
                         } else {
                             Log.w("SignupActivity", "Error checking user existence", task.getException());
@@ -124,6 +124,12 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void launchEntrantActivity() {
+        Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
+        startActivity(intent);
+        finish(); // Close SignupActivity
+    }
+
+    private void launchOrganizerActivity() {
         Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
         startActivity(intent);
         finish(); // Close SignupActivity
