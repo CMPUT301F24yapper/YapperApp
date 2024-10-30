@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 public class Entrant extends Role {
     // list of events attribute (to be used in Homepage fragment!...)
-    private ArrayList<Event> eventsList;
+    private String status; // options being 'waiting', 'selected', 'cancelled', 'final'!!
+    private ArrayList<Event> eventsSignedUpList;
+    // need to instantiate the other types of lists of Events that Entrant can see on homepage
     private Boolean notifOn;
     // other methods (specific to Entrant) beyond Gs & Ss: can be moved around in package but for now I am placing them here
     public void joinWaitingList(Event event) {

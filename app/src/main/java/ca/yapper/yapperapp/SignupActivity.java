@@ -22,6 +22,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+// is below import necessary?
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class SignupActivity extends AppCompatActivity {
     private FirebaseFirestore db;
