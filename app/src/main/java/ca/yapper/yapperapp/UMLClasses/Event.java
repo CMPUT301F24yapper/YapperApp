@@ -1,5 +1,8 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.encoder.QRCode;
+
 import java.util.Date;
 
 public class Event {
@@ -11,6 +14,7 @@ public class Event {
     // private Date registrationDeadline;
     private String registrationDeadline;
     // private Poster poster;
+    private qrCode eventQRCode;
     private int eventAttendees;
     private int wlCapacity;
     private int wlSeatsAvailable;
@@ -23,6 +27,7 @@ public class Event {
         this.eventName = eventName;
         this.eventFacility = eventFacility;
         this.eventDate = eventDate;
+        this.eventQRCode = null; // Initially we will have no QR Code until the organizer generates it
         this.registrationDeadline = registrationDeadline;
         this.eventAttendees = eventAttendees;
         // this.poster = poster;
@@ -30,6 +35,10 @@ public class Event {
         this.wlSeatsAvailable = wlSeatsAvailable;
         this.geolocationEnabled = geolocationEnabled;
     }
+
+    public qrCode getEventQRCode() { return eventQRCode; }
+
+    public void setEventQRCode(qrCode eventQRCode) { this.eventQRCode = eventQRCode; }
 
     public String getEventName() {
         return eventName;

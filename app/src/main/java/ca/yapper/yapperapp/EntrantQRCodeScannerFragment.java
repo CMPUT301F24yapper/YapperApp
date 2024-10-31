@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +22,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private BarcodeView barcodeScan;
     private CameraSettings settings;
     private ViewfinderView overlay;
+
     private BarcodeCallback scanningResult;
 
     @Nullable
@@ -42,10 +45,11 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             barcodeScan.pause();
             barcodeScan.setVisibility(View.GONE);
             overlay.setVisibility(View.GONE);
+            // Here we switch fragments
+            getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, new EntrantEventFragment()).commit();
         };
-
-        barcodeScan.resume();
         barcodeScan.decodeContinuous(scanningResult);
+        barcodeScan.resume();
     }
 
     private void initializeScan(View view){
@@ -57,13 +61,12 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             settings.setRequestedCameraId(1);
         }
         settings.setAutoFocusEnabled(true);
-
         barcodeScan.setCameraSettings(settings);
     }
 
     private void showOverlay(View view){
         overlay = view.findViewById(R.id.viewfinder);
-        // attaching overlay to currently opened camera preview
+        // attaching overlay to currently opened camera preview(the barcodeView extends camera preview)
         overlay.setCameraPreview(barcodeScan);
     }
 }
