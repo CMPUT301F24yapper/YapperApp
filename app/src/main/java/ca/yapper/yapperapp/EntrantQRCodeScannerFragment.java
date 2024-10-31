@@ -5,13 +5,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
@@ -22,6 +29,8 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private BarcodeView barcodeScan;
     private CameraSettings settings;
     private ViewfinderView overlay;
+    private FirebaseFirestore db;
+    private Bundle eventData;
 
     private BarcodeCallback scanningResult;
 
@@ -29,6 +38,8 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entrant_qrscanner, container, false);
+
+        db = FirebaseFirestore.getInstance(); // For Checking what event the QRCode is from
 
         initializeScan(view);
         showOverlay(view);
@@ -45,8 +56,12 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             barcodeScan.pause();
             barcodeScan.setVisibility(View.GONE);
             overlay.setVisibility(View.GONE);
+
             // Here we switch fragments
-            getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, new EntrantEventFragment()).commit();
+            getEvent(db, String.valueOf(QRScanResult)); // What happens if we scan a qr code that's not from an existing event?
+            EntrantEventFragment newFragment = new EntrantEventFragment();
+            newFragment.setArguments(eventData);
+            getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
         };
         barcodeScan.decodeContinuous(scanningResult);
         barcodeScan.resume();
@@ -68,5 +83,20 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         overlay = view.findViewById(R.id.viewfinder);
         // attaching overlay to currently opened camera preview(the barcodeView extends camera preview)
         overlay.setCameraPreview(barcodeScan);
+    }
+
+    private void getEvent(FirebaseFirestore db, String QRScanResult){
+        //DocumentReference eventRef = db.collection("Events").document("sampleEventId");
+
+        db.collection("Events").document("sampleEventId")
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            //if (task.getResult().exists()) {
+                                eventData = new Bundle(); // using this to send data between fragments
+                                eventData.putString("0", "QRScanResult");
+                        //}
+                    }
+                });
     }
 }
