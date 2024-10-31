@@ -12,9 +12,13 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class OrganizerActivity extends AppCompatActivity {
-
+    // do I need below code?
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private CollectionReference eventsRef = db.collection("Events");
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

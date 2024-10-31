@@ -13,15 +13,15 @@ public class User {
 
     // Default constructor (required for Firestore deserialization)
     public User() {}
-
-    /** public User(String name, String deviceId, String email, String phoneNum, ProfilePic profilePic, ProfilePic generatedProfilePic) {
+    // constructor version with parameters
+    public User(String name, String deviceId, String email, String phoneNum, ProfilePic profilePic, ProfilePic generatedProfilePic) {
         this.name = name;
         this.deviceId = deviceId;
         this.email = email;
         this.phoneNum = phoneNum;
         this.profilePic = profilePic;
         this.generatedProfilePic = generatedProfilePic;
-    } **/
+    }
 
     public String getName() {
         return name;
