@@ -6,7 +6,7 @@
     android:id="@+id/entrant_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EntrantActivity">
+    tools:context=".Activities.EntrantActivity">
 
     <!-- Fragment container -->
     <FrameLayout
