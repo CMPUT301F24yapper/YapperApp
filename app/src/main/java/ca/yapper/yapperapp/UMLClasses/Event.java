@@ -1,5 +1,8 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import android.util.Log;
+
+import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.encoder.QRCode;
 
@@ -23,11 +26,11 @@ public class Event {
     // deserialize constructor for Firebase
     public Event() {}
     // constructor version with parameters
-    public Event(String eventName, String eventFacility, String eventDate, String registrationDeadline, int eventAttendees, int wlCapacity, int wlSeatsAvailable, boolean geolocationEnabled) {
+    public Event(String eventName, String eventFacility, String eventDate, String registrationDeadline, int eventAttendees, int wlCapacity, int wlSeatsAvailable, boolean geolocationEnabled) throws WriterException {
         this.eventName = eventName;
         this.eventFacility = eventFacility;
         this.eventDate = eventDate;
-        this.eventQRCode = null; // Initially we will have no QR Code until the organizer generates it
+        this.eventQRCode = new qrCode(this.eventName);
         this.registrationDeadline = registrationDeadline;
         this.eventAttendees = eventAttendees;
         // this.poster = poster;
@@ -36,7 +39,7 @@ public class Event {
         this.geolocationEnabled = geolocationEnabled;
     }
 
-    public qrCode getEventQRCode() { return eventQRCode; }
+    public qrCode getEventQRCode() { return this.eventQRCode; }
 
     public void setEventQRCode(qrCode eventQRCode) { this.eventQRCode = eventQRCode; }
 

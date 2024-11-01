@@ -5,20 +5,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
+
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
@@ -39,8 +33,6 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entrant_qrscanner, container, false);
 
-        //ADD METHOD TO CHECK FOR CAMERA PERMISSIONS (CheckSelfPermissions and RequestPermissions)
-
         db = FirebaseFirestore.getInstance(); // For Checking what event the QRCode is from
 
         initializeScan(view);
@@ -60,7 +52,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             overlay.setVisibility(View.GONE);
 
             // Here we switch fragments
-            getEvent(db, String.valueOf(QRScanResult)); // What happens if we scan a qr code that's not from an existing event?
+            getEvent(db, String.valueOf(QRScanResult));
         };
         barcodeScan.decodeContinuous(scanningResult);
         barcodeScan.resume();
@@ -69,13 +61,14 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private void initializeScan(View view){
         barcodeScan = view.findViewById(R.id.barcode_view);
         settings = barcodeScan.getCameraSettings();
+        checkCameraPermissions(); // We have to ask for camera permissions otherwise it only shows a black screen
 
-//        if (settings.getRequestedCameraId() != 1){
-//            // Sets the default camera to be the front facing camera, in case its not
-//            settings.setRequestedCameraId(0);
-//        }
+        if (settings.getRequestedCameraId() != 1){
+            // Sets the default camera to be the front facing camera, in case its not
+            settings.setRequestedCameraId(1);
+        }
 
-        settings.setRequestedCameraId(0);
+        //settings.setRequestedCameraId(1);
         settings.setAutoFocusEnabled(true);
         barcodeScan.setCameraSettings(settings);
     }
@@ -86,7 +79,16 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         overlay.setCameraPreview(barcodeScan);
     }
 
-
+    private void checkCameraPermissions() {
+        String[] permissions = {"android.permission.CAMERA"};
+        // checkSelfPermission return 0 if the permission to use the camera is already given
+        if (ContextCompat.checkSelfPermission(getContext(), "android.permission.CAMERA") != 0) {
+            // This launches the pop up showing options for the camera permissions.
+            requestPermissions(permissions, 1); // The request code is just like a tag, can be any integer
+            Log.d("Camera", "Camera Permissions Given");
+        }
+        //Log.d("S", Integer.toString(ContextCompat.checkSelfPermission(this.getContext(), "android.permission.CAMERA");)); // FOR TESTING
+    }
 
     private void getEvent(FirebaseFirestore db, String QRScanResult){
         //REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING

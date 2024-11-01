@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.WriterException;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -35,13 +36,13 @@ public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventWlCapacityEditText;
     private Switch geolocationSwitch;
     private Button saveEventButton;
+    private String eventId;
 
     // Firebase Firestore instance
     private FirebaseFirestore db;
 
     // Date variables
     private int selectedYear, selectedMonth, selectedDay;
-
 
     @Nullable
     @Override
@@ -66,7 +67,13 @@ public class OrganizerCreateEventFragment extends Fragment {
         // Set up registration deadline picker
         eventDeadlineEditText.setOnClickListener(v -> showDatePickerDialog(eventDeadlineEditText));
 
-        saveEventButton.setOnClickListener(v -> createEvent());
+        saveEventButton.setOnClickListener(v -> {
+            try {
+                createEvent();
+            } catch (WriterException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         return view;
     }
@@ -87,7 +94,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void createEvent() {
+    private void createEvent() throws WriterException { // writer exception from QR Code
         String eventName = eventNameEditText.getText().toString();
         String eventFacilityName = eventFacilityEditText.getText().toString();
         // TO-DO: how does event facility work here? i.e. if they've used this facility before / exists in facility profile already, we shouldn't be creating
@@ -99,6 +106,8 @@ public class OrganizerCreateEventFragment extends Fragment {
         Integer eventWlCapacity = Integer.valueOf(eventWlCapacityEditText.getText().toString());
         Integer eventWlSeatsAvailable = eventWlCapacity;
         boolean geolocationEnabled = geolocationSwitch.isChecked();
+
+
         // **don't forget to make it clear for user on screen which fields are required**
 
         if (eventName.isEmpty() || eventDate.isEmpty() || eventFacilityName.isEmpty() || eventAttendees == null) {
@@ -106,9 +115,13 @@ public class OrganizerCreateEventFragment extends Fragment {
             return;
         }
 
-        // Create instance of Event
+        // Create instance of Event NOTE: QR Codes are automatically generated at event creation
         Event event = new Event(eventName, eventFacilityName, eventDate, registrationDeadline, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
         // Create map to store Event data
+
+        // Generating QR Code
+        eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
+
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventName", event.getEventName());
         eventData.put("facilityName", event.getEventFacility());
@@ -118,9 +131,12 @@ public class OrganizerCreateEventFragment extends Fragment {
         eventData.put("eventWlCapacity", event.getWlCapacity());
         eventData.put("eventWlSeatsAvailable", event.getWlSeatsAvailable());
         eventData.put("geolocationEnabled", event.isGeolocationEnabled());
+        eventData.put("qrCodeValue",event.getEventQRCode().getQRCodeValue());
+        eventData.put("hashData",event.getEventQRCode().getHashData());
+        //eventData.put("qrCodeBitMatrix",event.getEventQRCode().getQrCode());
 
         // Add a new document to Events collection
-        DocumentReference eventRef = db.collection("Events").document();
+        DocumentReference eventRef = db.collection("Events").document(eventId); // eventID is the hash value from qr code
         eventRef.set(eventData).addOnSuccessListener(aVoid -> {
             // Initialize subcollections after creating the Event document
             initializeEventSubcollections(eventRef);
@@ -144,5 +160,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         selectedListRef.document("placeholder").set(placeholder);
         cancelledListRef.document("placeholder").set(placeholder);
         finalListRef.document("placeholder").set(placeholder);
+
+
     }
 }
