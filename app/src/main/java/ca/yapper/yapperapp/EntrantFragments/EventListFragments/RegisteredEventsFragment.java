@@ -54,24 +54,20 @@ public class RegisteredEventsFragment extends Fragment {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     String eventName = document.getString("eventName");
-                    String eventFacility = document.getString("eventFacility");
+                    String eventDate = document.getString("eventDate");
+                    String registrationDeadline = document.getString("registrationDeadline");
+                    int waitingListSeats = document.getLong("eventWlCapacity").intValue();
 
-                    // Directly convert Timestamp to String
-                    String eventDate = document.getTimestamp("eventDate").toDate().toString();
-                    String registrationDeadline = document.getTimestamp("registrationDeadline").toDate().toString();
-
-                    // Retrieve waitingListSeats as a number
-                    int waitingListSeats = document.getLong("waitingListSeats").intValue();
-
-                    Event event = new Event(eventName, eventFacility, eventDate, registrationDeadline, 0, 0, waitingListSeats, false);
+                    Event event = new Event(eventName, "", eventDate, registrationDeadline, 0, 0, waitingListSeats, false);
                     eventList.add(event);
                 }
                 adapter.notifyDataSetChanged();
             } else {
-                // Handle errors if needed
+                // Handle errors
             }
         });
     }
+
 
 }
 
