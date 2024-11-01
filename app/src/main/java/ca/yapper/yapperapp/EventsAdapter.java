@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.EntrantFragments.EntrantEventFragment;
 
@@ -38,24 +39,38 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
     public void onBindViewHolder(@NonNull EventsViewHolder holder, int position) {
         Event event = eventList.get(position);
 
+        // Set the text views
         holder.eventNameTextView.setText(event.getEventName());
         holder.eventDateTextView.setText(event.getEventDateTime());
         holder.eventLocationTextView.setText(event.getEventFacilityName());
 
-        // Set an OnClickListener for the item
+        // Set click listener
         holder.itemView.setOnClickListener(v -> {
-            // Create a new instance of EntrantEventFragment
             EntrantEventFragment entrantEventFragment = new EntrantEventFragment();
 
-            // Create a bundle and add the event name
+            // Create bundle with all event details
             Bundle bundle = new Bundle();
-            bundle.putString("0", event.getEventName()); // Key "0" with the event name
+            bundle.putString("eventId", event.getEventQRCode() != null ?
+                    event.getEventQRCode().getQRCodeValue() :
+                    "sampleEventId"); // Fallback ID if no QR code
+            bundle.putString("eventName", event.getEventName());
+            bundle.putString("eventDateTime", event.getEventDateTime());
+            bundle.putString("eventFacility", event.getEventFacilityName());
+            bundle.putString("eventLocation", event.getEventFacilityLocation());
+            bundle.putString("eventDeadline", event.getEventRegDeadline());
+            bundle.putInt("eventAttendees", event.getEventAttendees());
+            bundle.putInt("eventWaitlistCapacity", event.getEventWlCapacity());
+            bundle.putBoolean("geolocationEnabled", event.isEventGeolocEnabled());
+
             entrantEventFragment.setArguments(bundle);
 
-            // Replace the current fragment with EntrantEventFragment
-            FragmentTransaction transaction = ((FragmentActivity) context).getSupportFragmentManager().beginTransaction();
+            // Replace current fragment with event details fragment
+            FragmentTransaction transaction = ((FragmentActivity) context)
+                    .getSupportFragmentManager()
+                    .beginTransaction();
+
             transaction.replace(R.id.fragment_container, entrantEventFragment);
-            transaction.addToBackStack(null); // Add to back stack to allow navigation back
+            transaction.addToBackStack(null);
             transaction.commit();
         });
     }

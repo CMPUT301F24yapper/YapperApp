@@ -13,117 +13,113 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-//import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.HashMap;
 
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.UMLClasses.Image;
-// new library import (in Gradle dependencies as well) from source: https://guides.codepath.com/android/Displaying-Images-with-the-Glide-Library
+
 public class EntrantEventFragment extends Fragment {
 
     private FirebaseFirestore db;
     private String eventId;
     private TextView eventTitle, eventDateTime, eventFacility, eventDescription, availableSlots;
-    private Image eventPoster;
     private Button joinButton;
     private boolean geolocationEnabled;
     private String userDeviceId;
     private Bundle eventParameters;
-
-    // To-Do: make sure to implement edge case where User ALREADY joined Event & is viewing same Event
-    // from QR code (Join button grey / onclicklistener turned off in this case!)
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entrant_event, container, false);
 
-        eventTitle = view.findViewById(R.id.event_title);
-
         db = FirebaseFirestore.getInstance();
         eventParameters = getArguments();
-        eventId = eventParameters.getString("0");
-        // Initialize views
 
-        //  eventTitle.setText(eventId);
+        // Initialize views
         eventTitle = view.findViewById(R.id.event_title);
         eventDateTime = view.findViewById(R.id.event_date_time);
         eventFacility = view.findViewById(R.id.facility_name);
         eventDescription = view.findViewById(R.id.event_description);
         availableSlots = view.findViewById(R.id.available_slots);
-        // eventPoster = view.findViewById(R.id.event_poster);
         joinButton = view.findViewById(R.id.join_button);
 
-        // load database details for Event
-        loadEventDetails();
+        if (eventParameters != null) {
+            // Get data from bundle
+            eventId = eventParameters.getString("eventId", "");
+            String name = eventParameters.getString("eventName", "");
+            String dateTime = eventParameters.getString("eventDateTime", "");
+            String facility = eventParameters.getString("eventFacility", "");
+            geolocationEnabled = eventParameters.getBoolean("geolocationEnabled", false);
 
-        // join on click listener
+            // Set views with bundle data
+            eventTitle.setText(name);
+            eventDateTime.setText(dateTime);
+            eventFacility.setText("Facility: " + facility);
+
+            // Load additional details from Firestore
+            loadEventDetails();
+        }
+
+        // Join button click listener
         joinButton.setOnClickListener(v -> handleJoinButtonClick());
 
         return view;
     }
+
     private void loadEventDetails() {
         db.collection("Events").document(eventId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                // Retrieve event details
-                String eventName = documentSnapshot.getString("eventName");
-                String eventDateTimeString = documentSnapshot.getString("eventDateTime");
-                // IMPORTANT: have to change how Facility is stored in Firestore through Event fields & update in code as well
-                // i.e. it should be a reference to a FacilityId that we THEN retrieve the facilityName from
-                // we should also include (in xml, classes, fragments, etc) the LOCATION of facility, which we will also retrieve from the facilityId reference field in Event
-                String facilityName = documentSnapshot.getString("eventFacilityName"); // This assumes a string field
+                // Safely get event details with null checks and default values
                 String eventDescriptionString = documentSnapshot.getString("eventDescription");
-                int waitingListCapacity = documentSnapshot.getLong("waitingListCapacity").intValue();
-                int availableSlotsCount = documentSnapshot.getLong("availableSlots").intValue();
-                geolocationEnabled = documentSnapshot.getBoolean("geolocationEnabled");
+                Long waitingListCapacityLong = documentSnapshot.getLong("waitingListCapacity");
+                Long availableSlotsLong = documentSnapshot.getLong("availableSlots");
+                Boolean geoEnabled = documentSnapshot.getBoolean("geolocationEnabled");
 
-                // Set UI components
-                eventTitle.setText(eventName);
-                eventDateTime.setText(eventDateTimeString);
-                eventFacility.setText(facilityName);
-                eventDescription.setText(eventDescriptionString);
+                // Convert Longs to ints with null checks
+                int waitingListCapacity = waitingListCapacityLong != null ? waitingListCapacityLong.intValue() : 0;
+                int availableSlotsCount = availableSlotsLong != null ? availableSlotsLong.intValue() : 0;
+
+                // Update geolocationEnabled if value exists in Firestore
+                if (geoEnabled != null) {
+                    geolocationEnabled = geoEnabled;
+                }
+
+                // Set UI components with null checks
+                if (eventDescriptionString != null) {
+                    eventDescription.setText(eventDescriptionString);
+                }
+
                 availableSlots.setText(availableSlotsCount + " / " + waitingListCapacity);
 
-                // Load the event poster image (if a reference is available)
-                // loadEventPoster(documentSnapshot);
+                // Enable join button now that we have the data
+                joinButton.setEnabled(true);
 
                 // Check if the user is already in the waiting list
                 checkUserInWaitingList();
             }
         }).addOnFailureListener(e -> {
-            // Handle failure (e.g., show a toast message)
+            // Handle failure (e.g., show error message)
+            joinButton.setEnabled(false);
+            joinButton.setText("Error Loading Event");
         });
     }
 
-    /**
-    private void loadEventPoster(DocumentSnapshot documentSnapshot) {
-        // Assuming the poster is a reference to another document
-        DocumentReference posterRef = documentSnapshot.getDocumentReference("eventPoster");
-        if (posterRef != null) {
-            posterRef.get().addOnSuccessListener(posterSnapshot -> {
-                if (posterSnapshot.exists()) {
-                    String imageUrl = posterSnapshot.getString("imageURI"); // Assuming this field exists
-                    // Load the image using a library like Glide or Picasso
-                    Glide.with(this).load(imageUrl).into(eventPoster);
-                }
-            });
-        }
-    } **/
-
     private void checkUserInWaitingList() {
-        // Check if the user's device ID is in the waiting list
+        if (userDeviceId == null) return; // Add early return if userDeviceId is null
+
         db.collection("Events").document(eventId).collection("waitingList")
                 .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // User is already in the waiting list
                         joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY); // Change button color
+                        joinButton.setBackgroundColor(Color.GRAY);
                     } else {
                         // User is not in the waiting list
                         joinButton.setText("Join");
-                        joinButton.setBackgroundColor(Color.BLUE); // Default color
+                        joinButton.setBackgroundColor(Color.BLUE);
                     }
                 });
     }
@@ -141,7 +137,6 @@ public class EntrantEventFragment extends Fragment {
     }
 
     private void showGeolocationWarningDialog() {
-        // Create and show a dialog fragment
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
                 .setPositiveButton("Continue", (dialog, id) -> joinEvent())
@@ -151,24 +146,26 @@ public class EntrantEventFragment extends Fragment {
     }
 
     private void joinEvent() {
-        // Add user's device ID to the waiting list
+        if (userDeviceId == null) return; // Add early return if userDeviceId is null
+
         db.collection("Events").document(eventId).collection("waitingList").document(userDeviceId)
                 .set(new HashMap<>()).addOnSuccessListener(aVoid -> {
                     joinButton.setText("Unjoin");
-                    joinButton.setBackgroundColor(Color.GRAY); // Change button color
+                    joinButton.setBackgroundColor(Color.GRAY);
                 }).addOnFailureListener(e -> {
-                    // Handle failure (e.g., show a toast message)
+                    // Handle failure
                 });
     }
 
     private void unjoinEvent() {
-        // Remove user's device ID from the waiting list
+        if (userDeviceId == null) return; // Add early return if userDeviceId is null
+
         db.collection("Events").document(eventId).collection("waitingList").document(userDeviceId)
                 .delete().addOnSuccessListener(aVoid -> {
                     joinButton.setText("Join");
-                    joinButton.setBackgroundColor(Color.BLUE); // Reset button color
+                    joinButton.setBackgroundColor(Color.BLUE);
                 }).addOnFailureListener(e -> {
-                    // Handle failure (e.g., show a toast message)
+                    // Handle failure
                 });
     }
 }
