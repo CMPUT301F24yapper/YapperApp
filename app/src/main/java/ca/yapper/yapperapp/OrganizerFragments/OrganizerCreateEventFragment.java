@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.OrganizerFragments;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -23,8 +23,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
-import ca.yapper.yapperapp.UMLClasses.Facility;
 
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
