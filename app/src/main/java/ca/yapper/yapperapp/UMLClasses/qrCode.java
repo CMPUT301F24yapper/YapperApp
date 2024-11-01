@@ -9,6 +9,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 public class qrCode {
     // to implement (constructor, Gs & Ss)
+    // TO-DO: CHECK FOR UNIQUE HASH DATA FUNCTION INPUT
     private String QRCodeValue;
     private int hashData;
     private QRCodeWriter QRcodeManager;
