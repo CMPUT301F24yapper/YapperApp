@@ -39,6 +39,8 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entrant_qrscanner, container, false);
 
+        //ADD METHOD TO CHECK FOR CAMERA PERMISSIONS (CheckSelfPermissions and RequestPermissions)
+
         db = FirebaseFirestore.getInstance(); // For Checking what event the QRCode is from
 
         initializeScan(view);
@@ -59,9 +61,6 @@ public class EntrantQRCodeScannerFragment extends Fragment {
 
             // Here we switch fragments
             getEvent(db, String.valueOf(QRScanResult)); // What happens if we scan a qr code that's not from an existing event?
-            EntrantEventFragment newFragment = new EntrantEventFragment();
-            newFragment.setArguments(eventData);
-            getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
         };
         barcodeScan.decodeContinuous(scanningResult);
         barcodeScan.resume();
@@ -71,10 +70,12 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         barcodeScan = view.findViewById(R.id.barcode_view);
         settings = barcodeScan.getCameraSettings();
 
-        if (settings.getRequestedCameraId() != 1){
-            // Sets the default camera to be the front facing camera, in case its not
-            settings.setRequestedCameraId(1);
-        }
+//        if (settings.getRequestedCameraId() != 1){
+//            // Sets the default camera to be the front facing camera, in case its not
+//            settings.setRequestedCameraId(0);
+//        }
+
+        settings.setRequestedCameraId(0);
         settings.setAutoFocusEnabled(true);
         barcodeScan.setCameraSettings(settings);
     }
@@ -85,18 +86,22 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         overlay.setCameraPreview(barcodeScan);
     }
 
-    private void getEvent(FirebaseFirestore db, String QRScanResult){
-        //DocumentReference eventRef = db.collection("Events").document("sampleEventId");
 
-        db.collection("Events").document("sampleEventId")
-                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            //if (task.getResult().exists()) {
-                                eventData = new Bundle(); // using this to send data between fragments
-                                eventData.putString("0", "QRScanResult");
-                        //}
-                    }
-                });
+
+    private void getEvent(FirebaseFirestore db, String QRScanResult){
+        //REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
+
+        db.collection("Events").document("sampleEventId").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    eventData = new Bundle();
+                    eventData.putString("0", QRScanResult);
+
+                    EntrantEventFragment newFragment = new EntrantEventFragment();
+                    newFragment.setArguments(eventData);
+                    getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+                } else {
+                    Log.d("A","QRScanResult does not exist", task.getException());
+                }
+            });
     }
 }

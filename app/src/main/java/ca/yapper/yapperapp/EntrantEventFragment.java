@@ -27,10 +27,10 @@ public class EntrantEventFragment extends Fragment {
         eventTitle = view.findViewById(R.id.event_title);
 
         db = FirebaseFirestore.getInstance();
-        eventParameters = this.getArguments();
+        eventParameters = getArguments();
         eventId = eventParameters.getString("0");
 
-        //eventTitle.setText(eventParameters.getString("0"));
+        eventTitle.setText(eventId);
 
         return view;
     }
