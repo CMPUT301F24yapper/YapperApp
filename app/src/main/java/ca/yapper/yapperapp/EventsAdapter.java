@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.EntrantFragments.EntrantEventFragment;
 
@@ -40,8 +39,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
         Event event = eventList.get(position);
 
         holder.eventNameTextView.setText(event.getEventName());
-        holder.eventDateTextView.setText(event.getEventDate());
-        holder.eventLocationTextView.setText(event.getEventFacility());
+        holder.eventDateTextView.setText(event.getEventDateTime());
+        holder.eventLocationTextView.setText(event.getEventFacilityName());
 
         // Set an OnClickListener for the item
         holder.itemView.setOnClickListener(v -> {

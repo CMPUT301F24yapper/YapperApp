@@ -54,11 +54,16 @@ public class RegisteredEventsFragment extends Fragment {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     String eventName = document.getString("eventName");
-                    String eventDate = document.getString("eventDate");
-                    String registrationDeadline = document.getString("registrationDeadline");
-                    int waitingListSeats = document.getLong("eventWlCapacity").intValue();
+                    String eventDateTime = document.getString("eventDate");
+                    String eventRegDeadline = document.getString("registrationDeadline");
+                    String eventFacilityName = ""; // Placeholder if not stored in Firestore
+                    String eventFacilityLocation = ""; // Placeholder if not stored in Firestore
+                    int eventAttendees = 0; // Placeholder if not stored in Firestore
+                    int eventWlCapacity = document.contains("wlCapacity") ? document.getLong("wlCapacity").intValue() : 0;
+                    int eventWlSeatsLeft = document.contains("waitingListSeats") ? document.getLong("waitingListSeats").intValue() : 0;
+                    boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
 
-                    Event event = new Event(eventName, "", eventDate, registrationDeadline, 0, 0, waitingListSeats, false);
+                    Event event = new Event(null, eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsLeft, eventGeolocEnabled);
                     eventList.add(event);
                 }
                 adapter.notifyDataSetChanged();
