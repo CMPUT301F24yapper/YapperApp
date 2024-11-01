@@ -1,5 +1,68 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import android.graphics.Bitmap;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
 public class qrCode {
     // to implement (constructor, Gs & Ss)
+    private String QRCodeValue;
+    private int hashData;
+    private QRCodeWriter QRcodeManager;
+    private BitMatrix qrCode;
+
+    qrCode(String QRCodeValue){
+        this.QRCodeValue = QRCodeValue;
+        this.hashData = -1;
+        this.QRcodeManager = new QRCodeWriter();
+        this.qrCode = new BitMatrix(0, 0);
+    }
+
+    /**
+     * Generates a QR Code as a BitMatrix using the currently stored string.
+     * */
+    public void encodeValue() throws WriterException {
+        //Obtaining the BitMatrix from the encoder
+        QRcodeManager = new QRCodeWriter();
+        this.qrCode = QRcodeManager.encode(QRCodeValue, BarcodeFormat.QR_CODE, 500, 500);
+        this.hashData = qrCode.hashCode();
+    }
+
+    /**
+     * Takes a generated QR code BitMatrix and converts it into a Bitmap for use in ImageViews.
+     * */
+    public Bitmap convertToIMG() throws UnsupportedOperationException{
+        if (this.qrCode.getHeight() != 500 || this.qrCode.getWidth() != 500){
+            return null;
+        }
+        // Bitmap.Config.ARGB_8888 is the color config
+        Bitmap QRImg = Bitmap.createBitmap(this.qrCode.getHeight(), this.qrCode.getWidth(), Bitmap.Config.ARGB_8888);
+
+        for (int i = 0; i < this.qrCode.getHeight(); i++) {
+            for (int j = 0; j < this.qrCode.getWidth(); j++) {
+                Boolean current = this.qrCode.get(i,j);
+                if (current) {QRImg.setPixel(i, j, 0xFF000000);} // set pixel black
+                else         {QRImg.setPixel(i, j, 0xFFFFFFFF);} // set pixel white
+        }}
+        return QRImg;
+    }
+
+    public String getQRCodeValue() {
+        return QRCodeValue;
+    }
+
+    public void setQRCodeValue(String QRCodeValue) {
+        this.QRCodeValue = QRCodeValue;
+    }
+
+    public int getHashData() {
+        return hashData;
+    }
+
+    public void setHashData(int hashData) {
+        this.hashData = hashData;
+    }
 }

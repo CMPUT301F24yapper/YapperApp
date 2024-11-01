@@ -1,5 +1,7 @@
 package ca.yapper.yapperapp;
 
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -36,6 +38,7 @@ public class EntrantActivity extends AppCompatActivity {
             return insets;
         });
 
+        this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         setupBottomNavigation();
     }
 

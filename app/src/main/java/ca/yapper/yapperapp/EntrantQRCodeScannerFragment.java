@@ -1,69 +1,50 @@
 package ca.yapper.yapperapp;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeView;
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
+import com.journeyapps.barcodescanner.ViewfinderView;
+import com.journeyapps.barcodescanner.camera.CameraSettings;
 
 public class EntrantQRCodeScannerFragment extends Fragment {
 
-    private BarcodeView barcodeView;
-    private TextView scannerResult;
-    private ImageView QRCodeImage;
-    private ActivityResultLauncher<ScanOptions> cameraScan;
+    private BarcodeView barcodeScan;
+    private CameraSettings settings;
+    private ViewfinderView overlay;
+    private FirebaseFirestore db;
+    private Bundle eventData;
+
+    private BarcodeCallback scanningResult;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entrant_qrscanner, container, false);
 
-        barcodeView = view.findViewById(R.id.barcode_view);
-        scannerResult = view.findViewById(R.id.scanner_result);
-        QRCodeImage = view.findViewById(R.id.image_view);
-        Button testQRScannerButton = view.findViewById(R.id.QR_scanner_button);
+        //ADD METHOD TO CHECK FOR CAMERA PERMISSIONS (CheckSelfPermissions and RequestPermissions)
 
-        ScanOptions cameraOptions = new ScanOptions()
-                .setCameraId(0)
-                .setDesiredBarcodeFormats(String.valueOf(BarcodeFormat.QR_CODE))
-                .setPrompt("Scanning for QR codes")
-                .setOrientationLocked(true);
+        db = FirebaseFirestore.getInstance(); // For Checking what event the QRCode is from
 
-        cameraScan = registerForActivityResult(new ScanContract(), qrCodeValue -> {
-            scannerResult.setText(qrCodeValue.getContents());
-        });
-
-        testQRScannerButton.setOnClickListener(v -> {
-            QRCodeWriter qrcodeManager = new QRCodeWriter();
-            String testData = "Ruffles test case2";
-            try {
-                BitMatrix qrCode = qrcodeManager.encode(testData, BarcodeFormat.QR_CODE, 500, 500);
-                Bitmap codeIMG = convertingBitMatrix(qrCode);
-                QRCodeImage.setImageBitmap(codeIMG);
-
-                cameraScan.launch(cameraOptions);
-            } catch (WriterException e) {
-                Log.d("QR Code Error", "Unable to encode: " + testData);
-            }
-        });
+        initializeScan(view);
+        showOverlay(view);
 
         return view;
     }
@@ -71,22 +52,56 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        BarcodeCallback result = QRScanResult -> {
-            scannerResult.setText(QRScanResult.toString());
-            barcodeView.pause();
-        };
 
-        barcodeView.resume();
-        barcodeView.decodeContinuous(result);
+        scanningResult = QRScanResult -> {
+            Log.d("QR Code Scanned","Results from QR code scan " + QRScanResult);
+            barcodeScan.pause();
+            barcodeScan.setVisibility(View.GONE);
+            overlay.setVisibility(View.GONE);
+
+            // Here we switch fragments
+            getEvent(db, String.valueOf(QRScanResult)); // What happens if we scan a qr code that's not from an existing event?
+        };
+        barcodeScan.decodeContinuous(scanningResult);
+        barcodeScan.resume();
     }
 
-    private Bitmap convertingBitMatrix(BitMatrix qrcode) {
-        Bitmap img = Bitmap.createBitmap(qrcode.getWidth(), qrcode.getHeight(), Bitmap.Config.ARGB_8888);
-        for (int i = 0; i < qrcode.getHeight(); i++) {
-            for (int j = 0; j < qrcode.getWidth(); j++) {
-                img.setPixel(i, j, qrcode.get(i, j) ? 0xFF000000 : 0xFFFFFFFF);
-            }
-        }
-        return img;
+    private void initializeScan(View view){
+        barcodeScan = view.findViewById(R.id.barcode_view);
+        settings = barcodeScan.getCameraSettings();
+
+//        if (settings.getRequestedCameraId() != 1){
+//            // Sets the default camera to be the front facing camera, in case its not
+//            settings.setRequestedCameraId(0);
+//        }
+
+        settings.setRequestedCameraId(0);
+        settings.setAutoFocusEnabled(true);
+        barcodeScan.setCameraSettings(settings);
+    }
+
+    private void showOverlay(View view){
+        overlay = view.findViewById(R.id.viewfinder);
+        // attaching overlay to currently opened camera preview(the barcodeView extends camera preview)
+        overlay.setCameraPreview(barcodeScan);
+    }
+
+
+
+    private void getEvent(FirebaseFirestore db, String QRScanResult){
+        //REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
+
+        db.collection("Events").document("sampleEventId").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    eventData = new Bundle();
+                    eventData.putString("0", QRScanResult);
+
+                    EntrantEventFragment newFragment = new EntrantEventFragment();
+                    newFragment.setArguments(eventData);
+                    getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+                } else {
+                    Log.d("A","QRScanResult does not exist", task.getException());
+                }
+            });
     }
 }

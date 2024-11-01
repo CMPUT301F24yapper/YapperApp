@@ -32,6 +32,8 @@ import ca.yapper.yapperapp.UMLClasses.User;
 
 import ca.yapper.yapperapp.UMLClasses.User;
 
+import ca.yapper.yapperapp.UMLClasses.User;
+
 public class SignupActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private CollectionReference usersRef;
