@@ -125,7 +125,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventName", event.getEventName());
         eventData.put("facilityName", event.getEventFacility());
-        eventData.put("eventDateTime", event.getEventDate()); 
+        eventData.put("eventDateTime", event.getEventDate());
         eventData.put("registrationDeadline", event.getRegistrationDeadline());
         eventData.put("eventAttendees", event.getEventAttendees());
         eventData.put("eventWlCapacity", event.getWlCapacity());
