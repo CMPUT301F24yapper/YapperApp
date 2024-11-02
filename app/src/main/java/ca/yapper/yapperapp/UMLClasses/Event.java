@@ -45,7 +45,6 @@ public class Event {
 
     // constructor version with parameters
     public Event(String eventName, String eventDateTime, String eventRegDeadline, String eventFacilityName, String eventFacilityLocation, int eventAttendees, int eventWlCapacity, int eventWlSeatsLeft, boolean eventGeolocEnabled) throws WriterException {
-        this.eventQRCode = new qrCode(this.eventName);
         this.eventName = eventName;
         this.eventDateTime = eventDateTime;
         this.eventRegDeadline = eventRegDeadline;
@@ -55,6 +54,7 @@ public class Event {
         this.eventWlCapacity = eventWlCapacity;
         this.eventWlSeatsLeft = eventWlSeatsLeft;
         this.eventGeolocEnabled = eventGeolocEnabled;
+        this.eventQRCode = new qrCode(this.eventName);
     }
 
     public qrCode getEventQRCode() {

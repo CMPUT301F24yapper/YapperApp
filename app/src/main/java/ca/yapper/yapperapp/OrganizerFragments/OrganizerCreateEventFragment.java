@@ -117,8 +117,8 @@ public class OrganizerCreateEventFragment extends Fragment {
         Event event = new Event(eventName, eventDateTime, registrationDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
 
         // Create map to store Event data
-
         // Generating QR Code
+        Log.d("EVENT", "FireBase Storage Begun");
         eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
 
         Map<String, Object> eventData = new HashMap<>();
