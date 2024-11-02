@@ -122,7 +122,7 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void launchOrganizerActivity() {
-        Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
+        Intent intent = new Intent(SignupActivity.this, OrganizerActivity.class);
         startActivity(intent);
         finish(); // Close SignupActivity
     }

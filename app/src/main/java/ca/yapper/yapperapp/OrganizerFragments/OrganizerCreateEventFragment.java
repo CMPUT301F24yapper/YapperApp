@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.WriterException;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -35,13 +36,13 @@ public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventWlCapacityEditText;
     private Switch geolocationSwitch;
     private Button saveEventButton;
+    private String eventId;
 
     // Firebase Firestore instance
     private FirebaseFirestore db;
 
     // Date variables
     private int selectedYear, selectedMonth, selectedDay;
-
 
     @Nullable
     @Override
@@ -66,7 +67,13 @@ public class OrganizerCreateEventFragment extends Fragment {
         // Set up registration deadline picker
         eventDeadlineEditText.setOnClickListener(v -> showDatePickerDialog(eventDeadlineEditText));
 
-        saveEventButton.setOnClickListener(v -> createEvent());
+        saveEventButton.setOnClickListener(v -> {
+            try {
+                createEvent();
+            } catch (WriterException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         return view;
     }
@@ -87,7 +94,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void createEvent() {
+    private void createEvent() throws WriterException { // writer exception from QR Code
         String eventName = eventNameEditText.getText().toString();
         String eventFacilityName = eventFacilityEditText.getText().toString();
         String eventFacilityLocation = ""; // Placeholder, adjust if needed
@@ -106,22 +113,29 @@ public class OrganizerCreateEventFragment extends Fragment {
             return;
         }
 
-        // Create instance of Event
-        Event event = new Event(null, eventName, eventDateTime, registrationDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+        // Create instance of Event NOTE: QR Codes are automatically generated at event creation
+        Event event = new Event(eventName, eventDateTime, registrationDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
 
         // Create map to store Event data
+        // Generating QR Code
+        Log.d("EVENT", "FireBase Storage Begun");
+        eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
+
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventName", event.getEventName());
         eventData.put("facilityName", event.getEventFacilityName());
-        eventData.put("eventDate", event.getEventDateTime());
+        eventData.put("eventDateTime", event.getEventDateTime());
         eventData.put("registrationDeadline", event.getEventRegDeadline());
         eventData.put("eventAttendees", event.getEventAttendees());
         eventData.put("eventWlCapacity", event.getEventWlCapacity());
         eventData.put("waitingListSeats", event.getEventWlSeatsLeft()); // Update to match Firestore field name
         eventData.put("geolocationEnabled", event.isEventGeolocEnabled());
+        eventData.put("qrCodeValue",event.getEventQRCode().getQRCodeValue());
+        eventData.put("hashData",event.getEventQRCode().getHashData());
+        //eventData.put("qrCodeBitMatrix",event.getEventQRCode().getQrCode());
 
         // Add a new document to Events collection
-        DocumentReference eventRef = db.collection("Events").document();
+        DocumentReference eventRef = db.collection("Events").document(eventId); // eventID is the hash value from qr code
         eventRef.set(eventData).addOnSuccessListener(aVoid -> {
             // Initialize subcollections after creating the Event document
             initializeEventSubcollections(eventRef);
@@ -145,5 +159,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         selectedListRef.document("placeholder").set(placeholder);
         cancelledListRef.document("placeholder").set(placeholder);
         finalListRef.document("placeholder").set(placeholder);
+
+
     }
 }

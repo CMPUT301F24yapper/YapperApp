@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,12 @@ public class RegisteredEventsFragment extends Fragment {
                     int eventWlSeatsLeft = document.contains("waitingListSeats") ? document.getLong("waitingListSeats").intValue() : 0;
                     boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
 
-                    Event event = new Event(null, eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsLeft, eventGeolocEnabled);
+                    Event event = null;
+                    try {
+                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsLeft, eventGeolocEnabled);
+                    } catch (WriterException e) {
+                        throw new RuntimeException(e);
+                    }
                     eventList.add(event);
                 }
                 adapter.notifyDataSetChanged();

@@ -1,6 +1,7 @@
 package ca.yapper.yapperapp.UMLClasses;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -15,19 +16,13 @@ public class qrCode {
     private QRCodeWriter QRcodeManager;
     private BitMatrix qrCode;
 
-    qrCode(String QRCodeValue){
-        this.QRCodeValue = QRCodeValue;
-        this.hashData = -1;
-        this.QRcodeManager = new QRCodeWriter();
-        this.qrCode = new BitMatrix(0, 0);
-    }
-
     /**
-     * Generates a QR Code as a BitMatrix using the currently stored string.
+     * Generates a QR Code as a BitMatrix using the currently stored string and stores both the
+     * resulting bitMatrix and hash value.
      * */
-    public void encodeValue() throws WriterException {
-        //Obtaining the BitMatrix from the encoder
-        QRcodeManager = new QRCodeWriter();
+    qrCode(String QRCodeValue) throws WriterException {
+        this.QRCodeValue = QRCodeValue;
+        this.QRcodeManager = new QRCodeWriter();
         this.qrCode = QRcodeManager.encode(QRCodeValue, BarcodeFormat.QR_CODE, 500, 500);
         this.hashData = qrCode.hashCode();
     }
@@ -65,5 +60,13 @@ public class qrCode {
 
     public void setHashData(int hashData) {
         this.hashData = hashData;
+    }
+
+    public BitMatrix getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(BitMatrix qrCode) {
+        this.qrCode = qrCode;
     }
 }

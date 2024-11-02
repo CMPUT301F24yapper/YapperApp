@@ -70,5 +70,4 @@ public class EntrantActivity extends AppCompatActivity {
                 return true;
             }
         });
-
 } }
