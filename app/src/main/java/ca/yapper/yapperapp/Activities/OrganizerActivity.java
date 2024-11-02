@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Activities;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,6 +14,11 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEventFragment;
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
+import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.R;
 
 public class OrganizerActivity extends AppCompatActivity {
     // do I need below code?

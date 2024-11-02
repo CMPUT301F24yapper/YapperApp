@@ -1,16 +1,11 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Activities;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -19,12 +14,14 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.List;
+import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
+import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
+import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
+import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.R;
 
 public class EntrantActivity extends AppCompatActivity {
     private FirebaseFirestore db;

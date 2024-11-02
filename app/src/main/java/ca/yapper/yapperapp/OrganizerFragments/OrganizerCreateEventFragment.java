@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.OrganizerFragments;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -24,8 +24,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
-import ca.yapper.yapperapp.UMLClasses.Facility;
 
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
@@ -97,26 +97,25 @@ public class OrganizerCreateEventFragment extends Fragment {
     private void createEvent() throws WriterException { // writer exception from QR Code
         String eventName = eventNameEditText.getText().toString();
         String eventFacilityName = eventFacilityEditText.getText().toString();
-        // TO-DO: how does event facility work here? i.e. if they've used this facility before / exists in facility profile already, we shouldn't be creating
-        // new instance of facility?!
-        // Facility eventFacility = new Facility(eventFacilityName);
-        String eventDate = eventDateEditText.getText().toString();
+        String eventFacilityLocation = ""; // Placeholder, adjust if needed
+        String eventDateTime = eventDateEditText.getText().toString();
         String registrationDeadline = eventDeadlineEditText.getText().toString();
-        Integer eventAttendees = Integer.valueOf(eventNumberOfAttendeesEditText.getText().toString());
-        Integer eventWlCapacity = Integer.valueOf(eventWlCapacityEditText.getText().toString());
-        Integer eventWlSeatsAvailable = eventWlCapacity;
+
+        // Ensure to parse these values safely
+        int eventAttendees = eventNumberOfAttendeesEditText.getText().toString().isEmpty() ? 0 : Integer.parseInt(eventNumberOfAttendeesEditText.getText().toString());
+        int eventWlCapacity = eventWlCapacityEditText.getText().toString().isEmpty() ? 0 : Integer.parseInt(eventWlCapacityEditText.getText().toString());
+        int eventWlSeatsAvailable = eventWlCapacity; // Assuming seats available initially equals the capacity
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
-
-        // **don't forget to make it clear for user on screen which fields are required**
-
-        if (eventName.isEmpty() || eventDate.isEmpty() || eventFacilityName.isEmpty() || eventAttendees == null) {
+        // Check for required fields
+        if (eventName.isEmpty() || eventDateTime.isEmpty() || eventFacilityName.isEmpty()) {
             Toast.makeText(getActivity(), "Please fill in the required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Create instance of Event NOTE: QR Codes are automatically generated at event creation
-        Event event = new Event(eventName, eventFacilityName, eventDate, registrationDeadline, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+        Event event = new Event(eventName, eventDateTime, registrationDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+
         // Create map to store Event data
 
         // Generating QR Code
@@ -124,13 +123,13 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventName", event.getEventName());
-        eventData.put("facilityName", event.getEventFacility());
-        eventData.put("eventDateTime", event.getEventDate());
-        eventData.put("registrationDeadline", event.getRegistrationDeadline());
+        eventData.put("facilityName", event.getEventFacilityName());
+        eventData.put("eventDateTime", event.getEventDateTime());
+        eventData.put("registrationDeadline", event.getEventRegDeadline());
         eventData.put("eventAttendees", event.getEventAttendees());
-        eventData.put("eventWlCapacity", event.getWlCapacity());
-        eventData.put("eventWlSeatsAvailable", event.getWlSeatsAvailable());
-        eventData.put("geolocationEnabled", event.isGeolocationEnabled());
+        eventData.put("eventWlCapacity", event.getEventWlCapacity());
+        eventData.put("waitingListSeats", event.getEventWlSeatsLeft()); // Update to match Firestore field name
+        eventData.put("geolocationEnabled", event.isEventGeolocEnabled());
         eventData.put("qrCodeValue",event.getEventQRCode().getQRCodeValue());
         eventData.put("hashData",event.getEventQRCode().getHashData());
         //eventData.put("qrCodeBitMatrix",event.getEventQRCode().getQrCode());

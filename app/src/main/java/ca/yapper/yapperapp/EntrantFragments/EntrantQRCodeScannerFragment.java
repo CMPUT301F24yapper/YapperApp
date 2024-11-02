@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.EntrantFragments;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +17,8 @@ import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
 import com.journeyapps.barcodescanner.camera.CameraSettings;
+
+import ca.yapper.yapperapp.R;
 
 public class EntrantQRCodeScannerFragment extends Fragment {
 
