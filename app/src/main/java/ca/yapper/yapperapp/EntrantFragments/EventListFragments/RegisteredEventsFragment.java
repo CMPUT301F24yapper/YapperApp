@@ -78,7 +78,5 @@ public class RegisteredEventsFragment extends Fragment {
             }
         });
     }
-
-
 }
 

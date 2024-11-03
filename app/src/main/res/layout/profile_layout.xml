@@ -154,130 +154,144 @@
             android:paddingLeft="24dp"/>
 
         <!-- Notifications Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Notifications"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingTop="2dp"
-            android:paddingBottom="8dp"
-            android:paddingRight="24dp"
-            android:paddingLeft="24dp"/>
-
         <LinearLayout
+            android:id="@+id/notifications_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingRight="24dp"
-            android:paddingLeft="24dp">
+            android:orientation="vertical">
 
             <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Pause all"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:paddingEnd="8dp" />
-
-            <Switch
-                android:id="@+id/switch_notifications"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="Notifications"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingTop="2dp"
+                android:paddingBottom="8dp"
+                android:paddingRight="24dp"
+                android:paddingLeft="24dp"/>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingRight="24dp"
+                android:paddingLeft="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Pause all"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingEnd="8dp" />
+
+                <Switch
+                    android:id="@+id/switch_notifications"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Facility Details"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingRight="24dp"
-            android:paddingLeft="24dp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="16dp" />
-
-
+<!--        Facility Section-->
         <LinearLayout
+            android:id="@+id/facility_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingRight="24dp"
-            android:paddingLeft="24dp">
+            android:orientation="vertical">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Facility Name:"
-                android:textSize="16sp"
+                android:text="Facility Details"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:paddingEnd="8dp" />
+                android:paddingRight="24dp"
+                android:paddingLeft="24dp"
+                android:paddingBottom="8dp"/>
 
-            <EditText
-                android:id="@+id/edit_facility"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:hint="Optional"
-                android:layout_marginStart="10dp"
+                android:orientation="horizontal"
+                android:paddingRight="24dp"
+                android:paddingLeft="24dp">
 
-                android:inputType="phone"
-                android:background="@android:color/transparent" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Facility Name:"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/edit_facility"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:hint="Optional"
+                    android:layout_marginStart="10dp"
+
+                    android:inputType="phone"
+                    android:background="@android:color/transparent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingRight="24dp"
+                android:paddingTop="10dp"
+                android:paddingLeft="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Address:"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/edit_Address"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:hint="Optional"
+                    android:layout_marginStart="10dp"
+
+                    android:inputType="phone"
+                    android:background="@android:color/transparent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingRight="24dp"
+                android:paddingLeft="24dp">
+                <!-- Your existing facility content -->
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingRight="24dp"
-            android:paddingTop="10dp"
-            android:paddingLeft="24dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Address:"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:paddingEnd="8dp" />
-
-            <EditText
-                android:id="@+id/edit_Address"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:hint="Optional"
-                android:layout_marginStart="10dp"
-
-                android:inputType="phone"
-                android:background="@android:color/transparent" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
-
-
 
 
     </LinearLayout>
