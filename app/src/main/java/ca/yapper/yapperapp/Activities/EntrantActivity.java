@@ -2,8 +2,11 @@ package ca.yapper.yapperapp.Activities;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -34,40 +37,72 @@ public class EntrantActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.entrant_activity_layout);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.entrant_activity), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         setupBottomNavigation();
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new EntrantHomeFragment())
+                    .commit();
+
+            // Also set the home item as selected in bottom nav
+            BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+            bottomNavigationView.setSelectedItemId(R.id.nav_entrant_home);
+        }
     }
 
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment selectedFragment = null;
 
-                if (item.getItemId() == R.id.nav_entrant_home) {
-                    selectedFragment = new EntrantHomeFragment();
+        // Set up normal click listener
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
 
-                } else if (item.getItemId() == R.id.nav_entrant_qrscanner) {
-                    selectedFragment = new EntrantQRCodeScannerFragment();
+            if (item.getItemId() == R.id.nav_entrant_home) {
+                selectedFragment = new EntrantHomeFragment();
+            } else if (item.getItemId() == R.id.nav_entrant_qrscanner) {
+                selectedFragment = new EntrantQRCodeScannerFragment();
+            } else if (item.getItemId() == R.id.nav_entrant_notifications) {
+                selectedFragment = new EntrantNotificationsFragment();
+            } else if (item.getItemId() == R.id.nav_entrant_profile) {
+                selectedFragment = new ProfileFragment();
+            }
 
-                } else if (item.getItemId() == R.id.nav_entrant_notifications) {
-                    selectedFragment = new EntrantNotificationsFragment();
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+            }
+            return true;
+        });
 
-                } else if (item.getItemId() == R.id.nav_entrant_profile) {
-                    selectedFragment = new ProfileFragment();
-                }
-                // Default fragment
-                if (selectedFragment != null) {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
-                }
+        // Set up long click listener for profile item
+        View profileItem = bottomNavigationView.findViewById(R.id.nav_entrant_profile);
+        profileItem.setOnLongClickListener(v -> {
+            showProfileSwitchMenu(v);
+            return true;
+        });
+    }
+
+    private void showProfileSwitchMenu(View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
+
+        // Hide the current role option
+        popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false);
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.switch_to_organizer) {
+                // Switch to OrganizerActivity
+                Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
+                startActivity(intent);
+                finish(); // Close current activity
                 return true;
             }
+            return false;
         });
-} }
+
+        popup.show();
+    }
+}
