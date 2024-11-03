@@ -95,7 +95,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private void getEvent(FirebaseFirestore db, String QRScanResult){
         //REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
 
-        db.collection("Events").document("sampleEventId").get().addOnCompleteListener(task -> {
+        db.collection("Events").document(QRScanResult).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     eventData = new Bundle();
                     eventData.putString("0", QRScanResult);

@@ -29,6 +29,8 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
+    // for below facility details, only the name is needed because Facility should already be stored in firestore for Organizer...
+    //... can later retrieve the Facility details such as location
     private EditText eventFacilityEditText;
     private EditText eventDateEditText;
     private EditText eventDeadlineEditText;
@@ -54,7 +56,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         eventFacilityEditText = view.findViewById(R.id.event_facility_input);
         eventDateEditText = view.findViewById(R.id.date_input);
         eventDeadlineEditText = view.findViewById(R.id.deadline_input);
-        // code for event poster
+        // ***TO-DO: code for event poster
         eventNumberOfAttendeesEditText = view.findViewById(R.id.attendees_input);
         eventWlCapacityEditText = view.findViewById(R.id.wl_capacity_input);
         geolocationSwitch = view.findViewById(R.id.geo_location_toggle);
@@ -96,6 +98,7 @@ public class OrganizerCreateEventFragment extends Fragment {
 
     private void createEvent() throws WriterException { // writer exception from QR Code
         String eventName = eventNameEditText.getText().toString();
+        // should facility be pre-written in for the Organizer (since they can only have 1 facility?)
         String eventFacilityName = eventFacilityEditText.getText().toString();
         String eventFacilityLocation = ""; // Placeholder, adjust if needed
         String eventDateTime = eventDateEditText.getText().toString();
@@ -159,7 +162,6 @@ public class OrganizerCreateEventFragment extends Fragment {
         selectedListRef.document("placeholder").set(placeholder);
         cancelledListRef.document("placeholder").set(placeholder);
         finalListRef.document("placeholder").set(placeholder);
-
 
     }
 }
