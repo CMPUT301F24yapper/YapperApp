@@ -19,7 +19,7 @@
         android:id="@+id/entrant_image"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:src="@drawable/profile_avatar"
+        android:src="@drawable/ic_profile_placeholder"
         android:backgroundTint="@android:color/holo_blue_light"
         android:scaleType="centerInside" />
 
