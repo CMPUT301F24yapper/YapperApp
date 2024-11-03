@@ -74,7 +74,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingTop="8dp"
-            android:text="Facility: Facility Name"
+            android:text="Facility Name: Facility Name"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Facility Location -->
+        <TextView
+            android:id="@+id/facility_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="Facility Location: Address"
             android:textColor="@android:color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
