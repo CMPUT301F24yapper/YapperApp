@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/entrant_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Entrant"
+        android:layout_marginStart="10dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/entrant_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/profile_avatar"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:scaleType="centerInside" />
+
+</LinearLayout>
