@@ -48,8 +48,9 @@
                 <TextView
                     android:id="@+id/name_label"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Name:"
+                    android:layout_height="0dp"
+                    android:padding="12dp"
+                    android:text="@string/name"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -60,13 +61,13 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
-                    android:hint="John Doe"
+                    android:hint="@string/Name_Hint"
                     android:inputType="textPersonName"
+                    android:padding="12dp"
                     android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@id/name_label"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/name_label"
-                    android:layout_marginStart="8dp" />
+                    app:layout_constraintStart_toEndOf="@+id/phone_label"
+                    app:layout_constraintTop_toTopOf="@id/name_label" />
 
                 <!-- Email Field -->
                 <TextView
@@ -76,6 +77,7 @@
                     android:text="Email:"
                     android:textSize="16sp"
                     android:textStyle="bold"
+                    android:padding="12dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/name_input"
                     android:layout_marginTop="16dp" />
@@ -87,11 +89,11 @@
                     android:background="@android:color/transparent"
                     android:hint="example@domain.com"
                     android:inputType="textEmailAddress"
+                    android:padding="12dp"
                     android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@id/email_label"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/email_label"
-                    android:layout_marginStart="8dp" />
+                    app:layout_constraintStart_toEndOf="@+id/phone_label"
+                    app:layout_constraintTop_toTopOf="@id/email_label" />
 
                 <!-- Phone Number Field -->
                 <TextView
@@ -101,6 +103,7 @@
                     android:text="Phone Number:"
                     android:textSize="16sp"
                     android:textStyle="bold"
+                    android:padding="12dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/email_input"
                     android:layout_marginTop="16dp" />
@@ -112,11 +115,11 @@
                     android:background="@android:color/transparent"
                     android:hint="Optional"
                     android:inputType="phone"
+                    android:padding="12dp"
                     android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@id/phone_label"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/phone_label"
-                    android:layout_marginStart="8dp" />
+                    app:layout_constraintStart_toEndOf="@+id/phone_label"
+                    app:layout_constraintTop_toTopOf="@id/phone_label" />
                 <!-- Small space between label and input -->
 
             </androidx.constraintlayout.widget.ConstraintLayout>
