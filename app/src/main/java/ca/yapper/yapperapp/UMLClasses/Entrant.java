@@ -2,7 +2,7 @@ package ca.yapper.yapperapp.UMLClasses;
 
 import java.util.ArrayList;
 
-public class Entrant extends Role {
+public class Entrant {
     // list of events attribute (to be used in Homepage fragment!...)
     private String status; // options being 'waiting', 'selected', 'cancelled', 'final'!!
     private ArrayList<Event> eventsSignedUpList;

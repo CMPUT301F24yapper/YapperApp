@@ -1,13 +1,10 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import java.util.ArrayList;
-
 public class User {
     private String deviceId;
     private String name;
     private String email;
     private String phoneNum;
-    // private ArrayList<Role> roles;
     // private ProfilePic profilePic;
     // private ProfilePic generatedProfilePic;
     // implement Booleans for role (not an array anymore!)
@@ -15,7 +12,7 @@ public class User {
     private Boolean isOrganizer;
     private Boolean isAdmin;
 
-    // Default constructor (required for Firestore deserialization)
+    // default constructor (required for Firestore deserialization)
     public User() {}
     // constructor version with parameters
     public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
