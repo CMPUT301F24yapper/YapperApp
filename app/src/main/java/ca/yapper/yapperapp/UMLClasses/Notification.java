@@ -22,6 +22,7 @@ public class Notification {
         this.isRead = false; // Default to false when a notification is created
     }
 
+
     // Getters and Setters
     public Date getDateTimeStamp() {
         return dateTimeStamp;
