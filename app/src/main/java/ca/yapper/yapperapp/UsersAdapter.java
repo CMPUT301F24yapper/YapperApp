@@ -1,21 +1,16 @@
 package ca.yapper.yapperapp;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import ca.yapper.yapperapp.EntrantFragments.EntrantEventFragment;
-import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHolder> {
@@ -45,7 +40,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
         // Set click listener
         /**
         holder.itemView.setOnClickListener(v -> {
-            EntrantEventFragment entrantEventFragment = new EntrantEventFragment();
+            EventDetailsFragment entrantEventFragment = new EventDetailsFragment();
 
             // Create bundle with all event details
             // is the bundle necessary (shouldn't it just be deviceId?)

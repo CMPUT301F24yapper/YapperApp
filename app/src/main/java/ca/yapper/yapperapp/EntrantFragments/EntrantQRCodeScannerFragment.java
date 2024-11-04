@@ -18,6 +18,7 @@ import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
 import com.journeyapps.barcodescanner.camera.CameraSettings;
 
+import ca.yapper.yapperapp.EventDetailsFragment;
 import ca.yapper.yapperapp.R;
 
 public class EntrantQRCodeScannerFragment extends Fragment {
@@ -100,7 +101,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
                     eventData = new Bundle();
                     eventData.putString("0", QRScanResult);
 
-                    EntrantEventFragment newFragment = new EntrantEventFragment();
+                    EventDetailsFragment newFragment = new EventDetailsFragment();
                     newFragment.setArguments(eventData);
                     getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
                 } else {

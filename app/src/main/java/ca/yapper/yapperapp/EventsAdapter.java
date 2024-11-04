@@ -14,9 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
-import ca.yapper.yapperapp.EntrantFragments.EntrantEventFragment;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsViewHolder> {
 
@@ -46,7 +44,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
 
         // Set click listener
         holder.itemView.setOnClickListener(v -> {
-            EntrantEventFragment entrantEventFragment = new EntrantEventFragment();
+            EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
 
             // Create bundle with all event details
             Bundle bundle = new Bundle();
@@ -62,14 +60,14 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
             bundle.putInt("eventWaitlistCapacity", event.getEventWlCapacity());
             bundle.putBoolean("geolocationEnabled", event.isEventGeolocEnabled());
 
-            entrantEventFragment.setArguments(bundle);
+            eventDetailsFragment.setArguments(bundle);
 
             // Replace current fragment with event details fragment
             FragmentTransaction transaction = ((FragmentActivity) context)
                     .getSupportFragmentManager()
                     .beginTransaction();
 
-            transaction.replace(R.id.fragment_container, entrantEventFragment);
+            transaction.replace(R.id.fragment_container, eventDetailsFragment);
             transaction.addToBackStack(null);
             transaction.commit();
         });

@@ -20,12 +20,16 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
@@ -110,6 +114,12 @@ public class OrganizerCreateEventFragment extends Fragment {
         int eventWlSeatsAvailable = eventWlCapacity; // Assuming seats available initially equals the capacity
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
+        // create empty User lists
+        ArrayList<User> waitingList = null;
+        ArrayList<User> selectedList = null;
+        ArrayList<User> finalList = null;
+        ArrayList<User> cancelledList = null;
+
         // Check for required fields
         if (eventName.isEmpty() || eventDateTime.isEmpty() || eventFacilityName.isEmpty()) {
             Toast.makeText(getActivity(), "Please fill in the required fields", Toast.LENGTH_SHORT).show();
@@ -117,7 +127,11 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
 
         // Create instance of Event NOTE: QR Codes are automatically generated at event creation
-        Event event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+        Event event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled, waitingList, selectedList, finalList, cancelledList);
+
+        // getHashData() to confirm if this hashData is unique for eventId, if not then add 1s to id
+        // hashing logic:
+        // if (event.getHashData() )
 
         // Create map to store Event data
         // Generating QR Code

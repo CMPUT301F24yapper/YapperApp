@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp.EntrantFragments;
+package ca.yapper.yapperapp;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,14 +18,11 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.yapper.yapperapp.R;
-
-public class EntrantEventFragment extends Fragment {
+public class EventDetailsFragment extends Fragment {
 
     private FirebaseFirestore db;
     private String eventId;

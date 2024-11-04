@@ -7,11 +7,14 @@ import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.encoder.QRCode;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Event {
     private qrCode eventQRCode;
     // eventQRCode: string that UNIQUELY IDENTITIES EVENT in database?! -> confirm
+    private String uniqueEventString;
+    
     private String eventName;
     private String eventDateTime;
     private String eventRegDeadline;
@@ -37,12 +40,14 @@ public class Event {
 
     private boolean eventGeolocEnabled;
     // eventGeolocEnabled: required attribute to create Event
-
+    private ArrayList<User> waitingList;
+    private ArrayList<User> selectedList;
+    private ArrayList<User> finalList;
+    private ArrayList<User> cancelledList;
     // deserialize constructor for Firebase
     public Event() {}
-
     // constructor version with parameters
-    public Event(String eventName, String eventDateTime, String eventRegDeadline, String eventFacilityName, String eventFacilityLocation, int eventAttendees, int eventWlCapacity, int eventWlSeatsLeft, boolean eventGeolocEnabled) throws WriterException {
+    public Event(String eventName, String eventDateTime, String eventRegDeadline, String eventFacilityName, String eventFacilityLocation, int eventAttendees, int eventWlCapacity, int eventWlSeatsLeft, boolean eventGeolocEnabled, ArrayList<User> waitingList, ArrayList<User> selectedList, ArrayList<User> finalList, ArrayList<User> cancelledList) throws WriterException {
         this.eventName = eventName;
         this.eventDateTime = eventDateTime;
         this.eventRegDeadline = eventRegDeadline;
@@ -52,6 +57,10 @@ public class Event {
         this.eventWlCapacity = eventWlCapacity;
         this.eventGeolocEnabled = eventGeolocEnabled;
         this.eventQRCode = new qrCode(this.eventName);
+        this.waitingList = waitingList;
+        this.selectedList = selectedList;
+        this.finalList = finalList;
+        this.cancelledList = cancelledList;
     }
 
     public qrCode getEventQRCode() {
@@ -124,5 +133,37 @@ public class Event {
 
     public void setEventGeolocEnabled(boolean eventGeolocEnabled) {
         this.eventGeolocEnabled = eventGeolocEnabled;
+    }
+
+    public ArrayList<User> getWaitingList() {
+        return waitingList;
+    }
+
+    public void setWaitingList(ArrayList<User> waitingList) {
+        this.waitingList = waitingList;
+    }
+
+    public ArrayList<User> getSelectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(ArrayList<User> selectedList) {
+        this.selectedList = selectedList;
+    }
+
+    public ArrayList<User> getFinalList() {
+        return finalList;
+    }
+
+    public void setFinalList(ArrayList<User> finalList) {
+        this.finalList = finalList;
+    }
+
+    public ArrayList<User> getCancelledList() {
+        return cancelledList;
+    }
+
+    public void setCancelledList(ArrayList<User> cancelledList) {
+        this.cancelledList = cancelledList;
     }
 }
