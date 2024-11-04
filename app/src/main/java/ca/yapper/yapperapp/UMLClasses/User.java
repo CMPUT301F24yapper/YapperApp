@@ -3,13 +3,13 @@ package ca.yapper.yapperapp.UMLClasses;
 import java.util.ArrayList;
 
 public class User {
-    private String name;
     private String deviceId;
+    private String name;
     private String email;
     private String phoneNum;
     // private ArrayList<Role> roles;
-    private ProfilePic profilePic;
-    private ProfilePic generatedProfilePic;
+    // private ProfilePic profilePic;
+    // private ProfilePic generatedProfilePic;
     // implement Booleans for role (not an array anymore!)
     private Boolean isEntrant;
     private Boolean isOrganizer;
@@ -18,13 +18,16 @@ public class User {
     // Default constructor (required for Firestore deserialization)
     public User() {}
     // constructor version with parameters
-    public User(String name, String deviceId, String email, String phoneNum, ProfilePic profilePic, ProfilePic generatedProfilePic) {
-        this.name = name;
+    public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
         this.deviceId = deviceId;
+        this.name = name;
         this.email = email;
         this.phoneNum = phoneNum;
-        this.profilePic = profilePic;
-        this.generatedProfilePic = generatedProfilePic;
+        // this.profilePic = profilePic;
+        // this.generatedProfilePic = generatedProfilePic;
+        this.isEntrant = isEntrant;
+        this.isOrganizer = isOrganizer;
+        this.isAdmin = isAdmin;
     }
 
     public String getName() {
@@ -60,7 +63,7 @@ public class User {
         this.phoneNum = phoneNum;
     }
 
-    public ProfilePic getProfilePic() {
+    /** public ProfilePic getProfilePic() {
         return profilePic;
     }
 
@@ -74,7 +77,7 @@ public class User {
 
     public void setGeneratedProfilePic(ProfilePic generatedProfilePic) {
         this.generatedProfilePic = generatedProfilePic;
-    }
+    } **/
 
     public Boolean getIsEntrant() {
         return isEntrant;
