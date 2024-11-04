@@ -102,7 +102,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         String eventFacilityName = eventFacilityEditText.getText().toString();
         String eventFacilityLocation = ""; // Placeholder, adjust if needed
         String eventDateTime = eventDateEditText.getText().toString();
-        String registrationDeadline = eventDeadlineEditText.getText().toString();
+        String eventRegDeadline = eventDeadlineEditText.getText().toString();
 
         // Ensure to parse these values safely
         int eventAttendees = eventNumberOfAttendeesEditText.getText().toString().isEmpty() ? 0 : Integer.parseInt(eventNumberOfAttendeesEditText.getText().toString());
@@ -117,7 +117,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         }
 
         // Create instance of Event NOTE: QR Codes are automatically generated at event creation
-        Event event = new Event(eventName, eventDateTime, registrationDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+        Event event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
 
         // Create map to store Event data
         // Generating QR Code
@@ -131,7 +131,6 @@ public class OrganizerCreateEventFragment extends Fragment {
         eventData.put("registrationDeadline", event.getEventRegDeadline());
         eventData.put("eventAttendees", event.getEventAttendees());
         eventData.put("eventWlCapacity", event.getEventWlCapacity());
-        eventData.put("waitingListSeats", event.getEventWlSeatsLeft()); // Update to match Firestore field name
         eventData.put("geolocationEnabled", event.isEventGeolocEnabled());
         eventData.put("qrCodeValue",event.getEventQRCode().getQRCodeValue());
         eventData.put("hashData",event.getEventQRCode().getHashData());
