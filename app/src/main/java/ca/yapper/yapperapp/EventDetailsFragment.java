@@ -22,14 +22,21 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.Activities.EntrantActivity;
+import ca.yapper.yapperapp.Activities.OrganizerActivity;
+
+// class that pulls up Event details from Firestore for BOTH Entrants & Organizers
 public class EventDetailsFragment extends Fragment {
 
     private FirebaseFirestore db;
     private String eventId;
-    private TextView eventTitle, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventDescription, eventWlAvailableSlots;
+    private TextView eventTitle, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventDescription, eventAttendees, eventWlCapacity;
     private boolean geolocationEnabled;
     private Button joinButton;
-    private String entrantDeviceId;
+    private Button viewParticipantsButton;
+    private Button editEventButton;
+    // later, we can implement Button QR Code view for Organizer
+    private String userDeviceId;
     private Bundle eventParameters;
     // ***TO-DO***:
     // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
@@ -42,7 +49,9 @@ public class EventDetailsFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         eventParameters = getArguments();
         eventId = eventParameters.getString("0");
-        entrantDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        setVisibilityBasedOnActivity();
 
         // Initialize views
         eventTitle = view.findViewById(R.id.event_title);
@@ -51,7 +60,6 @@ public class EventDetailsFragment extends Fragment {
         eventFacilityName = view.findViewById(R.id.facility_name);
         eventFacilityLocation = view.findViewById(R.id.facility_name);
         eventDescription = view.findViewById(R.id.event_description);
-        eventWlAvailableSlots = view.findViewById(R.id.available_slots);
         joinButton = view.findViewById(R.id.join_button);
         /**
         if (eventParameters != null) {
@@ -94,7 +102,6 @@ public class EventDetailsFragment extends Fragment {
                 eventDateTime.setText(eventDateTimeString);
                 eventRegDeadline.setText(eventRegDeadlineString);
                 eventDescription.setText(eventDescriptionString);
-                eventWlAvailableSlots.setText(eventWlSeatsLeft + "/" + eventWlCapacity);
 
                 // retrieve facility details for firestore (reference to facilityId):
                 DocumentReference facilityRef = documentSnapshot.getDocumentReference("facilityId");
@@ -131,10 +138,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void checkUserInWaitingList() {
-        if (entrantDeviceId == null) return; // Add early return if userDeviceId is null
+        if (userDeviceId == null) return; // Add early return if userDeviceId is null
         // Check if the user's device ID is in the waiting list (SUBCOLLECTION!)
         db.collection("Events").document(eventId).collection("waitingList")
-                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+                .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // User is already in the waiting list
                         joinButton.setText("Unjoin");
@@ -172,14 +179,14 @@ public class EventDetailsFragment extends Fragment {
     // IMPLEMENT THE ADDITIONAL DETAIL THAT WHEN ENTRANT JOINS/UNJOINS EVENT, THIS WILL UPDATE IN FIRESTORE + HOMEPAGE VIEW
     // ...RE. ENTRANT EVENT LISTS (REGISTERED EVENTS, MISSED OUT EVENTS)...
     private void joinEvent() {
-        if (entrantDeviceId == null) {
+        if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
         Map<String, Object> entrantData = new HashMap<>();
         entrantData.put("timestamp", FieldValue.serverTimestamp()); // Add a server timestamp
         db.collection("Events").document(eventId).collection("waitingList")
-                .document(entrantDeviceId).set(entrantData)
+                .document(userDeviceId).set(entrantData)
                 .addOnSuccessListener(aVoid -> {
                     joinButton.setText("Unjoin");
                     joinButton.setBackgroundColor(Color.GRAY);
@@ -192,13 +199,13 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void unjoinEvent() {
-        if (entrantDeviceId == null) {
+        if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
 
         db.collection("Events").document(eventId).collection("waitingList")
-                .document(entrantDeviceId).delete()
+                .document(userDeviceId).delete()
                 .addOnSuccessListener(aVoid -> {
                     joinButton.setText("Join");
                     joinButton.setBackgroundColor(Color.BLUE);
@@ -208,5 +215,18 @@ public class EventDetailsFragment extends Fragment {
                     // Handle failure
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void setVisibilityBasedOnActivity() {
+        if (getActivity() instanceof EntrantActivity) {
+            // notificationsSection.setVisibility(View.VISIBLE);
+            // facilitySection.setVisibility(View.GONE);
+        } else if (getActivity() instanceof OrganizerActivity) {
+            // notificationsSection.setVisibility(View.GONE);
+            // facilitySection.setVisibility(View.VISIBLE);
+        } else {
+            // notificationsSection.setVisibility(View.GONE);
+            // facilitySection.setVisibility(View.GONE);
+        }
     }
 }

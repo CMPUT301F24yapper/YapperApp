@@ -15,8 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 
@@ -27,6 +30,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.Activities.SignupActivity;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -43,6 +47,7 @@ public class OrganizerCreateEventFragment extends Fragment {
     private Switch geolocationSwitch;
     private Button saveEventButton;
     private String eventId;
+    private int finalEventId;
 
     // Firebase Firestore instance
     private FirebaseFirestore db;
@@ -131,12 +136,13 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         // getHashData() to confirm if this hashData is unique for eventId, if not then add 1s to id
         // hashing logic:
-        // if (event.getHashData() )
+
+        hashEventId(event.getEventQRCode().getHashData());
 
         // Create map to store Event data
         // Generating QR Code
         Log.d("EVENT", "FireBase Storage Begun");
-        eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
+        // eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
 
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("eventName", event.getEventName());
@@ -151,7 +157,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         //eventData.put("qrCodeBitMatrix",event.getEventQRCode().getQrCode());
 
         // Add a new document to Events collection
-        DocumentReference eventRef = db.collection("Events").document(eventId); // eventID is the hash value from qr code
+        DocumentReference eventRef = db.collection("Events").document(Integer.toString(finalEventId)); // eventID is the hash value from qr code
         eventRef.set(eventData).addOnSuccessListener(aVoid -> {
             // Initialize subcollections after creating the Event document
             initializeEventSubcollections(eventRef);
@@ -176,5 +182,29 @@ public class OrganizerCreateEventFragment extends Fragment {
         cancelledListRef.document("placeholder").set(placeholder);
         finalListRef.document("placeholder").set(placeholder);
 
+    }
+
+    private void hashEventId(int currentEventId) {
+        db.collection("Events").document(Integer.toString(currentEventId))
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                // Document exists, increment the ID and check again
+                                hashEventId(currentEventId + 1);
+                            } else {
+                                // Document does not exist, unique ID found
+                                System.out.println("Unique event ID found: " + currentEventId);
+                                // Further actions can be taken here
+                            }
+                        } else {
+                            // Handle any errors during the process
+                            Log.w("Hashing", "Error checking event existence", task.getException());
+                        }
+                    }
+                });
     }
 }

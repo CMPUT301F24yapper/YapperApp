@@ -37,37 +37,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
         holder.userNameTextView.setText(user.getName());
         // other text views relevant to User?
 
-        // Set click listener
-        /**
-        holder.itemView.setOnClickListener(v -> {
-            EventDetailsFragment entrantEventFragment = new EventDetailsFragment();
-
-            // Create bundle with all event details
-            // is the bundle necessary (shouldn't it just be deviceId?)
-            Bundle bundle = new Bundle();
-            bundle.putString("eventId", event.getEventQRCode() != null ?
-                    event.getEventQRCode().getQRCodeValue() :
-                    "sampleEventId"); // Fallback ID if no QR code
-            bundle.putString("eventName", event.getEventName());
-            bundle.putString("eventDateTime", event.getEventDateTime());
-            bundle.putString("eventFacility", event.getEventFacilityName());
-            bundle.putString("eventLocation", event.getEventFacilityLocation());
-            bundle.putString("eventDeadline", event.getEventRegDeadline());
-            bundle.putInt("eventAttendees", event.getEventAttendees());
-            bundle.putInt("eventWaitlistCapacity", event.getEventWlCapacity());
-            bundle.putBoolean("geolocationEnabled", event.isEventGeolocEnabled());
-
-            entrantEventFragment.setArguments(bundle);
-
-            // Replace current fragment with event details fragment
-            FragmentTransaction transaction = ((FragmentActivity) context)
-                    .getSupportFragmentManager()
-                    .beginTransaction();
-
-            transaction.replace(R.id.fragment_container, entrantEventFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-        }); **/
     }
 
     @Override
