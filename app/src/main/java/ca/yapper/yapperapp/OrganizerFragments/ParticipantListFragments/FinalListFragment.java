@@ -61,10 +61,10 @@ public class FinalListFragment extends Fragment {
                             Boolean userIsEntrant = userDocument.getBoolean("isEntrant");
                             Boolean userIsOrganizer = userDocument.getBoolean("isOrganizer");
                             Boolean userIsAdmin = userDocument.getBoolean("isAdmin");
-
+                            Boolean isOptedOut = userDocument.getBoolean("isOptedOut");
                             // Create a User object and add to the final list
                             //     public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
-                            User user = new User(userId, userName, userEmail, userPhoneNum, userIsEntrant, userIsOrganizer, userIsAdmin);
+                            User user = new User(userId, userName, userEmail, userPhoneNum, userIsEntrant, userIsOrganizer, userIsAdmin, isOptedOut);
                             finalList.add(user);
                         }
                         adapter.notifyDataSetChanged();
