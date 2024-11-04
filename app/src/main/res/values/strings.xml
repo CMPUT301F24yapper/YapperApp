@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">YapperApp</string>
     <string name="remove_profile">Remove Profile Picture</string>
+    <string name="logo">Logo</string>
+    <string name="name">Name:</string>
+    <string name="Name_Hint">John Doe</string>
 </resources>
