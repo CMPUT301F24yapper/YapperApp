@@ -34,9 +34,7 @@ public class Event {
     // eventAttendees: required attribute to create Event (number of people/capacity Organizer declares for Event)
     private int eventWlCapacity;
     // eventWlCapacity: OPTIONAL attribute for waiting list capacity
-    private int eventWlSeatsLeft;
-    // eventWlSeatsLeft: OPTIONAL attribute for scenario where Organizer has declared eventWlCapacity...
-    //... equivalent to size of current Event waiting list - eventWlCapacity
+
     private boolean eventGeolocEnabled;
     // eventGeolocEnabled: required attribute to create Event
 
@@ -52,7 +50,6 @@ public class Event {
         this.eventFacilityLocation = eventFacilityLocation;
         this.eventAttendees = eventAttendees;
         this.eventWlCapacity = eventWlCapacity;
-        this.eventWlSeatsLeft = eventWlSeatsLeft;
         this.eventGeolocEnabled = eventGeolocEnabled;
         this.eventQRCode = new qrCode(this.eventName);
     }
@@ -119,14 +116,6 @@ public class Event {
 
     public void setEventWlCapacity(int eventWlCapacity) {
         this.eventWlCapacity = eventWlCapacity;
-    }
-
-    public int getEventWlSeatsLeft() {
-        return eventWlSeatsLeft;
-    }
-
-    public void setEventWlSeatsLeft(int eventWlSeatsLeft) {
-        this.eventWlSeatsLeft = eventWlSeatsLeft;
     }
 
     public boolean isEventGeolocEnabled() {

@@ -29,7 +29,7 @@ public class qrCode {
 
     /**
      * Takes a generated QR code BitMatrix and converts it into a Bitmap for use in ImageViews.
-     * */
+     **/
     public Bitmap convertToIMG() throws UnsupportedOperationException{
         if (this.qrCode.getHeight() != 500 || this.qrCode.getWidth() != 500){
             return null;

@@ -7,9 +7,13 @@ public class User {
     private String deviceId;
     private String email;
     private String phoneNum;
-    private ArrayList<Role> roles;
+    // private ArrayList<Role> roles;
     private ProfilePic profilePic;
     private ProfilePic generatedProfilePic;
+    // implement Booleans for role (not an array anymore!)
+    private Boolean isEntrant;
+    private Boolean isOrganizer;
+    private Boolean isAdmin;
 
     // Default constructor (required for Firestore deserialization)
     public User() {}
@@ -72,21 +76,31 @@ public class User {
         this.generatedProfilePic = generatedProfilePic;
     }
 
+    public Boolean getIsEntrant() {
+        return isEntrant;
+    }
+
+    public void setIsEntrant(Boolean entrant) {
+        isEntrant = entrant;
+    }
+
+    public Boolean getIsOrganizer() {
+        return isOrganizer;
+    }
+
+    public void setIsOrganizer(Boolean organizer) {
+        isOrganizer = organizer;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean admin) {
+        isAdmin = admin;
+    }
+
     // other methods (specific to User) beyond Gs & Ss: can be moved around in package but for now I am placing them here
-//    public Boolean checkIsEntrant() {
-//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-//        return roles.get(0);
-//    }
-//
-//    public Boolean checkIsOrganizer() {
-//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-//        return roles[1];
-//    }
-//
-//    public Boolean checkIsAdmin() {
-//        // roles ArrayList is 3 booleans / 0s & 1s that represent the 3 possible roles (?), with the first entry (index 0) representing Entrant, then Organiser, & so on
-//        return roles[2];
-//    }
 
     public void uploadProfilePic(ProfilePic profilePic) {
         // method logic
