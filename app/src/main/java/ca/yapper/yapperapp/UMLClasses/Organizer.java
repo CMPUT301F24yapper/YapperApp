@@ -10,7 +10,7 @@ import java.util.Map;
 //import com.google.zxing.common.BitMatrix;
 //import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
-public class Organizer extends Role {
+public class Organizer {
     // example library that can handle QR codes: Zebra Crossing (“ZXing”) library because of its simplicity and popularity
     // steps to create QR code image (from: https://www.geeksforgeeks.org/how-to-generate-and-read-qr-code-with-java-using-zxing-library/)
     // 1. Download the ZXING library (https://jar-download.com/?search_box=%20zxing).
