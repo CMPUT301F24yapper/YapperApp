@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,10 +23,16 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
 
     private List<Event> eventList;
     private Context context;
+    // private OnItemClickListener listener;
 
+    /** public interface OnItemClickListener {
+        void onItemClick(Event event);
+    } **/
+    // public EventsAdapter(List<Event> eventList, OnItemClickListener listener) {
     public EventsAdapter(List<Event> eventList, Context context) {
         this.eventList = eventList;
         this.context = context;
+        // this.listener = listener;
     }
 
     @NonNull
@@ -46,7 +53,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
         holder.itemView.setOnClickListener(v -> {
             EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
 
-            String eventId = event.getQRCode() != null ?
+            String eventId = Integer.toString(event.getQRCode().getHashData()) != null ?
                     event.getQRCode().getQRCodeValue() :
                     null;
 

@@ -66,10 +66,11 @@ public class RegisteredEventsFragment extends Fragment {
                     boolean eventGeolocEnabled = document.getBoolean("isGeolocationEnabled");
 
                     Event event = null;
+                    //                     // public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, boolean isGeolocationEnabled)
                     try {
                         event = new Event(eventName, eventDateTime, eventRegDeadline,
                                 eventFacilityName, eventFacilityLocation, eventCapacity,
-                                eventWlCapacity, eventWlCapacity, eventGeolocEnabled);
+                                eventWlCapacity, eventGeolocEnabled);
                         // Store the document ID in the QR code
                         if (event.getQRCode() != null) {
                             event.getQRCode().setQRCodeValue(document.getId());

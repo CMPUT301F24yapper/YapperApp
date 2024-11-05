@@ -34,7 +34,7 @@ import ca.yapper.yapperapp.Activities.SignupActivity;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-
+// TO-DO: WHEN ORGANIZER SUCCESSFULLY CREATED AN EVENT, ADD TO DATABASE (USER SUBCOLLECTION "CREATEDEVENTS"!)
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
     private EditText eventFacilityEditText;
@@ -113,10 +113,10 @@ public class OrganizerCreateEventFragment extends Fragment {
             Toast.makeText(getActivity(), "Please fill in the required fields", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        //                     // public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, boolean isGeolocationEnabled)
         Event event = new Event(eventName, eventDateTime, eventRegDeadline,
                 eventFacilityName, eventFacilityLocation, eventAttendees,
-                eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+                eventWlCapacity, geolocationEnabled);
 
         // getHashData() to confirm if this hashData is unique for eventId, if not then add 1s to id
         // hashing logic:

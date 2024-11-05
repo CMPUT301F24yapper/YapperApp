@@ -65,8 +65,9 @@ public class JoinedEventsFragment extends Fragment {
                     boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
 
                     Event event = null;
+                    // public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, boolean isGeolocationEnabled)
                     try {
-                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsLeft, eventGeolocEnabled);
+                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventGeolocEnabled);
                     } catch (WriterException e) {
                         throw new RuntimeException(e);
                     }

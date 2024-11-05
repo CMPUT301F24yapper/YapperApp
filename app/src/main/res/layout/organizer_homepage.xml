@@ -13,16 +13,9 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
-        <!-- Back Button -->
-        <ImageView
-            android:id="@+id/back_button"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/backbutton" />
-
         <!-- Title for the toolbar -->
         <TextView
-            android:id="@+id/notification_title"
+            android:id="@+id/my_events_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -38,9 +31,9 @@
         android:layout_height="1dp"
         android:background="@android:color/darker_gray" />
 
-    <!-- RecyclerView for the notifications list -->
+    <!-- RecyclerView for the Events list -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/notifications_recycler_view"
+        android:id="@+id/my_events_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingTop="8dp"

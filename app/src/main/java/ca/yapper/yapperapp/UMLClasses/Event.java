@@ -1,7 +1,7 @@
 package ca.yapper.yapperapp.UMLClasses;
 
 import com.google.zxing.WriterException;
-
+// TO-DO: ADD IN THE (INITIALLY NULL) ARRAYLIST<USER> (SUBCOLLECTIONS IN FS) WAITINGLIST, SELECTEDLIST, FINALLIST, CANCELLEDLIST!
 public class Event {
     private int capacity;
     private String date_Time;
@@ -13,16 +13,16 @@ public class Event {
     private String registrationDeadline;
     private int waitListCapacity;
 
-    public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, int eventWlSeatsLeft, boolean isGeolocationEnabled) throws WriterException {
-        this.capacity = capacity;
-        this.date_Time = date_Time;
-        this.facilityLocation = facilityLocation;
-        this.facilityName = facilityName;
-        this.isGeolocationEnabled = isGeolocationEnabled;
+    public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, boolean isGeolocationEnabled) throws WriterException {
         this.name = name;
-        this.QRCode = new qrCode(this.name);
+        this.date_Time = date_Time;
         this.registrationDeadline = registrationDeadline;
+        this.facilityName = facilityName;
+        this.facilityLocation = facilityLocation;
+        this.capacity = capacity;
         this.waitListCapacity = eventWlCapacity;
+        this.isGeolocationEnabled = isGeolocationEnabled;
+        this.QRCode = new qrCode(this.name);
     }
 
     public qrCode getQRCode() {
