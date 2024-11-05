@@ -1,128 +1,99 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import android.util.Log;
-
 import com.google.zxing.WriterException;
-import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.google.zxing.qrcode.encoder.QRCode;
-
-import java.util.Date;
 
 public class Event {
-    private qrCode eventQRCode;
-    // eventQRCode: string that UNIQUELY IDENTITIES EVENT in database?! -> confirm
-    private String eventName;
-    private String eventDateTime;
-    private String eventRegDeadline;
+    private int capacity;
+    private String date_Time;
+    private String facilityLocation;
+    private String facilityName;
+    private boolean isGeolocationEnabled;
+    private String name;
+    private qrCode QRCode;
+    private String registrationDeadline;
+    private int waitListCapacity;
 
-    private String eventFacilityName;
-    private String eventFacilityLocation;
-    // important re eventFacility: in the Firestore document for this Event (Events collection), the field re facility will be a reference...
-    //... to an already created document for facility under the Facilities collection referencing its id (facilityId),...
-    //... in turn gives us access to facility details such as facilityName, facilityLocation, facilityPic...
-
-    // private Poster eventPoster
-    // important re eventPoster: in the Firestore document for this Event (Events collection), the field re poster will be a reference...
-    //... to a document for the poster under the Images collection referencing its id (posterId)...
-    //... in turn gives us access to poster details such as the imageURI (for actual display of image)
-    //... HOWEVER, this document won't have been created UNTIL the Organizer has uploaded a poster upon creating the Event
-    //... which means we might want to keep this attribute declaration commented out for Event class... provide logic for the eventPoster as a conditional function within the OrganizerCreateEventFragment (if they decide to press upload!)
-    //... & then when or if Organizer uploads poster, that info is stored in Firestore as an additional field
-
-    private int eventAttendees;
-    // eventAttendees: required attribute to create Event (number of people/capacity Organizer declares for Event)
-    private int eventWlCapacity;
-    // eventWlCapacity: OPTIONAL attribute for waiting list capacity
-
-    private boolean eventGeolocEnabled;
-    // eventGeolocEnabled: required attribute to create Event
-
-    // deserialize constructor for Firebase
-    public Event() {}
-
-    // constructor version with parameters
-    public Event(String eventName, String eventDateTime, String eventRegDeadline, String eventFacilityName, String eventFacilityLocation, int eventAttendees, int eventWlCapacity, int eventWlSeatsLeft, boolean eventGeolocEnabled) throws WriterException {
-        this.eventName = eventName;
-        this.eventDateTime = eventDateTime;
-        this.eventRegDeadline = eventRegDeadline;
-        this.eventFacilityName = eventFacilityName;
-        this.eventFacilityLocation = eventFacilityLocation;
-        this.eventAttendees = eventAttendees;
-        this.eventWlCapacity = eventWlCapacity;
-        this.eventGeolocEnabled = eventGeolocEnabled;
-        this.eventQRCode = new qrCode(this.eventName);
+    public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, int eventWlSeatsLeft, boolean isGeolocationEnabled) throws WriterException {
+        this.capacity = capacity;
+        this.date_Time = date_Time;
+        this.facilityLocation = facilityLocation;
+        this.facilityName = facilityName;
+        this.isGeolocationEnabled = isGeolocationEnabled;
+        this.name = name;
+        this.QRCode = new qrCode(this.name);
+        this.registrationDeadline = registrationDeadline;
+        this.waitListCapacity = eventWlCapacity;
     }
 
-    public qrCode getEventQRCode() {
-        return this.eventQRCode;
+    public qrCode getQRCode() {
+        return this.QRCode;
     }
 
-    public void setEventQRCode(qrCode eventQRCode) {
-        this.eventQRCode = eventQRCode;
+    public void setQRCode(qrCode QRCode) {
+        this.QRCode = QRCode;
     }
 
-    public String getEventName() {
-        return eventName;
+    public String getName() {
+        return name;
     }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getEventDateTime() {
-        return eventDateTime;
+    public String getDate_Time() {
+        return date_Time;
     }
 
-    public void setEventDateTime(String eventDateTime) {
-        this.eventDateTime = eventDateTime;
+    public void setDate_Time(String date_Time) {
+        this.date_Time = date_Time;
     }
 
-    public String getEventRegDeadline() {
-        return eventRegDeadline;
+    public String getRegistrationDeadline() {
+        return registrationDeadline;
     }
 
-    public void setEventRegDeadline(String eventRegDeadline) {
-        this.eventRegDeadline = eventRegDeadline;
+    public void setRegistrationDeadline(String registrationDeadline) {
+        this.registrationDeadline = registrationDeadline;
     }
 
-    public String getEventFacilityName() {
-        return eventFacilityName;
+    public String getFacilityName() {
+        return facilityName;
     }
 
-    public void setEventFacilityName(String eventFacilityName) {
-        this.eventFacilityName = eventFacilityName;
+    public void setFacilityName(String facilityName) {
+        this.facilityName = facilityName;
     }
 
-    public String getEventFacilityLocation() {
-        return eventFacilityLocation;
+    public String getFacilityLocation() {
+        return facilityLocation;
     }
 
-    public void setEventFacilityLocation(String eventFacilityLocation) {
-        this.eventFacilityLocation = eventFacilityLocation;
+    public void setFacilityLocation(String facilityLocation) {
+        this.facilityLocation = facilityLocation;
     }
 
-    public int getEventAttendees() {
-        return eventAttendees;
+    public int getCapacity() {
+        return capacity;
     }
 
-    public void setEventAttendees(int eventAttendees) {
-        this.eventAttendees = eventAttendees;
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
-    public int getEventWlCapacity() {
-        return eventWlCapacity;
+    public int getWaitListCapacity() {
+        return waitListCapacity;
     }
 
-    public void setEventWlCapacity(int eventWlCapacity) {
-        this.eventWlCapacity = eventWlCapacity;
+    public void setWaitListCapacity(int waitListCapacity) {
+        this.waitListCapacity = waitListCapacity;
     }
 
-    public boolean isEventGeolocEnabled() {
-        return eventGeolocEnabled;
+    public boolean isGeolocationEnabled() {
+        return isGeolocationEnabled;
     }
 
-    public void setEventGeolocEnabled(boolean eventGeolocEnabled) {
-        this.eventGeolocEnabled = eventGeolocEnabled;
+    public void setGeolocationEnabled(boolean geolocationEnabled) {
+        this.isGeolocationEnabled = geolocationEnabled;
     }
 }

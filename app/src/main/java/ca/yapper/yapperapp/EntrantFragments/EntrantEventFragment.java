@@ -3,6 +3,7 @@ package ca.yapper.yapperapp.EntrantFragments;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,127 +26,107 @@ import java.util.Map;
 import ca.yapper.yapperapp.R;
 
 public class EntrantEventFragment extends Fragment {
-
     private FirebaseFirestore db;
     private String eventId;
     private TextView eventTitle, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventDescription, eventWlAvailableSlots;
     private boolean geolocationEnabled;
     private Button joinButton;
     private String entrantDeviceId;
-    private Bundle eventParameters;
-    // ***TO-DO***:
-    // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
+    private View view;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.entrant_event, container, false);
+        view = inflater.inflate(R.layout.entrant_event, container, false);
 
         db = FirebaseFirestore.getInstance();
-        eventParameters = getArguments();
-        eventId = eventParameters.getString("0");
+        Bundle args = getArguments();
+        if (args == null || !args.containsKey("0")) {
+            Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
+            return view;
+        }
+
+        eventId = args.getString("0");
         entrantDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Initialize views
-        eventTitle = view.findViewById(R.id.event_title);
-        eventDateTime = view.findViewById(R.id.event_date_time);
-        eventRegDeadline = view.findViewById(R.id.registration_deadline);
-        eventFacilityName = view.findViewById(R.id.facility_name);
-        eventFacilityLocation = view.findViewById(R.id.facility_name);
-        eventDescription = view.findViewById(R.id.event_description);
-        eventWlAvailableSlots = view.findViewById(R.id.available_slots);
-        joinButton = view.findViewById(R.id.join_button);
-        /**
-        if (eventParameters != null) {
-            // Get data from bundle
-            eventId = eventParameters.getString("eventId", "");
-            String name = eventParameters.getString("eventName", "");
-            String dateTime = eventParameters.getString("eventDateTime", "");
-            String facility = eventParameters.getString("eventFacility", "");
-            geolocationEnabled = eventParameters.getBoolean("geolocationEnabled", false);
+        initializeViews(view);
 
-            // Set views with bundle data
-            eventTitle.setText(name);
-            eventDateTime.setText(dateTime);
-            eventFacility.setText("Facility: " + facility);
+        if (eventId != null && !eventId.isEmpty()) {
+            loadEventDetails();
+        } else {
+            Toast.makeText(getContext(), "Error: Invalid event ID", Toast.LENGTH_SHORT).show();
+        }
 
-            // Load additional details from Firestore
-            loadEventDetails(); **/
-        loadEventDetails();
-
-        // Join button click listener
         joinButton.setOnClickListener(v -> handleJoinButtonClick());
 
         return view;
     }
 
-    private void loadEventDetails() {
-        db.collection("Events").document(eventId).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                // get Event details
-                String eventNameString = documentSnapshot.getString("eventName");
-                String eventDateTimeString = documentSnapshot.getString("eventDateTime");
-                String eventRegDeadlineString = documentSnapshot.getString("eventRegDeadline");
-                // eventFacilityName, eventFacilityLocation, eventDescription, eventWlCapacity, eventWlSeatsLeft;
-                String eventDescriptionString = documentSnapshot.getString("eventDescription");
-                int eventWlCapacity = documentSnapshot.getLong("eventWlCapacity").intValue();
-                int eventWlSeatsLeft = documentSnapshot.getLong("eventWlSeatsLeft").intValue();
-                geolocationEnabled = documentSnapshot.getBoolean("geolocationEnabled");
-
-                eventTitle.setText(eventNameString);
-                eventDateTime.setText(eventDateTimeString);
-                eventRegDeadline.setText(eventRegDeadlineString);
-                eventDescription.setText(eventDescriptionString);
-                eventWlAvailableSlots.setText(eventWlSeatsLeft + "/" + eventWlCapacity);
-
-                // retrieve facility details for firestore (reference to facilityId):
-                DocumentReference facilityRef = documentSnapshot.getDocumentReference("facilityId");
-                if (facilityRef != null) {
-                    facilityRef.get().addOnSuccessListener(facilitySnapshot -> {
-                        if (facilitySnapshot.exists()) {
-                            // Retrieve facility details
-                            String facilityNameString = facilitySnapshot.getString("facilityName");
-                            String facilityLocationString = facilitySnapshot.getString("facilityLocation");
-
-                            // Set UI components for facility details
-                            eventFacilityName.setText(facilityNameString);
-                            eventFacilityLocation.setText(facilityLocationString);
-                        } else {
-                            // eventFacility.setText("Facility details not found");
-                        }
-                    }).addOnFailureListener(e -> {
-                        // eventFacility.setText("Error loading facility details");
-                    });
-                } else {
-                    // eventFacility.setText("Facility reference not found");
-                }
-
-                checkUserInWaitingList();
-
-                // Enable join button now that we have the data
-                joinButton.setEnabled(true);
-
-                // Check if the user is already in the waiting list
-            }
-        }).addOnFailureListener(e -> {
-            // ***Handle failure (e.g., show error Toast message!)***
-        });
+    private void initializeViews(View view) {
+        eventTitle = view.findViewById(R.id.event_title);
+        eventDateTime = view.findViewById(R.id.event_date_time);
+        eventRegDeadline = view.findViewById(R.id.registration_deadline);
+        eventFacilityName = view.findViewById(R.id.facility_name);
+        eventFacilityLocation = view.findViewById(R.id.facility_location);
+        eventDescription = view.findViewById(R.id.event_description);
+        eventWlAvailableSlots = view.findViewById(R.id.available_slots);
+        joinButton = view.findViewById(R.id.join_button);
+        joinButton.setEnabled(false);
     }
 
-    private void checkUserInWaitingList() {
-        if (entrantDeviceId == null) return; // Add early return if userDeviceId is null
-        // Check if the user's device ID is in the waiting list (SUBCOLLECTION!)
-        db.collection("Events").document(eventId).collection("waitingList")
-                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+    private void loadEventDetails() {
+        Log.d("EventDebug", "Loading event with ID: " + eventId);
+
+        db.collection("Events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // User is already in the waiting list
-                        joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY);
+                        Log.d("EventDebug", "Document data: " + documentSnapshot.getData());
+
+                        String eventNameString = documentSnapshot.getString("name");
+                        String eventDateTimeString = documentSnapshot.getString("date_Time");
+                        String eventRegDeadlineString = documentSnapshot.getString("registrationDeadline");
+                        String facilityNameString = documentSnapshot.getString("facilityName");
+                        String facilityLocationString = documentSnapshot.getString("facilityLocation");
+                        int eventWlCapacity = documentSnapshot.contains("waitListCapacity") ?
+                                documentSnapshot.getLong("waitListCapacity").intValue() : 0;
+                        int eventCapacity = documentSnapshot.contains("capacity") ?
+                                documentSnapshot.getLong("capacity").intValue() : 0;
+                        geolocationEnabled = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
+                                documentSnapshot.getBoolean("isGeolocationEnabled") : false;
+
+                        eventTitle.setText(eventNameString != null ? eventNameString : "");
+                        eventDateTime.setText(eventDateTimeString != null ? eventDateTimeString : "");
+                        eventRegDeadline.setText("Registration Deadline: " +
+                                (eventRegDeadlineString != null ? eventRegDeadlineString : ""));
+
+                        eventFacilityName.setText("Facility: " +
+                                (facilityNameString != null ? facilityNameString : ""));
+                        eventFacilityLocation.setText("Location: " +
+                                (facilityLocationString != null ? facilityLocationString : ""));
+
+                        int availableSlots = eventWlCapacity;
+                        eventWlAvailableSlots.setText("Available Slots: " +
+                                availableSlots + "/" + eventWlCapacity);
+
+                        joinButton.setEnabled(true);
+
+                        if (geolocationEnabled) {
+                            TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                            if (geoLocationRequired != null) {
+                                geoLocationRequired.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        checkUserInWaitingList();
                     } else {
-                        // User is not in the waiting list
-                        joinButton.setText("Join");
-                        joinButton.setBackgroundColor(Color.BLUE);
+                        Log.d("EventDebug", "No such document");
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventDebug", "Error loading event", e);
+                    Toast.makeText(getContext(), "Error loading event details", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -163,7 +143,6 @@ public class EntrantEventFragment extends Fragment {
     }
 
     private void showGeolocationWarningDialog() {
-        // Create and show a dialog fragment (pop-up re geolocation enabled warning)
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
                 .setPositiveButton("Continue", (dialog, id) -> joinEvent())
@@ -171,16 +150,14 @@ public class EntrantEventFragment extends Fragment {
                 .create()
                 .show();
     }
-    // ***TO-DO FOR BELOW (JOIN) METHODS***:
-    // IMPLEMENT THE ADDITIONAL DETAIL THAT WHEN ENTRANT JOINS/UNJOINS EVENT, THIS WILL UPDATE IN FIRESTORE + HOMEPAGE VIEW
-    // ...RE. ENTRANT EVENT LISTS (REGISTERED EVENTS, MISSED OUT EVENTS)...
+
     private void joinEvent() {
         if (entrantDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
         Map<String, Object> entrantData = new HashMap<>();
-        entrantData.put("timestamp", FieldValue.serverTimestamp()); // Add a server timestamp
+        entrantData.put("timestamp", FieldValue.serverTimestamp());
         db.collection("Events").document(eventId).collection("waitingList")
                 .document(entrantDeviceId).set(entrantData)
                 .addOnSuccessListener(aVoid -> {
@@ -189,7 +166,6 @@ public class EntrantEventFragment extends Fragment {
                     Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
                     Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -208,8 +184,22 @@ public class EntrantEventFragment extends Fragment {
                     Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void checkUserInWaitingList() {
+        if (entrantDeviceId == null) return;
+
+        db.collection("Events").document(eventId).collection("waitingList")
+                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        joinButton.setText("Unjoin");
+                        joinButton.setBackgroundColor(Color.GRAY);
+                    } else {
+                        joinButton.setText("Join");
+                        joinButton.setBackgroundColor(Color.BLUE);
+                    }
                 });
     }
 }

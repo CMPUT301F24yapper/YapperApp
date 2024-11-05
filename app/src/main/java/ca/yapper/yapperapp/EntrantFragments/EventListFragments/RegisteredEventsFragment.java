@@ -54,29 +54,33 @@ public class RegisteredEventsFragment extends Fragment {
         eventsRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    String eventName = document.getString("eventName");
-                    String eventDateTime = document.getString("eventDate");
+                    String eventName = document.getString("name");
+                    String eventDateTime = document.getString("date_Time");
                     String eventRegDeadline = document.getString("registrationDeadline");
-                    String eventFacilityName = ""; // Placeholder if not stored in Firestore
-                    String eventFacilityLocation = ""; // Placeholder if not stored in Firestore
-                    int eventAttendees = 0; // Placeholder if not stored in Firestore
-                    int eventWlCapacity = document.contains("wlCapacity") ? document.getLong("wlCapacity").intValue() : 0;
-                    int eventWlSeatsLeft = document.contains("waitingListSeats") ? document.getLong("waitingListSeats").intValue() : 0;
-                    boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
+                    String eventFacilityName = document.getString("facilityName");
+                    String eventFacilityLocation = document.getString("facilityLocation");
+                    int eventCapacity = document.contains("capacity") ?
+                            document.getLong("capacity").intValue() : 0;
+                    int eventWlCapacity = document.contains("waitListCapacity") ?
+                            document.getLong("waitListCapacity").intValue() : 0;
+                    boolean eventGeolocEnabled = document.getBoolean("isGeolocationEnabled");
 
                     Event event = null;
                     try {
-                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsLeft, eventGeolocEnabled);
+                        event = new Event(eventName, eventDateTime, eventRegDeadline,
+                                eventFacilityName, eventFacilityLocation, eventCapacity,
+                                eventWlCapacity, eventWlCapacity, eventGeolocEnabled);
+                        // Store the document ID in the QR code
+                        if (event.getQRCode() != null) {
+                            event.getQRCode().setQRCodeValue(document.getId());
+                        }
                     } catch (WriterException e) {
                         throw new RuntimeException(e);
                     }
                     eventList.add(event);
                 }
                 adapter.notifyDataSetChanged();
-            } else {
-                // Handle errors
             }
         });
     }
 }
-
