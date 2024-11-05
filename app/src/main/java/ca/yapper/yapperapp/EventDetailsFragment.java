@@ -94,10 +94,10 @@ public class EventDetailsFragment extends Fragment {
         wlCapacityTextView = view.findViewById(R.id.event_wl_capacity);
 
         // only visible to Entrant:
-        /** joinButton = view.findViewById(R.id.join_button);
+        joinButton = view.findViewById(R.id.join_button);
         // only visible to Organizer:
         viewParticipantsButton = view.findViewById(R.id.button_view_participants);
-        editEventButton = view.findViewById(R.id.button_edit_event); **/
+        editEventButton = view.findViewById(R.id.button_edit_event);
     }
 
     private void loadEventDetails() {
@@ -106,18 +106,20 @@ public class EventDetailsFragment extends Fragment {
         db.collection("Events").document(eventId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 // get Event details
-                String eventNameString = documentSnapshot.getString("eventName");
-                String eventDateTimeString = documentSnapshot.getString("eventDateTime");
-                String eventRegDeadlineString = documentSnapshot.getString("eventRegDeadline");
-                String eventFacilityName = documentSnapshot.getString("eventFacilityName");
-                String eventFacilityLocation = documentSnapshot.getString("eventFacilityLocation");
-                String eventDescriptionString = documentSnapshot.getString("eventDescription");
-                int eventWlCapacity = documentSnapshot.contains("waitListCapacity") ?
-                                documentSnapshot.getLong("waitListCapacity").intValue() : 0;
-                int eventCapacity = documentSnapshot.contains("capacity") ?
-                                documentSnapshot.getLong("capacity").intValue() : 0;
+                String eventNameString = documentSnapshot.getString("name");
+                String eventDateTimeString = documentSnapshot.getString("dateTime");
+                String eventRegDeadlineString = documentSnapshot.getString("regDeadline");
+                String eventFacilityName = documentSnapshot.getString("facilityName");
+                String eventFacilityLocation = documentSnapshot.getString("facilityLocation");
+                String eventDescriptionString = documentSnapshot.getString("description");
+                String eventWlCapacity = documentSnapshot.contains("wLCapacity") ?
+                                Long.toString(documentSnapshot.getLong("wLCapacity")) : "0";
+                String eventCapacity = documentSnapshot.contains("capacity") ?
+                                Long.toString(documentSnapshot.getLong("capacity")) : "0";
                 geolocationEnabled = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
                                 documentSnapshot.getBoolean("isGeolocationEnabled") : false;
+                int finalCapacity = Integer.parseInt(eventCapacity);
+                int finalWlCapacity = Integer.parseInt(eventWlCapacity);
 
                 titleTextView.setText(eventNameString != null ? eventNameString : "");
                 dateTimeTextView.setText(eventDateTimeString != null ? eventDateTimeString : "");
@@ -139,7 +141,7 @@ public class EventDetailsFragment extends Fragment {
                 // TO-DO: implement WL seats left (based on amount of seats left in waiting list capacity) logic:
 
                 // IF ENTRANT:
-                if (isInEntrantActivity) {
+                if (isInEntrantActivity == true) {
                     // check User in (any) event List before allowing Join
                     checkUserInList();
                     // Enable join button now that we have the data (confirm below!):
@@ -149,10 +151,9 @@ public class EventDetailsFragment extends Fragment {
                 }
 
                 // IF ORGANIZER:
-                if (isInOrganizerActivity) {
+                else if (isInOrganizerActivity == true) {
                     viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
                     editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
-
                 }
             }
             else {

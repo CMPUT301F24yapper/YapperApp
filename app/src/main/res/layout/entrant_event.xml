@@ -132,7 +132,7 @@
             android:id="@+id/event_number_participants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="# of Participants"
+            android:text="# of Participants: "
             android:textColor="@android:color/black"
             android:textSize="16sp" />
 
