@@ -71,38 +71,8 @@ public class RegisteredEventsFragment extends Fragment {
                         Log.d("Firestore", "EntrantDetails or subcollections not found for user.");
                     }
                 });
-        /** eventsRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    String eventName = document.getString("name");
-                    String eventDateTime = document.getString("date_Time");
-                    String eventRegDeadline = document.getString("registrationDeadline");
-                    String eventFacilityName = document.getString("facilityName");
-                    String eventFacilityLocation = document.getString("facilityLocation");
-                    int eventCapacity = document.contains("capacity") ?
-                            document.getLong("capacity").intValue() : 0;
-                    int eventWlCapacity = document.contains("waitListCapacity") ?
-                            document.getLong("waitListCapacity").intValue() : 0;
-                    boolean eventGeolocEnabled = document.getBoolean("isGeolocationEnabled");
 
-                    Event event = null;
-                    //                     // public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, boolean isGeolocationEnabled)
-                    try {
-                        event = new Event(eventName, eventDateTime, eventRegDeadline,
-                                eventFacilityName, eventFacilityLocation, eventCapacity,
-                                eventWlCapacity, eventGeolocEnabled);
-                        // Store the document ID in the QR code
-                        if (event.getQRCode() != null) {
-                            event.getQRCode().setQRCodeValue(document.getId());
-                        }
-                    } catch (WriterException e) {
-                        throw new RuntimeException(e);
-                    }
-                    eventList.add(event);
-                }
-                adapter.notifyDataSetChanged();
-            }
-        }); **/
+
     }
 
     private void loadEventSubCollection(CollectionReference eventSubCollection) {
