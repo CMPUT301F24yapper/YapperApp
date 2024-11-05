@@ -11,11 +11,12 @@ public class User {
     private Boolean isEntrant;
     private Boolean isOrganizer;
     private Boolean isAdmin;
+    private Boolean isOptedOut; // Added attribute for notification opt-out status
 
     // default constructor (required for Firestore deserialization)
     public User() {}
     // constructor version with parameters
-    public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
+    public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin, Boolean isOptedOut) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -25,6 +26,7 @@ public class User {
         this.isEntrant = isEntrant;
         this.isOrganizer = isOrganizer;
         this.isAdmin = isAdmin;
+        this.isOptedOut = isOptedOut; // Initialize in the constructor
     }
 
     public String getName() {
@@ -36,7 +38,6 @@ public class User {
     }
 
     public String getDeviceId() {
-
         return deviceId;
     }
 
@@ -61,20 +62,20 @@ public class User {
     }
 
     /** public ProfilePic getProfilePic() {
-        return profilePic;
-    }
+     return profilePic;
+     }
 
-    public void setProfilePic(ProfilePic profilePic) {
-        this.profilePic = profilePic;
-    }
+     public void setProfilePic(ProfilePic profilePic) {
+     this.profilePic = profilePic;
+     }
 
-    public ProfilePic getGeneratedProfilePic() {
-        return generatedProfilePic;
-    }
+     public ProfilePic getGeneratedProfilePic() {
+     return generatedProfilePic;
+     }
 
-    public void setGeneratedProfilePic(ProfilePic generatedProfilePic) {
-        this.generatedProfilePic = generatedProfilePic;
-    } **/
+     public void setGeneratedProfilePic(ProfilePic generatedProfilePic) {
+     this.generatedProfilePic = generatedProfilePic;
+     } **/
 
     public Boolean getIsEntrant() {
         return isEntrant;
@@ -98,6 +99,14 @@ public class User {
 
     public void setIsAdmin(Boolean admin) {
         isAdmin = admin;
+    }
+
+    public Boolean getIsOptedOut() { // Getter for isOptedOut
+        return isOptedOut;
+    }
+
+    public void setIsOptedOut(Boolean isOptedOut) { // Setter for isOptedOut
+        this.isOptedOut = isOptedOut;
     }
 
     // other methods (specific to User) beyond Gs & Ss: can be moved around in package but for now I am placing them here
