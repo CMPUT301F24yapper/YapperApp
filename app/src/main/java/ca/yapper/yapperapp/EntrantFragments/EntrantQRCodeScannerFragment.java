@@ -93,20 +93,24 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         //Log.d("S", Integer.toString(ContextCompat.checkSelfPermission(this.getContext(), "android.permission.CAMERA");)); // FOR TESTING
     }
 
-    private void getEvent(FirebaseFirestore db, String QRScanResult){
-        //REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
+    private void getEvent(FirebaseFirestore db, String QRScanResult) {
+        // REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
 
-        db.collection("Events").document(QRScanResult).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    eventData = new Bundle();
-                    eventData.putString("0", QRScanResult);
+        // Check if QRScanResult contains extra segments, and extract the last segment if needed
+        String[] segments = QRScanResult.split("/");  // Split by "/" to get segments
+        String documentId = segments[segments.length - 1]; // Use the last segment as the document ID
 
-                    EventDetailsFragment newFragment = new EventDetailsFragment();
-                    newFragment.setArguments(eventData);
-                    getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
-                } else {
-                    Log.d("A","QRScanResult does not exist", task.getException());
-                }
-            });
+        db.collection("Events").document(documentId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult().exists()) {
+                eventData = new Bundle();
+                eventData.putString("0", documentId); // Pass just the document ID
+
+                EventDetailsFragment newFragment = new EventDetailsFragment();
+                newFragment.setArguments(eventData);
+                getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+            } else {
+                Log.d("A", "Event not found for QRScanResult: " + documentId, task.getException());
+            }
+        });
     }
 }
