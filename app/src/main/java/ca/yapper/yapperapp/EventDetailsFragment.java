@@ -30,14 +30,21 @@ public class EventDetailsFragment extends Fragment {
 
     private FirebaseFirestore db;
     private String eventId;
-    private TextView eventTitle, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventDescription, eventAttendees, eventWlCapacity;
-    private boolean geolocationEnabled;
+    private TextView titleTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, attendeesTextView, wlCapacityTextView;
+    private TextView geolocEnabledTextView;
+    Boolean geolocationEnabled;
+    // Entrant Button:
+
     private Button joinButton;
+    // Organizer Buttons:
     private Button viewParticipantsButton;
     private Button editEventButton;
     // later, we can implement Button QR Code view for Organizer
     private String userDeviceId;
     private Bundle eventParameters;
+    private Boolean isInEntrantActivity;
+    private Boolean isInOrganizerActivity;
+
     // ***TO-DO***:
     // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
 
@@ -51,38 +58,32 @@ public class EventDetailsFragment extends Fragment {
         eventId = eventParameters.getString("0");
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        // Initialize views (both Entrant & Organizer will see)
+        initializeViews(view);
+
         setVisibilityBasedOnActivity();
 
-        // Initialize views
-        eventTitle = view.findViewById(R.id.event_title);
-        eventDateTime = view.findViewById(R.id.event_date_time);
-        eventRegDeadline = view.findViewById(R.id.registration_deadline);
-        eventFacilityName = view.findViewById(R.id.facility_name);
-        eventFacilityLocation = view.findViewById(R.id.facility_name);
-        eventDescription = view.findViewById(R.id.event_description);
-        joinButton = view.findViewById(R.id.join_button);
-        /**
-        if (eventParameters != null) {
-            // Get data from bundle
-            eventId = eventParameters.getString("eventId", "");
-            String name = eventParameters.getString("eventName", "");
-            String dateTime = eventParameters.getString("eventDateTime", "");
-            String facility = eventParameters.getString("eventFacility", "");
-            geolocationEnabled = eventParameters.getBoolean("geolocationEnabled", false);
-
-            // Set views with bundle data
-            eventTitle.setText(name);
-            eventDateTime.setText(dateTime);
-            eventFacility.setText("Facility: " + facility);
-
-            // Load additional details from Firestore
-            loadEventDetails(); **/
+        // load Event details
         loadEventDetails();
 
-        // Join button click listener
-        joinButton.setOnClickListener(v -> handleJoinButtonClick());
-
         return view;
+    }
+
+    private void initializeViews(View view) {
+        titleTextView = view.findViewById(R.id.event_title);
+        dateTimeTextView = view.findViewById(R.id.event_date_time);
+        regDeadlineTextView = view.findViewById(R.id.registration_deadline);
+        facilityNameTextView = view.findViewById(R.id.facility_name);
+        facilityLocationTextView = view.findViewById(R.id.facility_name);
+        descriptionTextView = view.findViewById(R.id.event_description);
+        attendeesTextView = view.findViewById(R.id.event_number_participants);
+        wlCapacityTextView = view.findViewById(R.id.event_wl_capacity);
+
+        // only visible to Entrant:
+        /** joinButton = view.findViewById(R.id.join_button);
+        // only visible to Organizer:
+        viewParticipantsButton = view.findViewById(R.id.button_view_participants);
+        editEventButton = view.findViewById(R.id.button_edit_event); **/
     }
 
     private void loadEventDetails() {
@@ -92,58 +93,70 @@ public class EventDetailsFragment extends Fragment {
                 String eventNameString = documentSnapshot.getString("eventName");
                 String eventDateTimeString = documentSnapshot.getString("eventDateTime");
                 String eventRegDeadlineString = documentSnapshot.getString("eventRegDeadline");
-                // eventFacilityName, eventFacilityLocation, eventDescription, eventWlCapacity, eventWlSeatsLeft;
+                // eventWlCapacity, eventWlSeatsLeft;
+                String eventFacilityName = documentSnapshot.getString("eventFacilityName");
+                String eventFacilityLocation = documentSnapshot.getString("eventFacilityLocation");
                 String eventDescriptionString = documentSnapshot.getString("eventDescription");
                 int eventWlCapacity = documentSnapshot.getLong("eventWlCapacity").intValue();
-                int eventWlSeatsLeft = documentSnapshot.getLong("eventWlSeatsLeft").intValue();
+                int eventAttendees = documentSnapshot.getLong("eventWlAttendees").intValue();
                 geolocationEnabled = documentSnapshot.getBoolean("geolocationEnabled");
 
-                eventTitle.setText(eventNameString);
-                eventDateTime.setText(eventDateTimeString);
-                eventRegDeadline.setText(eventRegDeadlineString);
-                eventDescription.setText(eventDescriptionString);
-
-                // retrieve facility details for firestore (reference to facilityId):
-                DocumentReference facilityRef = documentSnapshot.getDocumentReference("facilityId");
-                if (facilityRef != null) {
-                    facilityRef.get().addOnSuccessListener(facilitySnapshot -> {
-                        if (facilitySnapshot.exists()) {
-                            // Retrieve facility details
-                            String facilityNameString = facilitySnapshot.getString("facilityName");
-                            String facilityLocationString = facilitySnapshot.getString("facilityLocation");
-
-                            // Set UI components for facility details
-                            eventFacilityName.setText(facilityNameString);
-                            eventFacilityLocation.setText(facilityLocationString);
-                        } else {
-                            // eventFacility.setText("Facility details not found");
-                        }
-                    }).addOnFailureListener(e -> {
-                        // eventFacility.setText("Error loading facility details");
-                    });
-                } else {
-                    // eventFacility.setText("Facility reference not found");
+                titleTextView.setText(eventNameString);
+                dateTimeTextView.setText(eventDateTimeString);
+                regDeadlineTextView.setText(eventRegDeadlineString);
+                descriptionTextView.setText(eventDescriptionString);
+                facilityNameTextView.setText(eventFacilityName);
+                facilityLocationTextView.setText(eventFacilityLocation);
+                wlCapacityTextView.setText(eventWlCapacity);
+                attendeesTextView.setText(eventAttendees);
+                if (geolocationEnabled == true) {
+                    geolocEnabledTextView.setText("Geolocation Required");
                 }
 
-                checkUserInWaitingList();
+                // TO-DO: implement WL seats left (based on amount of seats left in waiting list capacity) logic:
 
-                // Enable join button now that we have the data
-                joinButton.setEnabled(true);
+                // IF ENTRANT:
+                if (isInEntrantActivity) {
+                    // check User in (any) event List before allowing Join
+                    checkUserInList();
+                    // Enable join button now that we have the data (confirm below!):
+                    joinButton.setEnabled(true);
+                    // Join button click listener
+                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
+                }
 
-                // Check if the user is already in the waiting list
+                // IF ORGANIZER:
+                if (isInOrganizerActivity) {
+                    viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
+                    editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
+                }
+
             }
         }).addOnFailureListener(e -> {
             // ***Handle failure (e.g., show error Toast message!)***
         });
     }
 
-    private void checkUserInWaitingList() {
+    private void checkUserInList() {
         if (userDeviceId == null) return; // Add early return if userDeviceId is null
         // Check if the user's device ID is in the waiting list (SUBCOLLECTION!)
         db.collection("Events").document(eventId).collection("waitingList")
                 .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // User is already in the waiting list
+                        joinButton.setText("Unjoin");
+                        joinButton.setBackgroundColor(Color.GRAY);
+                    } else {
+                        // User is not in the waiting list
+                        joinButton.setText("Join");
+                        joinButton.setBackgroundColor(Color.BLUE);
+                    }
+                });
+
+        db.collection("Events").document(eventId).collection("selectedList")
+                .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // User is already in the selected list
                         joinButton.setText("Unjoin");
                         joinButton.setBackgroundColor(Color.GRAY);
                     } else {
@@ -164,6 +177,14 @@ public class EventDetailsFragment extends Fragment {
         } else {
             unjoinEvent();
         }
+    }
+
+    private void handleViewParticipantsButtonClick() {
+        // **TO IMPLEMENT**
+    }
+
+    private void handleEditEventButtonClick() {
+        // **TO IMPLEMENT**
     }
 
     private void showGeolocationWarningDialog() {
@@ -218,15 +239,21 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void setVisibilityBasedOnActivity() {
+        // TO-DO: IMPLEMENT MAP VISIBILITY FOR ORGANIZER, AS WELL AS QR CODE VIEW BUTTON FOR ORGANIZER
         if (getActivity() instanceof EntrantActivity) {
-            // notificationsSection.setVisibility(View.VISIBLE);
-            // facilitySection.setVisibility(View.GONE);
+            isInEntrantActivity = true;
+            joinButton.setVisibility(View.VISIBLE);
+            viewParticipantsButton.setVisibility(View.GONE);
+            editEventButton.setVisibility(View.GONE);
         } else if (getActivity() instanceof OrganizerActivity) {
-            // notificationsSection.setVisibility(View.GONE);
-            // facilitySection.setVisibility(View.VISIBLE);
+            isInOrganizerActivity = true;
+            joinButton.setVisibility(View.GONE);
+            viewParticipantsButton.setVisibility(View.VISIBLE);
+            editEventButton.setVisibility(View.VISIBLE);
         } else {
-            // notificationsSection.setVisibility(View.GONE);
-            // facilitySection.setVisibility(View.GONE);
+            joinButton.setVisibility(View.GONE);
+            viewParticipantsButton.setVisibility(View.GONE);
+            editEventButton.setVisibility(View.GONE);
         }
     }
 }
