@@ -127,6 +127,23 @@
             android:layout_width="match_parent"
             android:layout_height="16dp" />
 
+        <!-- # of Participants -->
+        <TextView
+            android:id="@+id/event_number_participants"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="# of Participants: "
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/event_wl_capacity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waiting List Capacity:"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
         <!-- Available Slots -->
         <TextView
             android:id="@+id/available_slots"
@@ -155,20 +172,52 @@
             android:layout_width="match_parent"
             android:layout_height="16dp" />
 
-        <!-- Join Button -->
-        <Button
-            android:id="@+id/join_button"
-            android:layout_width="wrap_content"
+        <!-- Button Layout -->
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Join Event"
-            android:textSize="16sp"
-            android:backgroundTint="@android:color/darker_gray"
-            android:textColor="@android:color/white"
-            android:enabled="false"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp">
 
+            <!-- Centered Horizontal Layout for View and Edit Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center">
 
+                <!-- Left Button -->
+                <Button
+                    android:id="@+id/button_view_participants"
+                    android:text="View Participants"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:backgroundTint="@android:color/holo_blue_dark"
+                    android:textColor="@android:color/white" />
+
+                <!-- Right Button -->
+                <Button
+                    android:id="@+id/button_edit_event"
+                    android:text="Edit Event"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@android:color/holo_green_dark"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
+            <!-- Join Button - Centered and Overlayed -->
+            <Button
+                android:id="@+id/join_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@android:color/darker_gray"
+                android:enabled="false"
+                android:text="Join Event"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+
+        </FrameLayout>
     </LinearLayout>
 
 </ScrollView>

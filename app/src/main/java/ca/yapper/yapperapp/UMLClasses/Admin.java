@@ -1,5 +1,5 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-public class Admin extends Role {
+public class Admin {
     // to implement
 }

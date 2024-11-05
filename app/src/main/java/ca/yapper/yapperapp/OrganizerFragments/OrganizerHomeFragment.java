@@ -8,45 +8,77 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.WriterException;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.ViewPagerAdapter;
+import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerHomeFragment extends Fragment {
+
+    private RecyclerView recyclerView;
+    private EventsAdapter adapter;
+    private List<Event> eventList;
+    private FirebaseFirestore db;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.entrant_homepage, container, false);
+        View view = inflater.inflate(R.layout.organizer_homepage, container, false);
+        // implement listView of Events pulled from Firestore, onClickListeners logic & navigability
 
-        TabLayout tabLayout = view.findViewById(R.id.tabLayout);
-        ViewPager2 viewPager = view.findViewById(R.id.viewPager);
+        recyclerView = view.findViewById(R.id.my_events_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Set up the adapter for ViewPager
-        viewPager.setAdapter(new ViewPagerAdapter(this));
+        eventList = new ArrayList<>();
+        adapter = new EventsAdapter(eventList, getContext());
+        recyclerView.setAdapter(adapter);
 
-        // Attach TabLayout and ViewPager
-        new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> {
-                    switch (position) {
-                        case 0:
-                            tab.setText("Waiting List");
-                            break;
-                        case 1:
-                            tab.setText("Selected List");
-                            break;
-                        case 2:
-                            tab.setText("Final List");
-                            break;
-                        case 3:
-                            tab.setText("Cancelled List");
-                            break;
-                    }
-                }).attach();
+        db = FirebaseFirestore.getInstance();
+
+        loadEventsFromFirebase();
 
         return view;
+    }
+
+    private void loadEventsFromFirebase() {
+        CollectionReference eventsRef = db.collection("Events");
+
+        eventsRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    String eventName = document.getString("eventName");
+                    String eventDateTime = document.getString("eventDate");
+                    String eventRegDeadline = document.getString("registrationDeadline");
+                    String eventFacilityName = ""; // Placeholder if not stored in Firestore
+                    String eventFacilityLocation = ""; // Placeholder if not stored in Firestore
+                    int eventAttendees = 0; // Placeholder if not stored in Firestore
+                    int eventWlCapacity = document.contains("wlCapacity") ? document.getLong("wlCapacity").intValue() : 0;
+                    boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
+                    // Event event = new Event(eventName, eventDateTime, eventRegDeadline,
+                    //                eventFacilityName, eventFacilityLocation, eventAttendees,
+                    //                eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+                    Event event = null;
+                    try {
+                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventGeolocEnabled);
+                    } catch (WriterException e) {
+                        throw new RuntimeException(e);
+                    }
+                    eventList.add(event);
+                }
+                adapter.notifyDataSetChanged();
+            } else {
+                // Handle errors
+            }
+        });
     }
 }

@@ -15,22 +15,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.Activities.SignupActivity;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
-
+import ca.yapper.yapperapp.UMLClasses.User;
+// TO-DO: WHEN ORGANIZER SUCCESSFULLY CREATED AN EVENT, ADD TO DATABASE (USER SUBCOLLECTION "CREATEDEVENTS"!)
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
-    // for below facility details, only the name is needed because Facility should already be stored in firestore for Organizer...
-    //... can later retrieve the Facility details such as location
     private EditText eventFacilityEditText;
     private EditText eventDateEditText;
     private EditText eventDeadlineEditText;
@@ -39,34 +45,27 @@ public class OrganizerCreateEventFragment extends Fragment {
     private Switch geolocationSwitch;
     private Button saveEventButton;
     private String eventId;
+    private int finalEventId;
 
-    // Firebase Firestore instance
     private FirebaseFirestore db;
-
-    // Date variables
     private int selectedYear, selectedMonth, selectedDay;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // return inflater.inflate(R.layout.organizer_createevent, container, false);
         View view = inflater.inflate(R.layout.organizer_createevent, container, false);
 
         eventNameEditText = view.findViewById(R.id.event_name_input);
         eventFacilityEditText = view.findViewById(R.id.event_facility_input);
         eventDateEditText = view.findViewById(R.id.date_input);
         eventDeadlineEditText = view.findViewById(R.id.deadline_input);
-        // ***TO-DO: code for event poster
         eventNumberOfAttendeesEditText = view.findViewById(R.id.attendees_input);
         eventWlCapacityEditText = view.findViewById(R.id.wl_capacity_input);
         geolocationSwitch = view.findViewById(R.id.geo_location_toggle);
         saveEventButton = view.findViewById(R.id.save_event_button);
         db = FirebaseFirestore.getInstance();
 
-        // Set up date picker
         eventDateEditText.setOnClickListener(v -> showDatePickerDialog(eventDateEditText));
-
-        // Set up registration deadline picker
         eventDeadlineEditText.setOnClickListener(v -> showDatePickerDialog(eventDeadlineEditText));
 
         saveEventButton.setOnClickListener(v -> {
@@ -86,28 +85,27 @@ public class OrganizerCreateEventFragment extends Fragment {
         selectedMonth = calendar.get(Calendar.MONTH);
         selectedDay = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // Create a DatePickerDialog
         DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity(),
                 (view, year, month, dayOfMonth) -> {
-                    String selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year; // Format date
-                    dateEditText.setText(selectedDate); // Set selected date to the respective EditText
+                    String selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
+                    dateEditText.setText(selectedDate);
                 }, selectedYear, selectedMonth, selectedDay);
 
         datePickerDialog.show();
     }
 
-    private void createEvent() throws WriterException { // writer exception from QR Code
+    private void createEvent() throws WriterException {
         String eventName = eventNameEditText.getText().toString();
-        // should facility be pre-written in for the Organizer (since they can only have 1 facility?)
         String eventFacilityName = eventFacilityEditText.getText().toString();
-        String eventFacilityLocation = ""; // Placeholder, adjust if needed
+        String eventFacilityLocation = ""; // Placeholder
         String eventDateTime = eventDateEditText.getText().toString();
         String eventRegDeadline = eventDeadlineEditText.getText().toString();
 
-        // Ensure to parse these values safely
-        int eventAttendees = eventNumberOfAttendeesEditText.getText().toString().isEmpty() ? 0 : Integer.parseInt(eventNumberOfAttendeesEditText.getText().toString());
-        int eventWlCapacity = eventWlCapacityEditText.getText().toString().isEmpty() ? 0 : Integer.parseInt(eventWlCapacityEditText.getText().toString());
-        int eventWlSeatsAvailable = eventWlCapacity; // Assuming seats available initially equals the capacity
+        int eventAttendees = eventNumberOfAttendeesEditText.getText().toString().isEmpty() ? 0 :
+                Integer.parseInt(eventNumberOfAttendeesEditText.getText().toString());
+        int eventWlCapacity = eventWlCapacityEditText.getText().toString().isEmpty() ? 0 :
+                Integer.parseInt(eventWlCapacityEditText.getText().toString());
+        int eventWlSeatsAvailable = eventWlCapacity;
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
         // Check for required fields
@@ -115,33 +113,35 @@ public class OrganizerCreateEventFragment extends Fragment {
             Toast.makeText(getActivity(), "Please fill in the required fields", Toast.LENGTH_SHORT).show();
             return;
         }
+        //                     // public Event(String name, String date_Time, String registrationDeadline, String facilityName, String facilityLocation, int capacity, int eventWlCapacity, boolean isGeolocationEnabled)
+        Event event = new Event(eventName, eventDateTime, eventRegDeadline,
+                eventFacilityName, eventFacilityLocation, eventAttendees,
+                eventWlCapacity, geolocationEnabled);
 
-        // Create instance of Event NOTE: QR Codes are automatically generated at event creation
-        Event event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
+        // getHashData() to confirm if this hashData is unique for eventId, if not then add 1s to id
+        // hashing logic:
 
-        // Create map to store Event data
-        // Generating QR Code
+        hashEventId(event.getQRCode().getHashData());
+
         Log.d("EVENT", "FireBase Storage Begun");
-        eventId = Integer.toString(event.getEventQRCode().getHashData()); // now the eventId is the "unique" qr hash value
+        // eventId = Integer.toString(event.getQRCode().getHashData());
 
         Map<String, Object> eventData = new HashMap<>();
-        eventData.put("eventName", event.getEventName());
-        eventData.put("facilityName", event.getEventFacilityName());
-        eventData.put("eventDateTime", event.getEventDateTime());
-        eventData.put("registrationDeadline", event.getEventRegDeadline());
-        eventData.put("eventAttendees", event.getEventAttendees());
-        eventData.put("eventWlCapacity", event.getEventWlCapacity());
-        eventData.put("geolocationEnabled", event.isEventGeolocEnabled());
-        eventData.put("qrCodeValue",event.getEventQRCode().getQRCodeValue());
-        eventData.put("hashData",event.getEventQRCode().getHashData());
-        //eventData.put("qrCodeBitMatrix",event.getEventQRCode().getQrCode());
+        eventData.put("name", event.getName());
+        eventData.put("facilityName", event.getFacilityName());
+        eventData.put("facilityLocation", event.getFacilityLocation());
+        eventData.put("date_Time", event.getDate_Time());
+        eventData.put("registrationDeadline", event.getRegistrationDeadline());
+        eventData.put("capacity", event.getCapacity());
+        eventData.put("waitListCapacity", event.getWaitListCapacity());
+        eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
+        eventData.put("qrCode_hashData", event.getQRCode().getQRCodeValue());
 
-        // Add a new document to Events collection
-        DocumentReference eventRef = db.collection("Events").document(eventId); // eventID is the hash value from qr code
+        DocumentReference eventRef = db.collection("Events").document(Integer.toString(finalEventId));
         eventRef.set(eventData).addOnSuccessListener(aVoid -> {
-            // Initialize subcollections after creating the Event document
             initializeEventSubcollections(eventRef);
             Toast.makeText(getActivity(), "Event created successfully", Toast.LENGTH_SHORT).show();
+            // Could add navigation back to home screen here
         }).addOnFailureListener(e -> {
             Log.w("Firestore", "Error creating event document", e);
             Toast.makeText(getActivity(), "Error creating event", Toast.LENGTH_SHORT).show();
@@ -162,5 +162,29 @@ public class OrganizerCreateEventFragment extends Fragment {
         cancelledListRef.document("placeholder").set(placeholder);
         finalListRef.document("placeholder").set(placeholder);
 
+    }
+
+    private void hashEventId(int currentEventId) {
+        db.collection("Events").document(Integer.toString(currentEventId))
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                // Document exists, increment the ID and check again
+                                hashEventId(currentEventId + 1);
+                            } else {
+                                // Document does not exist, unique ID found
+                                System.out.println("Unique event ID found: " + currentEventId);
+                                // Further actions can be taken here
+                            }
+                        } else {
+                            // Handle any errors during the process
+                            Log.w("Hashing", "Error checking event existence", task.getException());
+                        }
+                    }
+                });
     }
 }
