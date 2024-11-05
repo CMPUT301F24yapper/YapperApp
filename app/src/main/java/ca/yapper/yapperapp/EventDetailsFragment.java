@@ -3,6 +3,7 @@ package ca.yapper.yapperapp;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,15 +48,21 @@ public class EventDetailsFragment extends Fragment {
 
     // ***TO-DO***:
     // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
+    private View view;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.entrant_event, container, false);
+        view = inflater.inflate(R.layout.entrant_event, container, false);
 
         db = FirebaseFirestore.getInstance();
-        eventParameters = getArguments();
-        eventId = eventParameters.getString("0");
+        Bundle args = getArguments();
+        if (args == null || !args.containsKey("0")) {
+            Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
+            return view;
+        }
+
+        eventId = args.getString("0");
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Initialize views (both Entrant & Organizer will see)
@@ -65,6 +72,12 @@ public class EventDetailsFragment extends Fragment {
 
         // load Event details
         loadEventDetails();
+
+        if (eventId != null && !eventId.isEmpty()) {
+            loadEventDetails();
+        } else {
+            Toast.makeText(getContext(), "Error: Invalid event ID", Toast.LENGTH_SHORT).show();
+        }
 
         return view;
     }
@@ -87,30 +100,39 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void loadEventDetails() {
+        Log.d("EventDebug", "Loading event with ID: " + eventId);
+
         db.collection("Events").document(eventId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 // get Event details
                 String eventNameString = documentSnapshot.getString("eventName");
                 String eventDateTimeString = documentSnapshot.getString("eventDateTime");
                 String eventRegDeadlineString = documentSnapshot.getString("eventRegDeadline");
-                // eventWlCapacity, eventWlSeatsLeft;
                 String eventFacilityName = documentSnapshot.getString("eventFacilityName");
                 String eventFacilityLocation = documentSnapshot.getString("eventFacilityLocation");
                 String eventDescriptionString = documentSnapshot.getString("eventDescription");
-                int eventWlCapacity = documentSnapshot.getLong("eventWlCapacity").intValue();
-                int eventAttendees = documentSnapshot.getLong("eventWlAttendees").intValue();
-                geolocationEnabled = documentSnapshot.getBoolean("geolocationEnabled");
+                int eventWlCapacity = documentSnapshot.contains("waitListCapacity") ?
+                                documentSnapshot.getLong("waitListCapacity").intValue() : 0;
+                int eventCapacity = documentSnapshot.contains("capacity") ?
+                                documentSnapshot.getLong("capacity").intValue() : 0;
+                geolocationEnabled = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
+                                documentSnapshot.getBoolean("isGeolocationEnabled") : false;
 
-                titleTextView.setText(eventNameString);
-                dateTimeTextView.setText(eventDateTimeString);
-                regDeadlineTextView.setText(eventRegDeadlineString);
+                titleTextView..setText(eventNameString != null ? eventNameString : "");
+                dateTimeTextView.setText(eventDateTimeString != null ? eventDateTimeString : "");
+                regDeadlineTextView.setText("Registration Deadline: " +
+                (eventRegDeadlineString != null ? eventRegDeadlineString : ""));
                 descriptionTextView.setText(eventDescriptionString);
-                facilityNameTextView.setText(eventFacilityName);
-                facilityLocationTextView.setText(eventFacilityLocation);
+                facilityNameTextView.setText("Facility: " + (eventFacilityName != null ? eventFacilityName : ""));           
+                facilityLocationTextView.setText("Location: " + (eventFacilityLocation != null ? eventFacilityLocation : ""));
                 wlCapacityTextView.setText(eventWlCapacity);
-                attendeesTextView.setText(eventAttendees);
-                if (geolocationEnabled == true) {
-                    geolocEnabledTextView.setText("Geolocation Required");
+                attendeesTextView.setText(eventCapacity);
+
+                if (geolocationEnabled) {
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    if (geoLocationRequired != null) {
+                        geoLocationRequired.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 // TO-DO: implement WL seats left (based on amount of seats left in waiting list capacity) logic:
@@ -142,6 +164,73 @@ public class EventDetailsFragment extends Fragment {
         // Check if the user's device ID is in the waiting list (SUBCOLLECTION!)
         db.collection("Events").document(eventId).collection("waitingList")
                 .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+        eventTitle = view.findViewById(R.id.event_title);
+        eventDateTime = view.findViewById(R.id.event_date_time);
+        eventRegDeadline = view.findViewById(R.id.registration_deadline);
+        eventFacilityName = view.findViewById(R.id.facility_name);
+        eventFacilityLocation = view.findViewById(R.id.facility_location);
+        eventDescription = view.findViewById(R.id.event_description);
+        joinButton = view.findViewById(R.id.join_button);
+        joinButton.setEnabled(false);
+    }
+
+    private void loadEventDetails() {
+        Log.d("EventDebug", "Loading event with ID: " + eventId);
+
+        db.collection("Events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Log.d("EventDebug", "Document data: " + documentSnapshot.getData());
+
+                        String eventNameString = documentSnapshot.getString("name");
+                        String eventDateTimeString = documentSnapshot.getString("date_Time");
+                        String eventRegDeadlineString = documentSnapshot.getString("registrationDeadline");
+                        String facilityNameString = documentSnapshot.getString("facilityName");
+                        String facilityLocationString = documentSnapshot.getString("facilityLocation");
+                        int eventWlCapacity = documentSnapshot.contains("waitListCapacity") ?
+                                documentSnapshot.getLong("waitListCapacity").intValue() : 0;
+                        int eventCapacity = documentSnapshot.contains("capacity") ?
+                                documentSnapshot.getLong("capacity").intValue() : 0;
+                        geolocationEnabled = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
+                                documentSnapshot.getBoolean("isGeolocationEnabled") : false;
+
+                        eventTitle.setText(eventNameString != null ? eventNameString : "");
+                        eventDateTime.setText(eventDateTimeString != null ? eventDateTimeString : "");
+                        eventRegDeadline.setText("Registration Deadline: " +
+                                (eventRegDeadlineString != null ? eventRegDeadlineString : ""));
+
+                        eventFacilityName.setText("Facility: " +
+                                (facilityNameString != null ? facilityNameString : ""));
+                        eventFacilityLocation.setText("Location: " +
+                                (facilityLocationString != null ? facilityLocationString : ""));
+
+//                        int availableSlots = eventWlCapacity;
+//                        eventWlAvailableSlots.setText("Available Slots: " +
+//                                availableSlots + "/" + eventWlCapacity);
+
+                        joinButton.setEnabled(true);
+
+                        if (geolocationEnabled) {
+                            TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                            if (geoLocationRequired != null) {
+                                geoLocationRequired.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        //checkUserInWaitingList();
+                    } else {
+                        Log.d("EventDebug", "No such document");
+                        Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventDebug", "Error loading event", e);
+                    Toast.makeText(getContext(), "Error loading event details", Toast.LENGTH_SHORT).show();
+                });
+
+        db.collection("Events").document(eventId).collection("waitingList")
+                .document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // User is already in the waiting list
                         joinButton.setText("Unjoin");
@@ -160,7 +249,7 @@ public class EventDetailsFragment extends Fragment {
                         joinButton.setText("Unjoin");
                         joinButton.setBackgroundColor(Color.GRAY);
                     } else {
-                        // User is not in the waiting list
+                        // User is not in the selected list
                         joinButton.setText("Join");
                         joinButton.setBackgroundColor(Color.BLUE);
                     }
@@ -188,7 +277,6 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void showGeolocationWarningDialog() {
-        // Create and show a dialog fragment (pop-up re geolocation enabled warning)
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
                 .setPositiveButton("Continue", (dialog, id) -> joinEvent())
@@ -196,16 +284,14 @@ public class EventDetailsFragment extends Fragment {
                 .create()
                 .show();
     }
-    // ***TO-DO FOR BELOW (JOIN) METHODS***:
-    // IMPLEMENT THE ADDITIONAL DETAIL THAT WHEN ENTRANT JOINS/UNJOINS EVENT, THIS WILL UPDATE IN FIRESTORE + HOMEPAGE VIEW
-    // ...RE. ENTRANT EVENT LISTS (REGISTERED EVENTS, MISSED OUT EVENTS)...
+
     private void joinEvent() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
         Map<String, Object> entrantData = new HashMap<>();
-        entrantData.put("timestamp", FieldValue.serverTimestamp()); // Add a server timestamp
+        entrantData.put("timestamp", FieldValue.serverTimestamp());
         db.collection("Events").document(eventId).collection("waitingList")
                 .document(userDeviceId).set(entrantData)
                 .addOnSuccessListener(aVoid -> {
@@ -214,7 +300,6 @@ public class EventDetailsFragment extends Fragment {
                     Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
                     Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -233,10 +318,24 @@ public class EventDetailsFragment extends Fragment {
                     Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Handle failure
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });
     }
+
+//    private void checkUserInWaitingList() {
+//        if (entrantDeviceId == null) return;
+//
+//        db.collection("Events").document(eventId).collection("waitingList")
+//                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        joinButton.setText("Unjoin");
+//                        joinButton.setBackgroundColor(Color.GRAY);
+//                    } else {
+//                        joinButton.setText("Join");
+//                        joinButton.setBackgroundColor(Color.BLUE);
+//                    }
+//                });
+//    }
 
     private void setVisibilityBasedOnActivity() {
         // TO-DO: IMPLEMENT MAP VISIBILITY FOR ORGANIZER, AS WELL AS QR CODE VIEW BUTTON FOR ORGANIZER
