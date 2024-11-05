@@ -116,12 +116,12 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         Event event = new Event(eventName, eventDateTime, eventRegDeadline,
                 eventFacilityName, eventFacilityLocation, eventAttendees,
-                eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled, waitingList, selectedList, finalList, cancelledList);
+                eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
 
         // getHashData() to confirm if this hashData is unique for eventId, if not then add 1s to id
         // hashing logic:
 
-        hashEventId(event.getEventQRCode().getHashData());
+        hashEventId(event.getQRCode().getHashData());
 
         Log.d("EVENT", "FireBase Storage Begun");
         // eventId = Integer.toString(event.getQRCode().getHashData());

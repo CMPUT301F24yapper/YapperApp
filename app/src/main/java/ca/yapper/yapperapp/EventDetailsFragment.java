@@ -112,9 +112,9 @@ public class EventDetailsFragment extends Fragment {
                         eventFacilityLocation.setText("Location: " +
                                 (facilityLocationString != null ? facilityLocationString : ""));
 
-                        int availableSlots = eventWlCapacity;
-                        eventWlAvailableSlots.setText("Available Slots: " +
-                                availableSlots + "/" + eventWlCapacity);
+//                        int availableSlots = eventWlCapacity;
+//                        eventWlAvailableSlots.setText("Available Slots: " +
+//                                availableSlots + "/" + eventWlCapacity);
 
                         joinButton.setEnabled(true);
 
@@ -125,7 +125,7 @@ public class EventDetailsFragment extends Fragment {
                             }
                         }
 
-                        checkUserInWaitingList();
+                        //checkUserInWaitingList();
                     } else {
                         Log.d("EventDebug", "No such document");
                         Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
@@ -195,20 +195,20 @@ public class EventDetailsFragment extends Fragment {
                 });
     }
 
-    private void checkUserInWaitingList() {
-        if (entrantDeviceId == null) return;
-
-        db.collection("Events").document(eventId).collection("waitingList")
-                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY);
-                    } else {
-                        joinButton.setText("Join");
-                        joinButton.setBackgroundColor(Color.BLUE);
-                    }
-                });
-    }
+//    private void checkUserInWaitingList() {
+//        if (entrantDeviceId == null) return;
+//
+//        db.collection("Events").document(eventId).collection("waitingList")
+//                .document(entrantDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        joinButton.setText("Unjoin");
+//                        joinButton.setBackgroundColor(Color.GRAY);
+//                    } else {
+//                        joinButton.setText("Join");
+//                        joinButton.setBackgroundColor(Color.BLUE);
+//                    }
+//                });
+//    }
 
     private void setVisibilityBasedOnActivity() {
         if (getActivity() instanceof EntrantActivity) {

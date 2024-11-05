@@ -97,31 +97,31 @@ public class Event {
         this.isGeolocationEnabled = geolocationEnabled;
     }
 
-    public ArrayList<User> getWaitingList() {
-        return waitingList;
-    }
-
-    public void setWaitingList(ArrayList<User> waitingList) {
-        this.waitingList = waitingList;
-    }
-
-    public ArrayList<User> getSelectedList() {
-        return selectedList;
-    }
-
-    public void setSelectedList(ArrayList<User> selectedList) {
-        this.selectedList = selectedList;
-    }
-
-    public ArrayList<User> getFinalList() {
-        return finalList;
-    }
-
-    public void setFinalList(ArrayList<User> finalList) {
-        this.finalList = finalList;
-    }
-
-    public ArrayList<User> getCancelledList() {
-        return cancelledList;
-    }
+//    public ArrayList<User> getWaitingList() {
+//        return waitingList;
+//    }
+//
+//    public void setWaitingList(ArrayList<User> waitingList) {
+//        this.waitingList = waitingList;
+//    }
+//
+//    public ArrayList<User> getSelectedList() {
+//        return selectedList;
+//    }
+//
+//    public void setSelectedList(ArrayList<User> selectedList) {
+//        this.selectedList = selectedList;
+//    }
+//
+//    public ArrayList<User> getFinalList() {
+//        return finalList;
+//    }
+//
+//    public void setFinalList(ArrayList<User> finalList) {
+//        this.finalList = finalList;
+//    }
+//
+//    public ArrayList<User> getCancelledList() {
+//        return cancelledList;
+//    }
 }

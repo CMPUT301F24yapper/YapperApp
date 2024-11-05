@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import ca.yapper.yapperapp.EntrantFragments.EntrantEventFragment;
+import ca.yapper.yapperapp.EventDetailsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsViewHolder> {
@@ -57,7 +57,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
 
             Bundle bundle = new Bundle();
             bundle.putString("0", eventId);
-            entrantEventFragment.setArguments(bundle);
+            eventDetailsFragment.setArguments(bundle);
 
             FragmentTransaction transaction = ((FragmentActivity) context)
                     .getSupportFragmentManager()
