@@ -70,7 +70,7 @@ public class Event {
                 });
     }
 
-    private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
+    public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
         db.collection("Events").document(eventId).collection(subcollectionName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

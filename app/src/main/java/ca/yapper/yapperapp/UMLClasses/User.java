@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.WriterException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -163,31 +165,52 @@ public class User {
         this.createdEvents = createdEvents;
     }
 
-    public static User loadUserFromDatabase(String userDeviceId) {
+    public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        User user = new User(userDeviceId, "", false, false, false, "", "", false,
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-
-        db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                user.setAdmin(documentSnapshot.getBoolean("Admin"));
-                user.setEntrant(documentSnapshot.getBoolean("Entrant"));
-                user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
-                user.setDeviceId(documentSnapshot.getString("deviceId"));
-                user.setEmail(documentSnapshot.getString("entrantEmail"));
-                user.setName(documentSnapshot.getString("entrantName"));
-                user.setPhoneNum(documentSnapshot.getString("entrantPhone"));
-
-                loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
-                loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
-                loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
-                loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents);
-            }
-        });
-
-        return user;
+        db.collection("Users").document(userDeviceId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            // public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer,
+                            // String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
+                            User user = new User(
+                                    /** user.setAdmin(documentSnapshot.getBoolean("Admin"));
+                                     user.setEntrant(documentSnapshot.getBoolean("Entrant"));
+                                     user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
+                                     user.setDeviceId(documentSnapshot.getString("deviceId"));
+                                     user.setEmail(documentSnapshot.getString("entrantEmail"));
+                                     user.setName(documentSnapshot.getString("entrantName"));
+                                     user.setPhoneNum(documentSnapshot.getString("entrantPhone")); **/
+                                    documentSnapshot.getString("deviceId"),
+                                    documentSnapshot.getString("email"),
+                                    documentSnapshot.getBoolean("Admin"),
+                                    documentSnapshot.getBoolean("Entrant"),
+                                    documentSnapshot.getBoolean("Organizer"),
+                                    documentSnapshot.getString("entrantName"),
+                                    documentSnapshot.getString("entrantPhone"),
+                                    documentSnapshot.getBoolean("notificationsEnabled"),
+                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+                            );
+                            listener.onUserLoaded(user);
+                        } // catch (WriterException e) {
+                        catch (Exception e) {
+                            listener.onUserLoadError("Error creating user");
+                        }
+                    }
+                });
     }
+        // User user = new User(userDeviceId, "", false, false, false, "", "", false,
+        // new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        /** db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+         if (documentSnapshot.exists()) {
+         loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
+         loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
+         loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
+         loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents);
+         }
+         });
+         return user;
+         } **/
 
     private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
         db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
@@ -237,5 +260,10 @@ public class User {
         Log.d("User", "User and subcollections created");
 
         return user;
+    }
+
+    public interface OnUserLoadedListener {
+        void onUserLoaded(User user);
+        void onUserLoadError(String error);
     }
 }

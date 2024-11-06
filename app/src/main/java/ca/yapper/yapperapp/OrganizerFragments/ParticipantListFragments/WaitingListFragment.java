@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,19 +16,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
+import ca.yapper.yapperapp.UMLClasses.Event.OnEventLoadedListener;
 import ca.yapper.yapperapp.UsersAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
+import ca.yapper.yapperapp.UMLClasses.User.OnUserLoadedListener;
 
 public class WaitingListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> usersWaitingList;
+    // private List<>
     private FirebaseFirestore db;
     private String eventId;
 
@@ -46,7 +51,7 @@ public class WaitingListFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            // loadWaitingList(eventId);
+            loadWaitingList(eventId);
         }
         else {
             Toast.makeText(getContext(), "Error: Unable to get event ID", Toast.LENGTH_SHORT).show();
@@ -64,91 +69,25 @@ public class WaitingListFragment extends Fragment {
         return view;
     }
 
-    /** private void loadWaitingList(String eventId) {
+    private void loadWaitingList(String eventId) {
+        ArrayList<String> userIdsStringList = null;
         Log.d("EventDebug", "Loading event with ID: " + eventId);
-        db.collection("Events").document(eventId).collection("waitingList").get().addOnSuccessListener(queryDocumentSnapshots -> {
-            usersWaitingList.clear();
-            if (queryDocumentSnapshots.isEmpty()) {
-                Toast.makeText(getContext(), "No users in waiting list found", Toast.LENGTH_SHORT).show();
-                return;
+
+        Event.loadEventFromDatabase(eventId, new OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (getContext() == null) return;
+                //...loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
+                event.loadUserIdsFromSubcollection(db, eventId, "waitingList", userIdsStringList);
             }
 
-            for (DocumentSnapshot document : queryDocumentSnapshots) {
-                String userId = document.getId();
+            @Override
+            public void onEventLoadError(String error) {
+                if (getContext() == null) return;
 
-                User.loadUserFromDatabase(userId, new User.OnU() {
-        })
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-        }
-    } **/
-
-    /** private void loadEventsFromFirebase() {
-     db.collection("Users")
-     .document(userDeviceId)
-     .collection("joinedEvents")
-     .get()
-     .addOnSuccessListener(queryDocumentSnapshots -> {
-     eventList.clear();
-
-     if (queryDocumentSnapshots.isEmpty()) {
-     Toast.makeText(getContext(), "No joined events found", Toast.LENGTH_SHORT).show();
-     return;
-     }
-
-     for (DocumentSnapshot document : queryDocumentSnapshots) {
-     String eventId = document.getId();
-
-     Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-    @Override
-    public void onEventLoaded(Event event) {
-    if (getContext() == null) return;
-
-    eventList.add(event);
-    adapter.notifyDataSetChanged();
+                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+                Log.e("EventDetails", "Error loading event: " + error);
+            }
+        });
     }
-
-    @Override
-    public void onEventLoadError(String error) {
-    if (getContext() == null) return;
-
-    Log.e("JoinedEvents", "Error loading event " + eventId + ": " + error);
-    }
-    });
-     }
-     })
-     .addOnFailureListener(e -> {
-     if (getContext() != null) {
-     Toast.makeText(getContext(),
-     "Error loading joined events: " + e.getMessage(),
-     Toast.LENGTH_SHORT).show();
-     }
-     });
-     }
-     } **/
-
-    /**  private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
-     db.collection("Events").document(eventId).collection(subcollectionName)
-     .get()
-     .addOnSuccessListener(queryDocumentSnapshots -> {
-     for (DocumentSnapshot doc : queryDocumentSnapshots) {
-     // Assuming each document in the subcollection is a reference to a User in the "Users" collection
-     String userIdRef = doc.getId(); // Get the document ID in the subcollection (reference to User ID)
-
-     // Retrieve the User document to get the deviceId
-     db.collection("Users").document(userIdRef).get()
-     .addOnSuccessListener(userDoc -> {
-     if (userDoc.exists()) {
-     String deviceId = userDoc.getString("deviceId");
-     if (deviceId != null) {
-     userIdsList.add(deviceId); // Add the deviceId to the respective list
-     }
-     }
-     });
-     }
-     });
-     }
-     **/
-
-//
 }
-
