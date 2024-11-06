@@ -112,7 +112,11 @@ public class Event {
             eventData.put("waitListCapacity", event.waitListCapacity);
             eventData.put("organizerId", organizerId);
 
+            // Initialize the four subcollections with empty entries
+            initializeSubcollections(db, eventId);
+
             db.collection("Events").document(eventId).set(eventData);
+
             Map<String, Object> eventRef = new HashMap<>();
             eventRef.put("timestamp", com.google.firebase.Timestamp.now());
             db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
@@ -121,6 +125,19 @@ public class Event {
         } catch (WriterException e) {
             return null;
         }
+    }
+
+    // Method to initialize subcollections for the event with a placeholder document
+    private static void initializeSubcollections(FirebaseFirestore db, String eventId) {
+        // Define placeholder data with a unique field to indicate it's a placeholder
+        Map<String, Object> placeholderData = new HashMap<>();
+        placeholderData.put("placeholder", true); // Placeholder field to avoid empty/random documents
+
+        // Add the placeholder document to each of the four subcollections
+        db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
+        db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
+        db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
+        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
     }
 
     public interface OnEventLoadedListener {
