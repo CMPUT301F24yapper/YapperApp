@@ -18,6 +18,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UsersAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -49,29 +50,16 @@ public class WaitingListFragment extends Fragment {
     }
 
     private void loadUsersFromFirebase(String eventId) {
-        // Access the "waitingList" subcollection for the specific event
-        db.collection("Events").document(eventId).collection("waitingList").get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot userDocument : task.getResult()) {
-                            String userId = userDocument.getId(); // Get user ID (entrantDeviceId)
-                            String userName = userDocument.getString("name"); // Assuming 'name' field exists
-                            String userPhoneNum = userDocument.getString("phone");
-                            String userEmail = userDocument.getString("email");
-                            Boolean userIsEntrant = userDocument.getBoolean("isEntrant");
-                            Boolean userIsOrganizer = userDocument.getBoolean("isOrganizer");
-                            Boolean userIsAdmin = userDocument.getBoolean("isAdmin");
-
-                            // Create a User object and add to the waiting list
-                            //     public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
-                            User user = new User(userId, userName, userEmail, userPhoneNum, userIsEntrant, userIsOrganizer, userIsAdmin);
-                            waitingList.add(user);
-                        }
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        Log.e("Firestore", "Error getting waitingList subcollection for eventId: " + eventId, task.getException());
-                    }
-                });
+        Event event = Event.loadEventFromDatabase(eventId);
+        if (event != null) {
+            for (String userId : event.waitingList()) {
+                User user = User.loadUserFromDatabase(userId);
+                if (user != null) {
+                    waitingList.add(user);
+                }
+            }
+            adapter.notifyDataSetChanged();
+        }
     }
 }
 

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 
 // class that pulls up Event details from Firestore for BOTH Entrants & Organizers
@@ -108,68 +109,35 @@ public class EventDetailsFragment extends Fragment {
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
-        db.collection("Events").document(eventId).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                // get Event details
-                String eventNameString = documentSnapshot.getString("name");
-                String eventDateTimeString = documentSnapshot.getString("dateTime");
-                String eventRegDeadlineString = documentSnapshot.getString("regDeadline");
-                String eventFacilityName = documentSnapshot.getString("facilityName");
-                String eventFacilityLocation = documentSnapshot.getString("facilityLocation");
-                String eventDescriptionString = documentSnapshot.getString("description");
-                String eventWlCapacity = documentSnapshot.contains("wLCapacity") ?
-                                Long.toString(documentSnapshot.getLong("wLCapacity")) : "0";
-                String eventCapacity = documentSnapshot.contains("capacity") ?
-                                Long.toString(documentSnapshot.getLong("capacity")) : "0";
-                geolocationEnabled = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
-                                documentSnapshot.getBoolean("isGeolocationEnabled") : false;
-                int finalCapacity = Integer.parseInt(eventCapacity);
-                int finalWlCapacity = Integer.parseInt(eventWlCapacity);
+        Event event = Event.loadEventFromDatabase(eventId);
+        if (event != null) {
+            titleTextView.setText(event.getName());
+            dateTimeTextView.setText(event.getDate_Time());
+            regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
+            facilityNameTextView.setText("Facility: " + event.getFacilityName());
+            facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
+            wlCapacityTextView.setText(String.valueOf(event.getWaitListCapacity()));
+            attendeesTextView.setText(String.valueOf(event.getCapacity()));
 
-                titleTextView.setText(eventNameString != null ? eventNameString : "");
-                dateTimeTextView.setText(eventDateTimeString != null ? eventDateTimeString : "");
-                regDeadlineTextView.setText("Registration Deadline: " +
-                (eventRegDeadlineString != null ? eventRegDeadlineString : ""));
-                descriptionTextView.setText(eventDescriptionString);
-                facilityNameTextView.setText("Facility: " + (eventFacilityName != null ? eventFacilityName : ""));           
-                facilityLocationTextView.setText("Location: " + (eventFacilityLocation != null ? eventFacilityLocation : ""));
-                wlCapacityTextView.setText(eventWlCapacity);
-                attendeesTextView.setText(eventCapacity);
-
-                if (geolocationEnabled) {
-                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                    if (geoLocationRequired != null) {
-                        geoLocationRequired.setVisibility(View.VISIBLE);
-                    }
+            if (event.isGeolocationEnabled()) {
+                TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                if (geoLocationRequired != null) {
+                    geoLocationRequired.setVisibility(View.VISIBLE);
                 }
+            }
 
-                // TO-DO: implement WL seats left (based on amount of seats left in waiting list capacity) logic:
-
-                // IF ENTRANT:
-                if (isInEntrantActivity == true) {
-                    // check User in (any) event List before allowing Join
-                    checkUserInList();
-                    // Enable join button now that we have the data (confirm below!):
-                    joinButton.setEnabled(true);
-                    // Join button click listener
-                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
-                }
-
-                // IF ORGANIZER:
-                else if (isInOrganizerActivity == true) {
-                    viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
-                    editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
+            if (isInEntrantActivity) {
+                checkUserInList();
+                joinButton.setEnabled(true);
+                joinButton.setOnClickListener(v -> handleJoinButtonClick());
+            } else if (isInOrganizerActivity) {
+                viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
+                editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
                     viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
-                }
             }
-            else {
-                Log.d("EventDebug", "No such document");
-                Toast.makeText(getContext(), "Event not found", Toast.LENGTH_SHORT).show();
-            }
-
-        }).addOnFailureListener(e -> {
-            Log.e("EventDebug", "Error loading event", e);
-            Toast.makeText(getContext(), "Error loading event details", Toast.LENGTH_SHORT).show();        });
+        } else {
+            Toast.makeText(getContext(), "Error loading event details", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void checkUserInList() {

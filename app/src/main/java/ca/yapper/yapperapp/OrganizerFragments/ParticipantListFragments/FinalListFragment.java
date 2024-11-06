@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
@@ -49,28 +50,15 @@ public class FinalListFragment extends Fragment {
     }
 
     private void loadUsersFromFirebase(String eventId) {
-        // Access the "finalList" subcollection for the specific event
-        db.collection("Events").document(eventId).collection("finalList").get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot userDocument : task.getResult()) {
-                            String userId = userDocument.getId(); // Get user ID (entrantDeviceId)
-                            String userName = userDocument.getString("name"); // Assuming 'name' field exists
-                            String userPhoneNum = userDocument.getString("phone");
-                            String userEmail = userDocument.getString("email");
-                            Boolean userIsEntrant = userDocument.getBoolean("isEntrant");
-                            Boolean userIsOrganizer = userDocument.getBoolean("isOrganizer");
-                            Boolean userIsAdmin = userDocument.getBoolean("isAdmin");
-
-                            // Create a User object and add to the final list
-                            //     public User(String name, String deviceId, String email, String phoneNum, Boolean isEntrant, Boolean isOrganizer, Boolean isAdmin) {
-                            User user = new User(userId, userName, userEmail, userPhoneNum, userIsEntrant, userIsOrganizer, userIsAdmin);
-                            finalList.add(user);
-                        }
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        Log.e("Firestore", "Error getting finalList subcollection for eventId: " + eventId, task.getException());
-                    }
-                });
+        Event event = Event.loadEventFromDatabase(eventId);
+        if (event != null) {
+            for (String userId : event.finalList()) {
+                User user = User.loadUserFromDatabase(userId);
+                if (user != null) {
+                    finalList.add(user);
+                }
+            }
+            adapter.notifyDataSetChanged();
+        }
     }
 }

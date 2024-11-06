@@ -26,6 +26,7 @@ import java.util.List;
 import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class MissedOutFragment extends Fragment {
 
@@ -56,72 +57,15 @@ public class MissedOutFragment extends Fragment {
     }
 
     private void loadEventsFromFirebase() {
-        CollectionReference usersRef = db.collection("Users");
-
-        // Access the document for the current user based on their device ID
-        usersRef.document(userDeviceId).collection("EntrantDetails").get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        // Document found, proceed to access subcollections
-                        DocumentReference entrantDetailsDoc = task.getResult().getDocuments().get(0).getReference();
-                        // Load events from the 'missedOutEvents'
-                        loadEventSubCollection(entrantDetailsDoc.collection("missedOutEvents"));
-                    } else {
-                        // Handle case where user's EntrantDetails or subcollections don't exist
-                        Log.d("Firestore", "EntrantDetails or subcollections not found for user.");
-                    }
-                });
-    }
-
-    private void loadEventSubCollection(CollectionReference eventSubCollection) {
-        eventSubCollection.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot eventRefDoc : task.getResult()) {
-                    // Retrieve the event ID stored as a reference
-                    String eventId = eventRefDoc.getId();
-
-                    // Fetch event details from the "Events" collection using the event ID
-                    db.collection("Events").document(eventId).get().addOnCompleteListener(eventTask -> {
-                        if (eventTask.isSuccessful() && eventTask.getResult() != null) {
-                            DocumentSnapshot eventDoc = eventTask.getResult();
-
-                            String eventName = eventDoc.getString("name");
-                            String eventDateTime = eventDoc.getString("date_Time");
-                            String eventRegDeadline = eventDoc.getString("registrationDeadline");
-                            String eventFacilityName = eventDoc.getString("facilityName");
-                            String eventFacilityLocation = eventDoc.getString("facilityLocation");
-                            int eventCapacity = eventDoc.contains("capacity") ?
-                                    eventDoc.getLong("capacity").intValue() : 0;
-                            int eventWlCapacity = eventDoc.contains("waitListCapacity") ?
-                                    eventDoc.getLong("waitListCapacity").intValue() : 0;
-                            boolean eventGeolocEnabled = eventDoc.getBoolean("isGeolocationEnabled");
-
-                            // Construct the Event object
-                            Event event = null;
-                            try {
-                                event = new Event(eventName, eventDateTime, eventRegDeadline,
-                                        eventFacilityName, eventFacilityLocation, eventCapacity,
-                                        eventWlCapacity, eventGeolocEnabled);
-                                // Set the event ID as QR code value if applicable
-                                if (event.getQRCode() != null) {
-                                    event.getQRCode().setQRCodeValue(eventId);
-                                }
-                            } catch (WriterException e) {
-                                Log.e("Firestore", "Error generating QR code for event: " + eventId, e);
-                            }
-
-                            if (event != null) {
-                                eventList.add(event);
-                                adapter.notifyDataSetChanged();
-                            }
-                        } else {
-                            Log.d("Firestore", "Event details not found for ID: " + eventId);
-                        }
-                    });
+        User currentUser = User.loadUserFromDatabase(userDeviceId);
+        if (currentUser != null) {
+            for (String eventId : currentUser.missedOutEvents()) {
+                Event event = Event.loadEventFromDatabase(eventId);
+                if (event != null) {
+                    eventList.add(event);
+                    adapter.notifyDataSetChanged();
                 }
-            } else {
-                Log.d("Firestore", "Failed to load subcollection: " + eventSubCollection.getId());
             }
-        });
+        }
     }
 }
