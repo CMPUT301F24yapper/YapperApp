@@ -1,6 +1,9 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Notification {
     private Date dateTimeStamp;
@@ -21,7 +24,6 @@ public class Notification {
         this.notificationType = notificationType;
         this.isRead = false; // Default to false when a notification is created
     }
-
 
     // Getters and Setters
     public Date getDateTimeStamp() {
@@ -96,5 +98,26 @@ public class Notification {
     // Method to mark the notification as read
     public void markAsRead() {
         this.isRead = true;
+    }
+
+    // Method to save the notification to Firestore
+    public void saveToDatabase() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Prepare the notification data
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("dateTimeStamp", dateTimeStamp);
+        notificationData.put("userToId", userTo); // Assuming User has a getId() method for user ID
+        notificationData.put("userFromId", userFrom); // Assuming User has a getId() method for user ID
+        notificationData.put("title", title);
+        notificationData.put("message", message);
+        notificationData.put("notificationType", notificationType);
+        notificationData.put("isRead", isRead);
+
+        // Add the notification to the "Notifications" collection
+        db.collection("Notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> System.out.println("Notification added with ID: " + documentReference.getId()))
+                .addOnFailureListener(e -> System.err.println("Error adding notification: " + e));
     }
 }
