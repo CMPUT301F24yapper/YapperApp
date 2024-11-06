@@ -26,6 +26,7 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 
 // class that pulls up Event details from Firestore for BOTH Entrants & Organizers
 public class EventDetailsFragment extends Fragment {
@@ -35,17 +36,20 @@ public class EventDetailsFragment extends Fragment {
     private TextView titleTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, attendeesTextView, wlCapacityTextView;
     private TextView geolocEnabledTextView;
     Boolean geolocationEnabled;
-    // Entrant Button:
 
+    // Entrant Button:
     private Button joinButton;
+
     // Organizer Buttons:
     private Button viewParticipantsButton;
     private Button editEventButton;
-    // later, we can implement Button QR Code view for Organizer
+    private Button viewQRCodeButton;
+
     private String userDeviceId;
     private Bundle eventParameters;
     private Boolean isInEntrantActivity;
     private Boolean isInOrganizerActivity;
+    private Bundle QRCodeData;
 
     // ***TO-DO***:
     // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
@@ -98,6 +102,7 @@ public class EventDetailsFragment extends Fragment {
         // only visible to Organizer:
         viewParticipantsButton = view.findViewById(R.id.button_view_participants);
         editEventButton = view.findViewById(R.id.button_edit_event);
+        viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
     }
 
     private void loadEventDetails() {
@@ -154,6 +159,7 @@ public class EventDetailsFragment extends Fragment {
                 else if (isInOrganizerActivity == true) {
                     viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
                     editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
+                    viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
                 }
             }
             else {
@@ -217,6 +223,15 @@ public class EventDetailsFragment extends Fragment {
         // **TO IMPLEMENT**
     }
 
+    private void viewQRCodeButtonClick() {
+        QRCodeData = new Bundle();
+        QRCodeData.putString("0", eventId); // Here we pass the eventID to display its QR code value
+        // Then we swap to the fragment to view the QR Code
+        OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
+        newFragment.setArguments(QRCodeData);
+        getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+    }
+
     private void showGeolocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
@@ -275,6 +290,7 @@ public class EventDetailsFragment extends Fragment {
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
+            viewQRCodeButton.setVisibility(View.VISIBLE);
         } else {
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);

@@ -191,11 +191,19 @@
                     android:text="View Participants"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="4dp"
                     android:backgroundTint="@android:color/holo_blue_dark"
                     android:textColor="@android:color/white" />
 
                 <!-- Right Button -->
+                <Button
+                    android:id="@+id/button_view_QRCode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:text="Button" />
+
                 <Button
                     android:id="@+id/button_edit_event"
                     android:text="Edit Event"

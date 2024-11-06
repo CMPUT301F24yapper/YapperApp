@@ -20,7 +20,7 @@ public class qrCode {
      * Generates a QR Code as a BitMatrix using the currently stored string and stores both the
      * resulting bitMatrix and hash value.
      * */
-    qrCode(String QRCodeValue) throws WriterException {
+    public qrCode(String QRCodeValue) throws WriterException {
         this.QRCodeValue = QRCodeValue;
         this.QRcodeManager = new QRCodeWriter();
         this.qrCode = QRcodeManager.encode(QRCodeValue, BarcodeFormat.QR_CODE, 500, 500);

@@ -178,7 +178,6 @@ public class OrganizerCreateEventFragment extends Fragment {
                             } else {
                                 // Document does not exist, unique ID found
                                 System.out.println("Unique event ID found: " + currentEventId);
-                                // Further actions can be taken here
                             }
                         } else {
                             // Handle any errors during the process
