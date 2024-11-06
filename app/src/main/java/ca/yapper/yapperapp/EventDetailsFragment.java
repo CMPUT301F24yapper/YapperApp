@@ -125,7 +125,7 @@ public class EventDetailsFragment extends Fragment {
                         geoLocationRequired.setVisibility(View.VISIBLE);
                     }
                 }
-
+                Log.d("EventLoadSuccess", "Loaded event with ID: " + eventId);
                 setupButtonListeners();
             }
 
@@ -140,9 +140,12 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void setupButtonListeners() {
+        Log.d("setupbuttonlisteners", "Setting up button listeners");
+
         if (isInEntrantActivity) {
+            Log.d("Activity", "User is in Entrant Activity");
             checkUserInList();
-            // joinButton.setEnabled(true);
+            joinButton.setEnabled(true);
             joinButton.setOnClickListener(v -> handleJoinButtonClick());
         } else if (isInOrganizerActivity) {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
@@ -152,14 +155,15 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void checkUserInList() {
-        if (userDeviceId == null) return;
-
+        // if (userDeviceId == null) return;
+        Log.d("checkuserinlist", "checking if user in list (waiting or selected)");
         db.collection("Events").document(eventId)
                 .collection("waitingList")
                 .document(userDeviceId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        Log.d("checkuserinlist", "user in wait list, setting button to unjoin");
                         setButtonState("Unjoin", Color.GRAY); // User is in the waiting list
                     } else {
                         // Check selected list if not in waiting list
@@ -169,6 +173,7 @@ public class EventDetailsFragment extends Fragment {
                                 .get()
                                 .addOnSuccessListener(selectedSnapshot -> {
                                     if (selectedSnapshot.exists()) {
+                                        Log.d("checkuserinlist", "user in selected list, setting button to unjoin");
                                         setButtonState("Unjoin", Color.GRAY); // User is in the selected list
                                     } else {
                                         setButtonState("Join", Color.BLUE); // User not found in either list
@@ -182,16 +187,21 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     Log.e("EventDetails", "Error checking waiting list: " + e.getMessage());
                 });
+        Log.d("checkuserinlist", "user not in any list");
     }
 
     private void handleJoinButtonClick() {
+        Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
+                Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
                 showGeolocationWarningDialog();
             } else {
+                Log.d("EventDetailsFragment", "Joining event directly");
                 joinEvent();
             }
         } else {
+            Log.d("EventDetailsFragment", "Unjoining event");
             unjoinEvent();
         }
     }
