@@ -47,7 +47,7 @@ public class MissedOutFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        loadEventsFromFirebase();
+        loadEventsFromFirebaseDebug();
 
         return view;
     }
@@ -95,6 +95,47 @@ public class MissedOutFragment extends Fragment {
                     if (getContext() != null) {
                         Toast.makeText(getContext(),
                                 "Error loading missed events: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void loadEventsFromFirebaseDebug() {
+        db.collection("Events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    eventList.clear();
+
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String eventId = document.getId();
+
+                        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+                            @Override
+                            public void onEventLoaded(Event event) {
+                                if (getContext() == null) return;
+
+                                eventList.add(event);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onEventLoadError(String error) {
+                                if (getContext() == null) return;
+
+                                Log.e("AllEvents", "Error loading event " + eventId + ": " + error);
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(),
+                                "Error loading events: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

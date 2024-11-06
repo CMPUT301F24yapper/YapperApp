@@ -82,83 +82,49 @@ public class OrganizerCreateEventFragment extends Fragment {
     }
 
     private void createEvent() {
-        // CONFIRM / IMPLEMENT REQUIRED FIELDS INPUT VALIDATION:
-        // ...works such that if the Organizer doesn't enter such fields, they are prompted to enter it & can't 'save event'
-        // i.e. a button for save / confirm event that is not able to be clicked until all REQUIRED Event attributes are entered in?!
-        // REQUIRED:
         String name = eventNameEditText.getText().toString();
         if (name.isEmpty()) {
             Toast.makeText(getActivity(), "Event name is required", Toast.LENGTH_SHORT).show();
             return;
         }
-        // REQUIRED:
+
         String dateTime = eventDateTimeEditText.getText().toString();
         if (dateTime.isEmpty()) {
             Toast.makeText(getActivity(), "Event date is required", Toast.LENGTH_SHORT).show();
             return;
         }
-        // REQUIRED:
+
         String regDeadline = eventDeadlineEditText.getText().toString();
         if (regDeadline.isEmpty()) {
             Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
             return;
         }
-        // TO-DO: **UPDATE THE CREATE EVENT FOR ORGANIZER IN TERMS OF FACILITY REQUIREMENT...**
-        // **IT SHOULD BE AUTOMATICALLY FILLED IN FOR THEM BASED ON THEIR FACILITY PROFILE...**
-        // **IF THEY HAVEN'T SET UP FACILITY PROFILE / ADDED A FACILITY & ITS LOCATION, THEY WILL NOT BE ABLE TO CREATE EVENT & WILL BE TOLD TO IDENTIFY W/ A FACILITY FIRST**
-        // REQUIRED (FOR CURRENT IMPLEMENTATION, LATER WILL BE AUTOMATICALLY SAVED IN EVENT BASED ON FP, NO NEED TO ENTER IT IN):
-        String facilityName = eventFacilityEditText.getText().toString();
-        if (facilityName.isEmpty()) {
-            Toast.makeText(getActivity(), "Facility name is required", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // REQUIRED (FOR CURRENT IMPLEMENTATION, LATER WILL BE AUTOMATICALLY SAVED IN EVENT BASED ON FP, NO NEED TO ENTER IT IN):
-        String facilityLocation = eventFacilityLocationEditText.getText().toString();
-        if (facilityLocation.isEmpty()) {
-            Toast.makeText(getActivity(), "Facility location is required", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         int capacityInt;
         int waitListCapacityInt;
-        // REQUIRED:
         String capacityString = eventCapacityEditText.getText().toString();
         if (capacityString.isEmpty()) {
             Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
             return;
+        } else {
+            capacityInt = Integer.parseInt(capacityString);
         }
-        else {
-            capacityInt =  Integer.parseInt(capacityString);
-        }
-        // OPTIONAL:
+
         String waitListCapacityString = eventWaitListCapacityEditText.getText().toString();
         if (waitListCapacityString.isEmpty()) {
             waitListCapacityInt = 0;
-        }
-        else {
-            waitListCapacityInt =  Integer.parseInt(waitListCapacityString);
+        } else {
+            waitListCapacityInt = Integer.parseInt(waitListCapacityString);
         }
 
-        /** int capacity = eventCapacityEditText.getText().toString().isEmpty() ? 0 :
-                Integer.parseInt(eventCapacityEditText.getText().toString()); **/
-
-        /** int waitListCapacity = eventWaitListCapacityEditText.getText().toString().isEmpty() ? 0 :
-                Integer.parseInt(eventWaitListCapacityEditText.getText().toString()); **/
-        // REQUIRED:
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
-        // OPTIONAL:
-        String description = eventDescriptionEditText.getText().toString();
-        if (description.isEmpty()) {
-            description = "";
-        }
-
-        Event event = Event.createEventInDatabase(
+        Event.createEventInDatabase(
                 capacityInt,
                 dateTime,
-                description,
-                facilityLocation,
-                facilityName,
+                "",  // Empty description
+                "Default Location",  // Default facility location
+                "Default Facility", // Default facility name
                 geolocationEnabled,
                 name,
                 regDeadline,

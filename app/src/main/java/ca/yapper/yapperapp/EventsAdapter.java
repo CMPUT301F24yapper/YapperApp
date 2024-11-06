@@ -41,7 +41,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
 
         holder.eventNameTextView.setText(event.getName());
         holder.eventDateTextView.setText(event.getDate_Time());
-        holder.eventNameTextView.setText(event.getFacilityName());
+        holder.eventLocationTextView.setText(event.getFacilityName());
 
         holder.itemView.setOnClickListener(v -> {
             if (event.getQRCode() == null) {
