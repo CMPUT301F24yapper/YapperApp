@@ -9,20 +9,15 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-// is below import necessary?
-import java.util.HashMap;
-import java.util.Map;
 
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class SignupActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -39,15 +34,9 @@ public class SignupActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.signup_page_fragment);
 
-        // Initialize Firebase
         FirebaseApp.initializeApp(this);
         createFirebaseConnection();
-
-        // Get device ID (assuming this method retrieves the device's unique ID)
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        // Check if user is already in the database
-
         checkUserExists();
     }
 
@@ -56,31 +45,25 @@ public class SignupActivity extends AppCompatActivity {
         usersRef = db.collection("Users");
     }
 
-    // Check if the device ID is already in the database
     private void checkUserExists() {
         db.collection("Users").document(deviceId)
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                launchEntrantActivity();
-                            }
-                            else {
-                                setUpSignUpViews();
-                            }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            launchEntrantActivity();
                         } else {
-                            Log.w("SignupActivity", "Error checking user existence", task.getException());
-                            Toast.makeText(SignupActivity.this, "Error connecting to database.", Toast.LENGTH_SHORT).show();
+                            setUpSignUpViews();
                         }
+                    } else {
+                        Log.w("SignupActivity", "Error checking user existence", task.getException());
+                        Toast.makeText(SignupActivity.this, "Error connecting to database.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private void setUpSignUpViews() {
-        // Set up views only if the user is not already in the database
         addEntrantNameEditText = findViewById(R.id.name_input);
         addEntrantPhoneEditText = findViewById(R.id.phone_input);
         addEntrantEmailEditText = findViewById(R.id.email_input);
@@ -93,37 +76,29 @@ public class SignupActivity extends AppCompatActivity {
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
         String entrantEmail = addEntrantEmailEditText.getText().toString();
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("deviceId", deviceId);
-        user.put("entrantName", entrantName);
-        user.put("entrantPhone", entrantPhone);
-        user.put("entrantEmail", entrantEmail); // Replace with actual user details
+        User.createUserInDatabase(
+                deviceId,
+                entrantEmail,
+                false,  // isAdmin
+                true,   // isEntrant
+                false,  // isOrganizer
+                entrantName,
+                entrantPhone,
+                false   // isOptedOut
+        );
 
-        db.collection("Users").document(deviceId)
-                .set(user)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // User added successfully, now redirect to EntrantActivity
-                            launchEntrantActivity();
-                        } else {
-                            Log.w("SignupActivity", "Error adding user", task.getException());
-                            Toast.makeText(SignupActivity.this, "Error saving user data.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+        launchEntrantActivity();
     }
 
     private void launchEntrantActivity() {
         Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
         startActivity(intent);
-        finish(); // Close SignupActivity
+        finish();
     }
 
     private void launchOrganizerActivity() {
         Intent intent = new Intent(SignupActivity.this, OrganizerActivity.class);
         startActivity(intent);
-        finish(); // Close SignupActivity
+        finish();
     }
 }

@@ -1,19 +1,12 @@
 package ca.yapper.yapperapp.UMLClasses;
 
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import ca.yapper.yapperapp.R;
 
 public class Event {
     private int capacity;
@@ -29,27 +22,205 @@ public class Event {
     private ArrayList<String> cancelledList = null;
     private ArrayList<String> finalList = null;
     private ArrayList<String> selectedList = null;
-
     private ArrayList<String> waitingList = null;
 
-    public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity, ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList, ArrayList<String> waitingList) throws WriterException {
-        this.name = name;
-        this.date_Time = date_Time;
-        this.registrationDeadline = registrationDeadline;
-        this.facilityName = facilityName;
-        this.facilityLocation = facilityLocation;
+    public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
+                 boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
+                 ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
+                 ArrayList<String> waitingList) throws WriterException {
         this.capacity = capacity;
-        this.waitListCapacity = waitListCapacity;
+        this.date_Time = date_Time;
+        this.description = description;
+        this.facilityLocation = facilityLocation;
+        this.facilityName = facilityName;
         this.isGeolocationEnabled = isGeolocationEnabled;
+        this.name = name;
         this.QRCode = new qrCode(this.name);
+        this.registrationDeadline = registrationDeadline;
+        this.waitListCapacity = waitListCapacity;
         this.cancelledList = cancelledList;
-        this.finalList = cancelledList;
-        this.selectedList = cancelledList;
-        this.waitingList = cancelledList;
+        this.finalList = finalList;
+        this.selectedList = selectedList;
+        this.waitingList = waitingList;
+    }
+
+    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Events").document(hashData).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            Event event = new Event(
+                                    documentSnapshot.getLong("capacity").intValue(),
+                                    documentSnapshot.getString("date_Time"),
+                                    "",
+                                    documentSnapshot.getString("facilityLocation"),
+                                    documentSnapshot.getString("facilityName"),
+                                    documentSnapshot.getBoolean("isGeolocationEnabled"),
+                                    documentSnapshot.getString("name"),
+                                    documentSnapshot.getString("regDeadline"),
+                                    documentSnapshot.getLong("waitListCapacity").intValue(),
+                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+                            );
+                            listener.onEventLoaded(event);
+                        } catch (WriterException e) {
+                            listener.onEventLoadError("Error creating event");
+                        }
+                    }
+                });
+    }
+
+    private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
+        db.collection("Events").document(eventId).collection(subcollectionName)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String userIdRef = doc.getId();
+                        db.collection("Users").document(userIdRef).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    if (userDoc.exists()) {
+                                        String deviceId = userDoc.getString("deviceId");
+                                        if (deviceId != null) {
+                                            userIdsList.add(deviceId);
+                                        }
+                                    }
+                                });
+                    }
+                });
+    }
+
+    public static Event createEventInDatabase(int capacity, String dateTime, String description,
+                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
+                                              String registrationDeadline, int waitListCapacity, String organizerId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        try {
+            Event event = new Event(capacity, dateTime, description, facilityLocation,
+                    facilityName, isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+
+            String eventId = Integer.toString(event.getQRCode().getHashData());
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("capacity", event.capacity);
+            eventData.put("date_Time", event.date_Time);
+            eventData.put("description", event.description);
+            eventData.put("facilityLocation", event.facilityLocation);
+            eventData.put("facilityName", event.facilityName);
+            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled);
+            eventData.put("name", event.name);
+            eventData.put("qrCode_hashData", event.QRCode.getHashData());
+            eventData.put("registrationDeadline", event.registrationDeadline);
+            eventData.put("waitListCapacity", event.waitListCapacity);
+            eventData.put("organizerId", organizerId);
+
+            db.collection("Events").document(eventId).set(eventData);
+            Map<String, Object> eventRef = new HashMap<>();
+            eventRef.put("timestamp", com.google.firebase.Timestamp.now());
+            db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
+
+            return event;
+        } catch (WriterException e) {
+            return null;
+        }
+    }
+
+    public interface OnEventLoadedListener {
+        void onEventLoaded(Event event);
+        void onEventLoadError(String error);
+    }
+
+//    public int getCapacity() { return capacity; }
+//    public void setCapacity(int capacity) { this.capacity = capacity; }
+//
+//    public String getDate_Time() { return date_Time; }
+//    public void setDate_Time(String date_Time) { this.date_Time = date_Time; }
+//
+//    public String getDescription() { return description; }
+//    public void setDescription(String description) { this.description = description; }
+//
+//    public String getFacilityLocation() { return facilityLocation; }
+//    public void setFacilityLocation(String facilityLocation) { this.facilityLocation = facilityLocation; }
+//
+//    public String getFacilityName() { return facilityName; }
+//    public void setFacilityName(String facilityName) { this.facilityName = facilityName; }
+//
+//    public boolean isGeolocationEnabled() { return isGeolocationEnabled; }
+//    public void setGeolocationEnabled(boolean isGeolocationEnabled) { this.isGeolocationEnabled = isGeolocationEnabled; }
+//
+//    public String getName() { return name; }
+//    public void setName(String name) { this.name = name; }
+//
+//    public qrCode getQRCode() { return QRCode; }
+//    public void setQRCode(qrCode QRCode) { this.QRCode = QRCode; }
+//
+//    public String getRegistrationDeadline() { return registrationDeadline; }
+//    public void setRegistrationDeadline(String registrationDeadline) { this.registrationDeadline = registrationDeadline; }
+//
+//    public int getWaitListCapacity() { return waitListCapacity; }
+//    public void setWaitListCapacity(int waitListCapacity) { this.waitListCapacity = waitListCapacity; }
+//
+//    public ArrayList<String> cancelledList() { return cancelledList; }
+//    public void setCancelledList(ArrayList<String> cancelledList) { this.cancelledList = cancelledList; }
+//
+//    public ArrayList<String> finalList() { return finalList; }
+//    public void setFinalList(ArrayList<String> finalList) { this.finalList = finalList; }
+//
+//    public ArrayList<String> selectedList() { return selectedList; }
+//    public void setSelectedList(ArrayList<String> selectedList) { this.selectedList = selectedList; }
+//
+//    public ArrayList<String> waitingList() { return waitingList; }
+//    public void setWaitingList(ArrayList<String> waitingList) { this.waitingList = waitingList; }
+
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public String getDate_Time() {
+        return date_Time;
+    }
+
+    public void setDate_Time(String date_Time) {
+        this.date_Time = date_Time;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFacilityLocation() {
+        return facilityLocation;
+    }
+
+    public void setFacilityLocation(String facilityLocation) {
+        this.facilityLocation = facilityLocation;
+    }
+
+    public String getFacilityName() {
+        return facilityName;
+    }
+
+    public void setFacilityName(String facilityName) {
+        this.facilityName = facilityName;
+    }
+
+    public boolean isGeolocationEnabled() {
+        return isGeolocationEnabled;
+    }
+
+    public void setGeolocationEnabled(boolean geolocationEnabled) {
+        isGeolocationEnabled = geolocationEnabled;
     }
 
     public qrCode getQRCode() {
-        return this.QRCode;
+        return QRCode;
     }
 
     public void setQRCode(qrCode QRCode) {
@@ -64,44 +235,12 @@ public class Event {
         this.name = name;
     }
 
-    public String getDate_Time() {
-        return date_Time;
-    }
-
-    public void setDate_Time(String date_Time) {
-        this.date_Time = date_Time;
-    }
-
     public String getRegistrationDeadline() {
         return registrationDeadline;
     }
 
     public void setRegistrationDeadline(String registrationDeadline) {
         this.registrationDeadline = registrationDeadline;
-    }
-
-    public String getFacilityName() {
-        return facilityName;
-    }
-
-    public void setFacilityName(String facilityName) {
-        this.facilityName = facilityName;
-    }
-
-    public String getFacilityLocation() {
-        return facilityLocation;
-    }
-
-    public void setFacilityLocation(String facilityLocation) {
-        this.facilityLocation = facilityLocation;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 
     public int getWaitListCapacity() {
@@ -112,15 +251,7 @@ public class Event {
         this.waitListCapacity = waitListCapacity;
     }
 
-    public boolean isGeolocationEnabled() {
-        return isGeolocationEnabled;
-    }
-
-    public void setGeolocationEnabled(boolean geolocationEnabled) {
-        this.isGeolocationEnabled = geolocationEnabled;
-    }
-
-    public ArrayList<String> cancelledList() {
+    public ArrayList<String> getCancelledList() {
         return cancelledList;
     }
 
@@ -128,7 +259,7 @@ public class Event {
         this.cancelledList = cancelledList;
     }
 
-    public ArrayList<String> finalList() {
+    public ArrayList<String> getFinalList() {
         return finalList;
     }
 
@@ -136,7 +267,7 @@ public class Event {
         this.finalList = finalList;
     }
 
-    public ArrayList<String> selectedList() {
+    public ArrayList<String> getSelectedList() {
         return selectedList;
     }
 
@@ -144,131 +275,11 @@ public class Event {
         this.selectedList = selectedList;
     }
 
-    public ArrayList<String> waitingList() {
+    public ArrayList<String> getWaitingList() {
         return waitingList;
     }
 
     public void setWaitingList(ArrayList<String> waitingList) {
         this.waitingList = waitingList;
-    }
-
-    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("Events").document(hashData).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        try {
-                            String name = documentSnapshot.getString("name");
-                            String dateTime = documentSnapshot.getString("date_Time");
-                            String facilityName = documentSnapshot.getString("facilityName");
-                            String facilityLocation = documentSnapshot.getString("facilityLocation");
-                            boolean geoEnabled = documentSnapshot.getBoolean("isGeolocationEnabled");
-                            String regDeadline = documentSnapshot.getString("regDeadline");
-                            Long capacityLong = documentSnapshot.getLong("capacity");
-                            Long waitlistCapacityLong = documentSnapshot.getLong("waitListCapacity");
-
-                            int capacity = capacityLong != null ? capacityLong.intValue() : 0;
-                            int waitListCapacity = waitlistCapacityLong != null ? waitlistCapacityLong.intValue() : 0;
-
-                            // Only create Event when we have the data
-                            Event event = new Event(capacity, dateTime, "", facilityLocation,
-                                    facilityName, geoEnabled, name, regDeadline, waitListCapacity,
-                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-
-                            listener.onEventLoaded(event);
-                        } catch (WriterException e) {
-                            listener.onEventLoadError("Error creating event: " + e.getMessage());
-                        }
-                    } else {
-                        listener.onEventLoadError("Event not found");
-                    }
-                })
-                .addOnFailureListener(e -> listener.onEventLoadError(e.getMessage()));
-    }
-
-    public interface OnEventLoadedListener {
-        void onEventLoaded(Event event);
-        void onEventLoadError(String error);
-    }
-
-    private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
-        db.collection("Events").document(eventId).collection(subcollectionName)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        // Assuming each document in the subcollection is a reference to a User in the "Users" collection
-                        String userIdRef = doc.getId(); // Get the document ID in the subcollection (reference to User ID)
-
-                        // Retrieve the User document to get the deviceId
-                        db.collection("Users").document(userIdRef).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    if (userDoc.exists()) {
-                                        String deviceId = userDoc.getString("deviceId");
-                                        if (deviceId != null) {
-                                            userIdsList.add(deviceId); // Add the deviceId to the respective list
-                                        }
-                                    }
-                                });
-                    }
-                });
-    }
-
-    public static Event createEventInDatabase(int capacity, String dateTime, String description,
-                                              String facilityLocation, String facilityName,
-                                              boolean isGeolocationEnabled, String name,
-                                              String registrationDeadline, int waitListCapacity,
-                                              String organizerId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        try {
-            // Initialize empty lists
-            ArrayList<String> cancelledList = new ArrayList<>();
-            ArrayList<String> finalList = new ArrayList<>();
-            ArrayList<String> selectedList = new ArrayList<>();
-            ArrayList<String> waitingList = new ArrayList<>();
-
-            // Create event object with correct constructor
-            Event event = new Event(capacity, dateTime, description, facilityLocation,
-                    facilityName, isGeolocationEnabled, name,
-                    registrationDeadline, waitListCapacity,
-                    cancelledList, finalList, selectedList, waitingList);
-
-            // Create event data map
-            Map<String, Object> eventData = new HashMap<>();
-            eventData.put("name", event.getName());
-            eventData.put("date_Time", event.getDate_Time());
-            eventData.put("description", description);
-            eventData.put("facilityName", event.getFacilityName());
-            eventData.put("facilityLocation", event.getFacilityLocation());
-            eventData.put("registrationDeadline", event.getRegistrationDeadline());
-            eventData.put("capacity", event.getCapacity());
-            eventData.put("waitListCapacity", event.getWaitListCapacity());
-            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
-            eventData.put("qrCode_hashData", event.getQRCode().getHashData());
-            eventData.put("organizerId", organizerId);
-
-            // Get event ID from QR code hash
-            String eventId = Integer.toString(event.getQRCode().getHashData());
-
-            // Add event to Firestore
-            db.collection("Events").document(eventId)
-                    .set(eventData)
-                    .addOnSuccessListener(aVoid -> {
-                        // Add to organizer's created events
-                        Map<String, Object> eventRef = new HashMap<>();
-                        eventRef.put("timestamp", com.google.firebase.Timestamp.now());
-
-                        db.collection("Users").document(organizerId)
-                                .collection("createdEvents")
-                                .document(eventId)
-                                .set(eventRef);
-                    });
-
-            return event;
-        } catch (WriterException e) {
-            Log.e("Event", "Error creating event", e);
-            return null;
-        }
     }
 }

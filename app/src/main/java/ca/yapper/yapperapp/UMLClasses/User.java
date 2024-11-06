@@ -1,8 +1,12 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class User {
     private String deviceId;
@@ -200,5 +204,38 @@ public class User {
                 });
             }
         });
+    }
+
+    public static User createUserInDatabase(String deviceId, String email, boolean isAdmin,
+                                            boolean isEntrant, boolean isOrganizer, String name,
+                                            String phoneNum, boolean isOptedOut) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        User user = new User(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum,
+                isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                new ArrayList<>());
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("deviceId", user.getDeviceId());
+        userData.put("entrantEmail", user.getEmail());
+        userData.put("Admin", user.isAdmin());
+        userData.put("Entrant", user.isEntrant());
+        userData.put("Organizer", user.isOrganizer());
+        userData.put("entrantName", user.getName());
+        userData.put("entrantPhone", user.getPhoneNum());
+        userData.put("notificationsEnabled", !user.isOptedOut());
+
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("created", com.google.firebase.Timestamp.now());
+
+        db.collection("Users").document(deviceId).set(userData);
+        db.collection("Users").document(deviceId).collection("joinedEvents").document("placeholder").set(timestamp);
+        db.collection("Users").document(deviceId).collection("registeredEvents").document("placeholder").set(timestamp);
+        db.collection("Users").document(deviceId).collection("missedOutEvents").document("placeholder").set(timestamp);
+        db.collection("Users").document(deviceId).collection("createdEvents").document("placeholder").set(timestamp);
+
+        Log.d("User", "User and subcollections created");
+
+        return user;
     }
 }
