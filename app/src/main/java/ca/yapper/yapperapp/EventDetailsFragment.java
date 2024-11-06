@@ -24,6 +24,7 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
+import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 
@@ -201,7 +202,16 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void handleViewParticipantsButtonClick() {
-        // **TO IMPLEMENT**
+        WaitingListFragment waitingListFragment = new WaitingListFragment();
+
+        Bundle args = new Bundle();
+        args.putString("eventId", eventId); // Pass the eventId to the WaitingListFragment
+        waitingListFragment.setArguments(args);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, waitingListFragment)
+                .addToBackStack(null) // Add to back stack to allow back navigation
+                .commit();
     }
 
     private void handleEditEventButtonClick() {
