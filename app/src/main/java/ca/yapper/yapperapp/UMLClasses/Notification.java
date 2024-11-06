@@ -93,6 +93,7 @@ public class Notification {
         }
     }
 
+    
     // Method to mark the notification as read
     public void markAsRead() {
         this.isRead = true;
