@@ -107,8 +107,8 @@ public class Notification {
         // Prepare the notification data
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
-        notificationData.put("userToId", userTo.getId()); // Assuming User has a getId() method for user ID
-        notificationData.put("userFromId", userFrom.getId()); // Assuming User has a getId() method for user ID
+        notificationData.put("userToId", userTo); // Assuming User has a getId() method for user ID
+        notificationData.put("userFromId", userFrom); // Assuming User has a getId() method for user ID
         notificationData.put("title", title);
         notificationData.put("message", message);
         notificationData.put("notificationType", notificationType);
