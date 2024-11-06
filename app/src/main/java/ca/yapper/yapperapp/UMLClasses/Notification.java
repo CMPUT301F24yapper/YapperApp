@@ -87,7 +87,7 @@ public class Notification {
 
     // Placeholder for sending notification logic
     public void sendNotification() {
-        if (userTo != null && !userTo.getIsOptedOut()) { // Check if user is not opted out
+        if (userTo != null && !userTo.isOptedOut()) { // Check if user is not opted out
             // Logic to send notification via Firebase Cloud Messaging (FCM)
             System.out.println("Notification sent to " + userTo.getName());
         }

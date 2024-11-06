@@ -16,6 +16,7 @@ public class User {
     private boolean isOrganizer;
     private String name;
     private String phoneNum;
+    private boolean isOptedOut;
     // private ProfilePic profilePic;
     // private ProfilePic generatedProfilePic;
     private ArrayList<String> joinedEvents;
@@ -23,7 +24,7 @@ public class User {
     private ArrayList<String> missedOutEvents;
 
 
-    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents) {
+    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -31,6 +32,7 @@ public class User {
         this.isEntrant = isEntrant;
         this.isOrganizer = isOrganizer;
         this.isAdmin = isAdmin;
+        this.isOptedOut = isOptedOut;
         this.joinedEvents = joinedEvents;
         this.registeredEvents = registeredEvents;
         this.missedOutEvents = missedOutEvents;
@@ -90,6 +92,14 @@ public class User {
 
     public void setIsAdmin(Boolean admin) {
         isAdmin = admin;
+    }
+
+    public boolean isOptedOut() {
+        return isOptedOut;
+    }
+
+    public void setOptedOut(boolean optedOut) {
+        isOptedOut = optedOut;
     }
 
     public void uploadProfilePic(ProfilePic profilePic) {
@@ -152,7 +162,7 @@ public class User {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Create a User with empty lists by default
-        User user = new User(userDeviceId, "", false, false, false, "", "",
+        User user = new User(userDeviceId, "", false, false, false, "", "", false,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
         db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
