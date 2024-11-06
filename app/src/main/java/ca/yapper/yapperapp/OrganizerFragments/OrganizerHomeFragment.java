@@ -22,6 +22,7 @@ import java.util.List;
 import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class OrganizerHomeFragment extends Fragment {
 
@@ -45,40 +46,22 @@ public class OrganizerHomeFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
-        loadEventsFromFirebase();
+        //loadEventsFromFirebase();
 
         return view;
     }
 
-    private void loadEventsFromFirebase() {
-        CollectionReference eventsRef = db.collection("Events");
-
-        eventsRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    String eventName = document.getString("eventName");
-                    String eventDateTime = document.getString("eventDate");
-                    String eventRegDeadline = document.getString("registrationDeadline");
-                    String eventFacilityName = ""; // Placeholder if not stored in Firestore
-                    String eventFacilityLocation = ""; // Placeholder if not stored in Firestore
-                    int eventAttendees = 0; // Placeholder if not stored in Firestore
-                    int eventWlCapacity = document.contains("wlCapacity") ? document.getLong("wlCapacity").intValue() : 0;
-                    boolean eventGeolocEnabled = false; // Placeholder if not stored in Firestore
-                    // Event event = new Event(eventName, eventDateTime, eventRegDeadline,
-                    //                eventFacilityName, eventFacilityLocation, eventAttendees,
-                    //                eventWlCapacity, eventWlSeatsAvailable, geolocationEnabled);
-                    Event event = null;
-                    try {
-                        event = new Event(eventName, eventDateTime, eventRegDeadline, eventFacilityName, eventFacilityLocation, eventAttendees, eventWlCapacity, eventGeolocEnabled);
-                    } catch (WriterException e) {
-                        throw new RuntimeException(e);
-                    }
-                    eventList.add(event);
-                }
-                adapter.notifyDataSetChanged();
-            } else {
-                // Handle errors
-            }
-        });
-    }
+//    private void loadEventsFromFirebase() {
+//        User currentUser = User.loadUserFromDatabase(userDeviceId);
+//        if (currentUser != null && currentUser.isOrganizer()) {
+//            // Assuming there's a field for organizer's events
+//            for (String eventId : currentUser.getOrganizerEvents()) {
+//                Event event = Event.loadEventFromDatabase(eventId);
+//                if (event != null) {
+//                    eventList.add(event);
+//                }
+//            }
+//            adapter.notifyDataSetChanged();
+//        }
+//    }
 }
