@@ -25,6 +25,7 @@ import java.util.Map;
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
+import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 
@@ -202,15 +203,16 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void handleViewParticipantsButtonClick() {
-        WaitingListFragment waitingListFragment = new WaitingListFragment();
-
+        /// Create a new instance of ViewParticipantsFragment and pass the eventId
+        ViewParticipantsFragment viewParticipantsFragment = new ViewParticipantsFragment();
         Bundle args = new Bundle();
-        args.putString("eventId", eventId); // Pass the eventId to the WaitingListFragment
-        waitingListFragment.setArguments(args);
+        args.putString("eventId", eventId); // Pass eventId to ViewParticipantsFragment
+        viewParticipantsFragment.setArguments(args);
 
+        // Start the fragment transaction
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, waitingListFragment)
-                .addToBackStack(null) // Add to back stack to allow back navigation
+                .replace(R.id.fragment_container, viewParticipantsFragment)
+                .addToBackStack(null)
                 .commit();
     }
 
@@ -281,6 +283,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            setupButtonListeners();
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
@@ -288,6 +291,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
+            setupButtonListeners();
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;

@@ -45,6 +45,7 @@ public class WaitingListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         usersWaitingList = new ArrayList<>();
+
         adapter = new UsersAdapter(usersWaitingList, getContext());
         recyclerView.setAdapter(adapter);
         // add in event parameters bundle... etc
@@ -70,21 +71,37 @@ public class WaitingListFragment extends Fragment {
     }
 
     private void loadWaitingList(String eventId) {
-        ArrayList<String> userIdsStringList = null;
+        ArrayList<String> userIdsStringList = new ArrayList<>();
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
         Event.loadEventFromDatabase(eventId, new OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
                 if (getContext() == null) return;
-                //...loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
+
+                // Load user IDs from Firestore
                 event.loadUserIdsFromSubcollection(db, eventId, "waitingList", userIdsStringList);
+
+                // Assuming user objects are created after loading IDs
+                for (String userId : userIdsStringList) {
+                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            usersWaitingList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            Log.e("UserLoadError", error);
+                        }
+                    });
+                }
             }
 
             @Override
             public void onEventLoadError(String error) {
                 if (getContext() == null) return;
-
                 Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
                 Log.e("EventDetails", "Error loading event: " + error);
             }
