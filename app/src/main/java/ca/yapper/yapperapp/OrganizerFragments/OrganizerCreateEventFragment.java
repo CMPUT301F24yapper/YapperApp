@@ -25,10 +25,12 @@ import ca.yapper.yapperapp.UMLClasses.User;
 public class OrganizerCreateEventFragment extends Fragment {
     private EditText eventNameEditText;
     private EditText eventFacilityEditText;
-    private EditText eventDateEditText;
+    private EditText eventFacilityLocationEditText;
+    private EditText eventDateTimeEditText;
     private EditText eventDeadlineEditText;
-    private EditText eventNumberOfAttendeesEditText;
-    private EditText eventWlCapacityEditText;
+    private EditText eventCapacityEditText;
+    private EditText eventWaitListCapacityEditText;
+    private EditText eventDescriptionEditText;
     private Switch geolocationSwitch;
     private Button saveEventButton;
     private String userDeviceId;
@@ -50,16 +52,16 @@ public class OrganizerCreateEventFragment extends Fragment {
     private void initializeViews(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
         eventFacilityEditText = view.findViewById(R.id.event_facility_input);
-        eventDateEditText = view.findViewById(R.id.date_input);
+        eventDateTimeEditText = view.findViewById(R.id.date_input);
         eventDeadlineEditText = view.findViewById(R.id.deadline_input);
-        eventNumberOfAttendeesEditText = view.findViewById(R.id.attendees_input);
-        eventWlCapacityEditText = view.findViewById(R.id.wl_capacity_input);
+        eventCapacityEditText = view.findViewById(R.id.attendees_input);
+        eventWaitListCapacityEditText = view.findViewById(R.id.wl_capacity_input);
         geolocationSwitch = view.findViewById(R.id.geo_location_toggle);
         saveEventButton = view.findViewById(R.id.save_event_button);
     }
 
     private void setupClickListeners() {
-        eventDateEditText.setOnClickListener(v -> showDatePickerDialog(eventDateEditText));
+        eventDateTimeEditText.setOnClickListener(v -> showDatePickerDialog(eventDateTimeEditText));
         eventDeadlineEditText.setOnClickListener(v -> showDatePickerDialog(eventDeadlineEditText));
         saveEventButton.setOnClickListener(v -> createEvent());
     }
@@ -80,45 +82,79 @@ public class OrganizerCreateEventFragment extends Fragment {
     }
 
     private void createEvent() {
+        // CONFIRM / IMPLEMENT REQUIRED FIELDS INPUT VALIDATION:
+        // ...works such that if the Organizer doesn't enter such fields, they are prompted to enter it & can't 'save event'
+        // i.e. a button for save / confirm event that is not able to be clicked until all REQUIRED Event attributes are entered in?!
+        // REQUIRED:
         String name = eventNameEditText.getText().toString();
         if (name.isEmpty()) {
             Toast.makeText(getActivity(), "Event name is required", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        String dateTime = eventDateEditText.getText().toString();
+        // REQUIRED:
+        String dateTime = eventDateTimeEditText.getText().toString();
         if (dateTime.isEmpty()) {
             Toast.makeText(getActivity(), "Event date is required", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        // REQUIRED:
         String regDeadline = eventDeadlineEditText.getText().toString();
         if (regDeadline.isEmpty()) {
             Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        // TO-DO: **UPDATE THE CREATE EVENT FOR ORGANIZER IN TERMS OF FACILITY REQUIREMENT...**
+        // **IT SHOULD BE AUTOMATICALLY FILLED IN FOR THEM BASED ON THEIR FACILITY PROFILE...**
+        // **IF THEY HAVEN'T SET UP FACILITY PROFILE / ADDED A FACILITY & ITS LOCATION, THEY WILL NOT BE ABLE TO CREATE EVENT & WILL BE TOLD TO IDENTIFY W/ A FACILITY FIRST**
+        // REQUIRED (FOR CURRENT IMPLEMENTATION, LATER WILL BE AUTOMATICALLY SAVED IN EVENT BASED ON FP, NO NEED TO ENTER IT IN):
         String facilityName = eventFacilityEditText.getText().toString();
         if (facilityName.isEmpty()) {
             Toast.makeText(getActivity(), "Facility name is required", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        String capacityText = eventNumberOfAttendeesEditText.getText().toString();
-        if (capacityText.isEmpty()) {
-            Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
+        // REQUIRED (FOR CURRENT IMPLEMENTATION, LATER WILL BE AUTOMATICALLY SAVED IN EVENT BASED ON FP, NO NEED TO ENTER IT IN):
+        String facilityLocation = eventFacilityLocationEditText.getText().toString();
+        if (facilityLocation.isEmpty()) {
+            Toast.makeText(getActivity(), "Facility location is required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int capacity = Integer.parseInt(capacityText);
-        int waitListCapacity = eventWlCapacityEditText.getText().toString().isEmpty() ? 0 :
-                Integer.parseInt(eventWlCapacityEditText.getText().toString());
+        int capacityInt;
+        int waitListCapacityInt;
+        // REQUIRED:
+        String capacityString = eventCapacityEditText.getText().toString();
+        if (capacityString.isEmpty()) {
+            Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        else {
+            capacityInt =  Integer.parseInt(capacityString);
+        }
+        // OPTIONAL:
+        String waitListCapacityString = eventWaitListCapacityEditText.getText().toString();
+        if (waitListCapacityString.isEmpty()) {
+            waitListCapacityInt = 0;
+        }
+        else {
+            waitListCapacityInt =  Integer.parseInt(waitListCapacityString);
+        }
+
+        /** int capacity = eventCapacityEditText.getText().toString().isEmpty() ? 0 :
+                Integer.parseInt(eventCapacityEditText.getText().toString()); **/
+
+        /** int waitListCapacity = eventWaitListCapacityEditText.getText().toString().isEmpty() ? 0 :
+                Integer.parseInt(eventWaitListCapacityEditText.getText().toString()); **/
+        // REQUIRED:
         boolean geolocationEnabled = geolocationSwitch.isChecked();
-        String description = "";
-        String facilityLocation = "";
+
+        // OPTIONAL:
+        String description = eventDescriptionEditText.getText().toString();
+        if (description.isEmpty()) {
+            description = "";
+        }
 
         Event event = Event.createEventInDatabase(
-                capacity,
+                capacityInt,
                 dateTime,
                 description,
                 facilityLocation,
@@ -126,7 +162,7 @@ public class OrganizerCreateEventFragment extends Fragment {
                 geolocationEnabled,
                 name,
                 regDeadline,
-                waitListCapacity,
+                waitListCapacityInt,
                 userDeviceId
         );
     }
