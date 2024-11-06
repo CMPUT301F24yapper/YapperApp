@@ -10,6 +10,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import ca.yapper.yapperapp.R;
 
@@ -27,6 +29,7 @@ public class Event {
     private ArrayList<String> cancelledList = null;
     private ArrayList<String> finalList = null;
     private ArrayList<String> selectedList = null;
+
     private ArrayList<String> waitingList = null;
 
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity, ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList, ArrayList<String> waitingList) throws WriterException {
@@ -117,57 +120,72 @@ public class Event {
         this.isGeolocationEnabled = geolocationEnabled;
     }
 
+    public ArrayList<String> cancelledList() {
+        return cancelledList;
+    }
+
+    public void setCancelledList(ArrayList<String> cancelledList) {
+        this.cancelledList = cancelledList;
+    }
+
+    public ArrayList<String> finalList() {
+        return finalList;
+    }
+
+    public void setFinalList(ArrayList<String> finalList) {
+        this.finalList = finalList;
+    }
+
+    public ArrayList<String> selectedList() {
+        return selectedList;
+    }
+
+    public void setSelectedList(ArrayList<String> selectedList) {
+        this.selectedList = selectedList;
+    }
+
+    public ArrayList<String> waitingList() {
+        return waitingList;
+    }
+
+    public void setWaitingList(ArrayList<String> waitingList) {
+        this.waitingList = waitingList;
+    }
+
     public static Event loadEventFromDatabase(String hashData) {
-        // connect to Firestore
-        FirebaseFirestore db;
-        db = FirebaseFirestore.getInstance();
-        Event notEvent = null;
-        Log.d("EventDebug", "Loading event with ID: " + hashData);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Events").document(hashData).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                Log.d("EventDebug", "Event document found with ID: " + hashData);
-                // get Event details
-                String eventCapacity = documentSnapshot.contains("capacity") ?
-                        Long.toString(documentSnapshot.getLong("capacity")) : "0";
-                String eventDateTimeString = documentSnapshot.getString("date_Time");
-                String eventDescriptionString = documentSnapshot.getString("description");
-                String eventFacilityName = documentSnapshot.getString("facilityName");
-                String eventFacilityLocation = documentSnapshot.getString("facilityLocation");
-                boolean isGeolocationEnabledBool = documentSnapshot.getBoolean("isGeolocationEnabled") != null ?
-                        documentSnapshot.getBoolean("isGeolocationEnabled") : false;
-                String eventNameString = documentSnapshot.getString("name");
-                String eventRegDeadlineString = documentSnapshot.getString("regDeadline");
-                String eventWaitListCapacity = documentSnapshot.contains("waitListCapacity") ?
-                        Long.toString(documentSnapshot.getLong("waitListCapacity")) : "0";
-                eventWaitListFinal = Integer.valueOf(eventWaitListCapacity);
-                ArrayList<String> eventCancelledList = null;
-                ArrayList<String> eventFinalList = null;
-                ArrayList<String> eventSelectedList = null;
-                ArrayList<String> eventWaitingList = null;
+        try {
+            // Create basic event with empty lists first
+            Event event = new Event(0, "", "", "", "", false, "", "", 0,
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
-                loadUserIdsFromSubcollection(db, hashData, "waitingList", eventWaitingList);
-                loadUserIdsFromSubcollection(db, hashData, "selectedList", eventSelectedList);
-                loadUserIdsFromSubcollection(db, hashData, "finalList", eventFinalList);
-                loadUserIdsFromSubcollection(db, hashData, "cancelledList", eventCancelledList);
+            // Load the data in background
+            db.collection("Events").document(hashData).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    // Update event fields from document
+                    event.setCapacity(documentSnapshot.getLong("capacity").intValue());
+                    event.setDate_Time(documentSnapshot.getString("date_Time"));
+                    event.setFacilityName(documentSnapshot.getString("facilityName"));
+                    event.setFacilityLocation(documentSnapshot.getString("facilityLocation"));
+                    event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+                    event.setName(documentSnapshot.getString("name"));
+                    event.setRegistrationDeadline(documentSnapshot.getString("regDeadline"));
+                    event.setWaitListCapacity(documentSnapshot.getLong("waitListCapacity").intValue());
 
-                // Here you can create an Event object and set these ArrayLists to their respective fields
-                // Event event = new Event(...); (Initialize and set fields here as per your Event class)
-                //     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity, ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList, ArrayList<String> waitingList) throws WriterException {
-                try {
-                    return new Event(eventCapacity, eventDateTimeString, eventDescriptionString, eventFacilityLocation, eventFacilityName, isGeolocationEnabledBool, eventNameString, eventRegDeadlineString, eventWaitListCapacity, eventCancelledList, eventFinalList, eventSelectedList, eventWaitingList);
-                } catch (WriterException e) {
-                    throw new RuntimeException(e);
+                    loadUserIdsFromSubcollection(db, hashData, "waitingList", event.waitingList);
+                    loadUserIdsFromSubcollection(db, hashData, "selectedList", event.selectedList);
+                    loadUserIdsFromSubcollection(db, hashData, "finalList", event.finalList);
+                    loadUserIdsFromSubcollection(db, hashData, "cancelledList", event.cancelledList);
                 }
+            });
 
-                Log.d("EventDebug", "Event details loaded successfully.");
-            } else {
-                Log.w("EventDebug", "Event document with ID: " + hashData + " does not exist.");
-            }
-                })
-                .addOnFailureListener(e -> Log.e("EventDebug", "Error loading event document with ID: " + hashData, e));
+            return event;
 
-        return notEvent; // or return the created Event object if applicable
+        } catch (WriterException e) {
+            Log.e("EventDebug", "Error creating event", e);
+            return null;
+        }
     }
 
     private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
@@ -190,5 +208,63 @@ public class Event {
                                 });
                     }
                 });
+    }
+
+    public static Event createEventInDatabase(int capacity, String dateTime, String description,
+                                              String facilityLocation, String facilityName,
+                                              boolean isGeolocationEnabled, String name,
+                                              String registrationDeadline, int waitListCapacity,
+                                              String organizerId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        try {
+            // Initialize empty lists
+            ArrayList<String> cancelledList = new ArrayList<>();
+            ArrayList<String> finalList = new ArrayList<>();
+            ArrayList<String> selectedList = new ArrayList<>();
+            ArrayList<String> waitingList = new ArrayList<>();
+
+            // Create event object with correct constructor
+            Event event = new Event(capacity, dateTime, description, facilityLocation,
+                    facilityName, isGeolocationEnabled, name,
+                    registrationDeadline, waitListCapacity,
+                    cancelledList, finalList, selectedList, waitingList);
+
+            // Create event data map
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("name", event.getName());
+            eventData.put("date_Time", event.getDate_Time());
+            eventData.put("description", description);
+            eventData.put("facilityName", event.getFacilityName());
+            eventData.put("facilityLocation", event.getFacilityLocation());
+            eventData.put("registrationDeadline", event.getRegistrationDeadline());
+            eventData.put("capacity", event.getCapacity());
+            eventData.put("waitListCapacity", event.getWaitListCapacity());
+            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
+            eventData.put("qrCode_hashData", event.getQRCode().getQRCodeValue());
+            eventData.put("organizerId", organizerId);
+
+            // Get event ID from QR code hash
+            String eventId = Integer.toString(event.getQRCode().getHashData());
+
+            // Add event to Firestore
+            db.collection("Events").document(eventId)
+                    .set(eventData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Add to organizer's created events
+                        Map<String, Object> eventRef = new HashMap<>();
+                        eventRef.put("timestamp", com.google.firebase.Timestamp.now());
+
+                        db.collection("Users").document(organizerId)
+                                .collection("createdEvents")
+                                .document(eventId)
+                                .set(eventRef);
+                    });
+
+            return event;
+        } catch (WriterException e) {
+            Log.e("Event", "Error creating event", e);
+            return null;
+        }
     }
 }

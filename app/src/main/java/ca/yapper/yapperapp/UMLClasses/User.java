@@ -22,10 +22,8 @@ public class User {
     private ArrayList<String> registeredEvents;
     private ArrayList<String> missedOutEvents;
 
-    // default constructor (required for Firestore deserialization)
-    public User() {}
-    // constructor version with parameters
-    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, ArrayList<String> joinedEvents, ArrayList<String> selectedEvents, ArrayList<String> waitingList) {
+
+    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -34,8 +32,8 @@ public class User {
         this.isOrganizer = isOrganizer;
         this.isAdmin = isAdmin;
         this.joinedEvents = joinedEvents;
-        this.selectedEvents = selectedEvents;
-        this.waitingEvents = waitingEvents;
+        this.registeredEvents = registeredEvents;
+        this.missedOutEvents = missedOutEvents;
     }
 
     public String getName() {
@@ -103,65 +101,96 @@ public class User {
         // method logic
     }
 
-    public static Event loadUserFromDatabase(String userDeviceId) {
-        // connect to Firestore
-        FirebaseFirestore db;
-        db = FirebaseFirestore.getInstance();
+    public boolean isAdmin() {
+        return isAdmin;
+    }
 
-        Log.d("UserDebug", "Loading user with ID: " + userDeviceId);
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public boolean isEntrant() {
+        return isEntrant;
+    }
+
+    public void setEntrant(boolean entrant) {
+        isEntrant = entrant;
+    }
+
+    public boolean isOrganizer() {
+        return isOrganizer;
+    }
+
+    public void setOrganizer(boolean organizer) {
+        isOrganizer = organizer;
+    }
+
+    public ArrayList<String> joinedEvents() {
+        return joinedEvents;
+    }
+
+    public void setJoinedEvents(ArrayList<String> joinedEvents) {
+        this.joinedEvents = joinedEvents;
+    }
+
+    public ArrayList<String> registeredEvents() {
+        return registeredEvents;
+    }
+
+    public void setRegisteredEvents(ArrayList<String> registeredEvents) {
+        this.registeredEvents = registeredEvents;
+    }
+
+    public ArrayList<String> missedOutEvents() {
+        return missedOutEvents;
+    }
+
+    public void setMissedOutEvents(ArrayList<String> missedOutEvents) {
+        this.missedOutEvents = missedOutEvents;
+    }
+
+    public static User loadUserFromDatabase(String userDeviceId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Create a User with empty lists by default
+        User user = new User(userDeviceId, "", false, false, false, "", "",
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
         db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Log.d("UserDebug", "User document found with ID: " + userDeviceId);
-                        // get User details
-                        // public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, ArrayList<String> joinedEvents, ArrayList<String> selectedEvents, ArrayList<String> waitingList) {
-                        String deviceIdString = documentSnapshot.getString("deviceId");
-                        String emailString = documentSnapshot.getString("email");
-                        boolean isAdminBoolean = documentSnapshot.getBoolean("isAdmin");
-                        boolean isEntrantBoolean = documentSnapshot.getBoolean("isEntrant");
-                        boolean isOrganizerBoolean = documentSnapshot.getBoolean("isOrganizer");
-                        String nameString = documentSnapshot.getString("name");
-                        String phoneNum = documentSnapshot.getString("phoneNum");
-                        ArrayList<String> joinedEventsArray = null;
-                        ArrayList<String> registeredEventsArray = null;
-                        ArrayList<String> missedOutEventsArray = null;
+            if (documentSnapshot.exists()) {
+                // Update the user object with real values
+                user.setAdmin(documentSnapshot.getBoolean("Admin"));
+                user.setEntrant(documentSnapshot.getBoolean("Entrant"));
+                user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
+                user.setDeviceId(documentSnapshot.getString("deviceId"));
+                user.setEmail(documentSnapshot.getString("entrantEmail"));
+                user.setName(documentSnapshot.getString("entrantName"));
+                user.setPhoneNum(documentSnapshot.getString("entrantPhone"));
 
-                        loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", joinedEventsArray);
-                        loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", registeredEventsArray);
-                        loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", missedOutEventsArray);
+                // Initialize lists even if empty
+                loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
+                loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
+                loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
+            }
+        });
 
-                        // Here you can create an User object and set these ArrayLists to their respective fields
-                        User user = new User(deviceIdString, emailString, isAdminBoolean, isEntrantBoolean, isOrganizerBoolean, nameString, phoneNum, joinedEventsArray, registeredEventsArray, missedOutEventsArray);
-
-                        Log.d("UserDebug", "User details loaded successfully.");
-                    } else {
-                        Log.w("UserDebug", "User document with ID: " + userDeviceId + " does not exist.");
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("UserDebug", "Error loading user document with ID: " + userDeviceId, e));
-
-        return null; // or return the created User object if applicable
+        return user;
     }
 
     private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
-        db.collection("Users").document(userDeviceId).collection(subcollectionName)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        // Assuming each document in the subcollection is a reference to a Event in the "Events" collection
-                        String eventIdRef = doc.getId(); // Get the document ID in the subcollection (reference to Event ID)
+        db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                    String eventIdRef = doc.getId();
 
-                        // Retrieve the Event document to get the eventId
-                        db.collection("Events").document(eventIdRef).get()
-                                .addOnSuccessListener(eventDoc -> {
-                                    if (eventDoc.exists()) {
-                                        String eventId = eventDoc.getString("eventId");
-                                        if (eventId != null) {
-                                            eventIdsList.add(eventId); // Add the eventId to the respective list
-                                        }
-                                    }
-                                });
-                    }
-                });
+                    db.collection("Events").document(eventIdRef).get().addOnSuccessListener(eventDoc -> {
+                            if (eventDoc.exists()) {
+                                String eventId = eventDoc.getString("qrCode_hashData");
+                                if (eventId != null) {
+                                    eventIdsList.add(eventId);
+                                }
+                            }
+                        });
+                }
+        });
     }
 }

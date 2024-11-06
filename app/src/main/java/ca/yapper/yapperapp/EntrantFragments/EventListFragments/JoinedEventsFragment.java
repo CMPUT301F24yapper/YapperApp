@@ -51,8 +51,6 @@ public class JoinedEventsFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
-        Event event = Event.loadEventFromDatabase();
-
         return view;
     }
 }
