@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,12 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +35,7 @@ public class JoinedEventsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_registeredevents, container, false);
+        View view = inflater.inflate(R.layout.recycler_joinededevents, container, false);
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -50,8 +47,56 @@ public class JoinedEventsFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
+        loadEventsFromFirebase();
 
         return view;
     }
-}
 
+    private void loadEventsFromFirebase() {
+        if (userDeviceId == null) {
+            Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection("Users")
+                .document(userDeviceId)
+                .collection("joinedEvents")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    eventList.clear();
+
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(getContext(), "No joined events found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String eventId = document.getId();
+
+                        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+                            @Override
+                            public void onEventLoaded(Event event) {
+                                if (getContext() == null) return;
+
+                                eventList.add(event);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onEventLoadError(String error) {
+                                if (getContext() == null) return;
+
+                                Log.e("JoinedEvents", "Error loading event " + eventId + ": " + error);
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(),
+                                "Error loading joined events: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+}

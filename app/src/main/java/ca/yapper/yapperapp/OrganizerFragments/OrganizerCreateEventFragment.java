@@ -80,42 +80,54 @@ public class OrganizerCreateEventFragment extends Fragment {
     }
 
     private void createEvent() {
-
-        // First check if user is authorized
-        User organizer = User.loadUserFromDatabase(userDeviceId);
-        if (organizer == null || !organizer.isOrganizer()) {
-            Toast.makeText(getActivity(), "Error: User not authorized to create events", Toast.LENGTH_SHORT).show();
+        String name = eventNameEditText.getText().toString();
+        if (name.isEmpty()) {
+            Toast.makeText(getActivity(), "Event name is required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Get all inputs
-        String name = eventNameEditText.getText().toString();
         String dateTime = eventDateEditText.getText().toString();
-        String regDeadline = eventDeadlineEditText.getText().toString();
-        String facilityName = eventFacilityEditText.getText().toString();
-        String facilityLocation = ""; // Placeholder
-        String description = ""; // You might want to add a description field to your form
+        if (dateTime.isEmpty()) {
+            Toast.makeText(getActivity(), "Event date is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        int capacity = eventNumberOfAttendeesEditText.getText().toString().isEmpty() ? 0 :
-                Integer.parseInt(eventNumberOfAttendeesEditText.getText().toString());
+        String regDeadline = eventDeadlineEditText.getText().toString();
+        if (regDeadline.isEmpty()) {
+            Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String facilityName = eventFacilityEditText.getText().toString();
+        if (facilityName.isEmpty()) {
+            Toast.makeText(getActivity(), "Facility name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String capacityText = eventNumberOfAttendeesEditText.getText().toString();
+        if (capacityText.isEmpty()) {
+            Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int capacity = Integer.parseInt(capacityText);
         int waitListCapacity = eventWlCapacityEditText.getText().toString().isEmpty() ? 0 :
                 Integer.parseInt(eventWlCapacityEditText.getText().toString());
         boolean geolocationEnabled = geolocationSwitch.isChecked();
+        String description = "";
+        String facilityLocation = "";
 
-        // Create event using static method with correct parameter order
-        Event newEvent = Event.createEventInDatabase(
-                capacity, dateTime, description, facilityLocation,
-                facilityName, geolocationEnabled, name,
-                regDeadline, waitListCapacity, userDeviceId
+        Event event = Event.createEventInDatabase(
+                capacity,
+                dateTime,
+                description,
+                facilityLocation,
+                facilityName,
+                geolocationEnabled,
+                name,
+                regDeadline,
+                waitListCapacity,
+                userDeviceId
         );
-
-        if (newEvent != null) {
-            Toast.makeText(getActivity(), "Event created successfully", Toast.LENGTH_SHORT).show();
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        } else {
-            Toast.makeText(getActivity(), "Error creating event", Toast.LENGTH_SHORT).show();
-        }
     }
 }

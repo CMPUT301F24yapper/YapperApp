@@ -152,40 +152,44 @@ public class Event {
         this.waitingList = waitingList;
     }
 
-    public static Event loadEventFromDatabase(String hashData) {
+    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        try {
-            // Create basic event with empty lists first
-            Event event = new Event(0, "", "", "", "", false, "", "", 0,
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        db.collection("Events").document(hashData).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            String name = documentSnapshot.getString("name");
+                            String dateTime = documentSnapshot.getString("date_Time");
+                            String facilityName = documentSnapshot.getString("facilityName");
+                            String facilityLocation = documentSnapshot.getString("facilityLocation");
+                            boolean geoEnabled = documentSnapshot.getBoolean("isGeolocationEnabled");
+                            String regDeadline = documentSnapshot.getString("regDeadline");
+                            Long capacityLong = documentSnapshot.getLong("capacity");
+                            Long waitlistCapacityLong = documentSnapshot.getLong("waitListCapacity");
 
-            // Load the data in background
-            db.collection("Events").document(hashData).get().addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    // Update event fields from document
-                    event.setCapacity(documentSnapshot.getLong("capacity").intValue());
-                    event.setDate_Time(documentSnapshot.getString("date_Time"));
-                    event.setFacilityName(documentSnapshot.getString("facilityName"));
-                    event.setFacilityLocation(documentSnapshot.getString("facilityLocation"));
-                    event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
-                    event.setName(documentSnapshot.getString("name"));
-                    event.setRegistrationDeadline(documentSnapshot.getString("regDeadline"));
-                    event.setWaitListCapacity(documentSnapshot.getLong("waitListCapacity").intValue());
+                            int capacity = capacityLong != null ? capacityLong.intValue() : 0;
+                            int waitListCapacity = waitlistCapacityLong != null ? waitlistCapacityLong.intValue() : 0;
 
-                    loadUserIdsFromSubcollection(db, hashData, "waitingList", event.waitingList);
-                    loadUserIdsFromSubcollection(db, hashData, "selectedList", event.selectedList);
-                    loadUserIdsFromSubcollection(db, hashData, "finalList", event.finalList);
-                    loadUserIdsFromSubcollection(db, hashData, "cancelledList", event.cancelledList);
-                }
-            });
+                            // Only create Event when we have the data
+                            Event event = new Event(capacity, dateTime, "", facilityLocation,
+                                    facilityName, geoEnabled, name, regDeadline, waitListCapacity,
+                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
-            return event;
+                            listener.onEventLoaded(event);
+                        } catch (WriterException e) {
+                            listener.onEventLoadError("Error creating event: " + e.getMessage());
+                        }
+                    } else {
+                        listener.onEventLoadError("Event not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onEventLoadError(e.getMessage()));
+    }
 
-        } catch (WriterException e) {
-            Log.e("EventDebug", "Error creating event", e);
-            return null;
-        }
+    public interface OnEventLoadedListener {
+        void onEventLoaded(Event event);
+        void onEventLoadError(String error);
     }
 
     private static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
@@ -241,7 +245,7 @@ public class Event {
             eventData.put("capacity", event.getCapacity());
             eventData.put("waitListCapacity", event.getWaitListCapacity());
             eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
-            eventData.put("qrCode_hashData", event.getQRCode().getQRCodeValue());
+            eventData.put("qrCode_hashData", event.getQRCode().getHashData());
             eventData.put("organizerId", organizerId);
 
             // Get event ID from QR code hash

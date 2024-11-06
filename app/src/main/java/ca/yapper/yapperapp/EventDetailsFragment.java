@@ -48,8 +48,8 @@ public class EventDetailsFragment extends Fragment {
 
     private String userDeviceId;
     private Bundle eventParameters;
-    private Boolean isInEntrantActivity;
-    private Boolean isInOrganizerActivity;
+    private Boolean isInEntrantActivity = false;
+    private Boolean isInOrganizerActivity = false;
     private Bundle QRCodeData;
 
     // ***TO-DO***:
@@ -71,13 +71,8 @@ public class EventDetailsFragment extends Fragment {
         eventId = args.getString("0");
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Initialize views (both Entrant & Organizer will see)
         initializeViews(view);
-
-        setVisibilityBasedOnActivity();
-
-        // load Event details
-        loadEventDetails();
+        setVisibilityBasedOnActivity();  // This now sets the boolean values
 
         if (eventId != null && !eventId.isEmpty()) {
             loadEventDetails();
@@ -109,66 +104,84 @@ public class EventDetailsFragment extends Fragment {
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
-        Event event = Event.loadEventFromDatabase(eventId);
-        if (event != null) {
-            titleTextView.setText(event.getName());
-            dateTimeTextView.setText(event.getDate_Time());
-            regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
-            facilityNameTextView.setText("Facility: " + event.getFacilityName());
-            facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-            wlCapacityTextView.setText(String.valueOf(event.getWaitListCapacity()));
-            attendeesTextView.setText(String.valueOf(event.getCapacity()));
+        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (getContext() == null) return;
 
-            if (event.isGeolocationEnabled()) {
-                TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                if (geoLocationRequired != null) {
-                    geoLocationRequired.setVisibility(View.VISIBLE);
+                titleTextView.setText(event.getName());
+                dateTimeTextView.setText(event.getDate_Time());
+                regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
+                facilityNameTextView.setText("Facility: " + event.getFacilityName());
+                facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
+                wlCapacityTextView.setText(String.valueOf(event.getWaitListCapacity()));
+                attendeesTextView.setText(String.valueOf(event.getCapacity()));
+
+                geolocationEnabled = event.isGeolocationEnabled();
+                if (geolocationEnabled) {
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    if (geoLocationRequired != null) {
+                        geoLocationRequired.setVisibility(View.VISIBLE);
+                    }
                 }
+
+                setupButtonListeners();
             }
 
-            if (isInEntrantActivity) {
-                checkUserInList();
-                joinButton.setEnabled(true);
-                joinButton.setOnClickListener(v -> handleJoinButtonClick());
-            } else if (isInOrganizerActivity) {
-                viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
-                editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
-                    viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
+            @Override
+            public void onEventLoadError(String error) {
+                if (getContext() == null) return;
+
+                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+                Log.e("EventDetails", "Error loading event: " + error);
             }
-        } else {
-            Toast.makeText(getContext(), "Error loading event details", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void setupButtonListeners() {
+        if (isInEntrantActivity) {
+            checkUserInList();
+            joinButton.setEnabled(true);
+            joinButton.setOnClickListener(v -> handleJoinButtonClick());
+        } else if (isInOrganizerActivity) {
+            viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
+            editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
+            viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
         }
     }
 
     private void checkUserInList() {
-        if (userDeviceId == null) return; // Add early return if userDeviceId is null
-        // Check if the user's device ID is in the waiting list (SUBCOLLECTION!)
-        // CollectionReference eventsRef = db.collection("Events");
-        db.collection("Events").document(eventId).collection("waitingList").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                // User is already in the waiting list
-                joinButton.setText("Unjoin");
-                joinButton.setBackgroundColor(Color.GRAY);
-            } else {
-                // User is not in the waiting list
-                joinButton.setText("Join");
-                joinButton.setBackgroundColor(Color.BLUE);
-            }
-            // add log / toast messages for unsuccessful retrieval of document
-        });
+        if (userDeviceId == null) return;
 
-        db.collection("Events").document(eventId).collection("selectedList").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                // User is already in the selected list
-                joinButton.setText("Unjoin");
-                joinButton.setBackgroundColor(Color.GRAY);
-            } else {
-                // User is not in the selected list
-                joinButton.setText("Join");
-                joinButton.setBackgroundColor(Color.BLUE);
-            }
-            // add log / toast messages for unsuccessful retrieval of document
-        });
+        db.collection("Events").document(eventId)
+                .collection("waitingList")
+                .document(userDeviceId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        joinButton.setText("Unjoin");
+                        joinButton.setBackgroundColor(Color.GRAY);
+                        return;
+                    }
+
+                    // Only check selected list if not in waiting list
+                    db.collection("Events").document(eventId)
+                            .collection("selectedList")
+                            .document(userDeviceId)
+                            .get()
+                            .addOnSuccessListener(selectedSnapshot -> {
+                                if (selectedSnapshot.exists()) {
+                                    joinButton.setText("Unjoin");
+                                    joinButton.setBackgroundColor(Color.GRAY);
+                                } else {
+                                    joinButton.setText("Join");
+                                    joinButton.setBackgroundColor(Color.BLUE);
+                                }
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventDetails", "Error checking user lists: " + e.getMessage());
+                });
     }
 
     private void handleJoinButtonClick() {
@@ -247,22 +260,27 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void setVisibilityBasedOnActivity() {
-        // TO-DO: IMPLEMENT MAP VISIBILITY FOR ORGANIZER, AS WELL AS QR CODE VIEW BUTTON FOR ORGANIZER
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;
+            isInOrganizerActivity = false;
             joinButton.setVisibility(View.VISIBLE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
+            viewQRCodeButton.setVisibility(View.GONE);
         } else if (getActivity() instanceof OrganizerActivity) {
+            isInEntrantActivity = false;
             isInOrganizerActivity = true;
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
         } else {
+            isInEntrantActivity = false;
+            isInOrganizerActivity = false;
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
+            viewQRCodeButton.setVisibility(View.GONE);
         }
     }
 }

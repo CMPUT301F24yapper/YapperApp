@@ -2,10 +2,10 @@ package ca.yapper.yapperapp;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,23 +16,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import ca.yapper.yapperapp.EventDetailsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsViewHolder> {
 
     private List<Event> eventList;
     private Context context;
-    // private OnItemClickListener listener;
 
-    /** public interface OnItemClickListener {
-        void onItemClick(Event event);
-    } **/
-    // public EventsAdapter(List<Event> eventList, OnItemClickListener listener) {
     public EventsAdapter(List<Event> eventList, Context context) {
         this.eventList = eventList;
         this.context = context;
-        // this.listener = listener;
     }
 
     @NonNull
@@ -51,28 +44,38 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
         holder.eventLocationTextView.setText(event.getFacilityName());
 
         holder.itemView.setOnClickListener(v -> {
-            EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
-
-            String eventId = Integer.toString(event.getQRCode().getHashData()) != null ?
-                    event.getQRCode().getQRCodeValue() :
-                    null;
-
-            if (eventId == null) {
-                Toast.makeText(v.getContext(), "Error: Invalid event", Toast.LENGTH_SHORT).show();
+            if (event.getQRCode() == null) {
+                Toast.makeText(v.getContext(), "Error: Event QR code not found", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Bundle bundle = new Bundle();
-            bundle.putString("0", eventId);
-            eventDetailsFragment.setArguments(bundle);
+            String eventId = Integer.toString(event.getQRCode().getHashData());
+            if (eventId == null || eventId.isEmpty()) {
+                Toast.makeText(v.getContext(), "Error: Invalid event ID", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            FragmentTransaction transaction = ((FragmentActivity) context)
-                    .getSupportFragmentManager()
-                    .beginTransaction();
+            try {
+                EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("0", eventId);
+                eventDetailsFragment.setArguments(bundle);
 
-            transaction.replace(R.id.fragment_container, eventDetailsFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+                if (context instanceof FragmentActivity) {
+                    FragmentTransaction transaction = ((FragmentActivity) context)
+                            .getSupportFragmentManager()
+                            .beginTransaction();
+
+                    transaction.replace(R.id.fragment_container, eventDetailsFragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                } else {
+                    Log.e("EventsAdapter", "Context is not FragmentActivity");
+                }
+            } catch (Exception e) {
+                Log.e("EventsAdapter", "Error navigating to event details", e);
+                Toast.makeText(v.getContext(), "Error opening event details", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

@@ -44,21 +44,21 @@ public class FinalListFragment extends Fragment {
         // TO-DO: SET 'EVENTID' TO BUNDLE PARAMETER #1 SENT FROM HOMEPAGE TO SPECIFIC EVENT CLICK NAVIGATION!
         // add in event parameters bundle... etc
         db = FirebaseFirestore.getInstance();
-        loadUsersFromFirebase(eventId);
+        //loadUsersFromFirebase(eventId);
 
         return view;
     }
 
-    private void loadUsersFromFirebase(String eventId) {
-        Event event = Event.loadEventFromDatabase(eventId);
-        if (event != null) {
-            for (String userId : event.finalList()) {
-                User user = User.loadUserFromDatabase(userId);
-                if (user != null) {
-                    finalList.add(user);
-                }
-            }
-            adapter.notifyDataSetChanged();
-        }
-    }
+//    private void loadUsersFromFirebase(String eventId) {
+//        Event event = Event.loadEventFromDatabase(eventId);
+//        if (event != null) {
+//            for (String userId : event.finalList()) {
+//                User user = User.loadUserFromDatabase(userId);
+//                if (user != null) {
+//                    finalList.add(user);
+//                }
+//            }
+//            adapter.notifyDataSetChanged();
+//        }
+//    }
 }

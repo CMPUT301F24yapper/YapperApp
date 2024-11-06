@@ -1,11 +1,7 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import android.util.Log;
-
-import com.google.common.primitives.Booleans;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 
 public class User {
@@ -17,14 +13,12 @@ public class User {
     private String name;
     private String phoneNum;
     private boolean isOptedOut;
-    // private ProfilePic profilePic;
-    // private ProfilePic generatedProfilePic;
     private ArrayList<String> joinedEvents;
     private ArrayList<String> registeredEvents;
     private ArrayList<String> missedOutEvents;
+    private ArrayList<String> createdEvents;
 
-
-    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents) {
+    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -36,6 +30,7 @@ public class User {
         this.joinedEvents = joinedEvents;
         this.registeredEvents = registeredEvents;
         this.missedOutEvents = missedOutEvents;
+        this.createdEvents = createdEvents;
     }
 
     public String getName() {
@@ -103,11 +98,9 @@ public class User {
     }
 
     public void uploadProfilePic(ProfilePic profilePic) {
-        // method logic
     }
 
     public void removeProfilePic() {
-        // method logic
     }
 
     public boolean isAdmin() {
@@ -158,16 +151,22 @@ public class User {
         this.missedOutEvents = missedOutEvents;
     }
 
+    public ArrayList<String> getCreatedEvents() {
+        return createdEvents;
+    }
+
+    public void setCreatedEvents(ArrayList<String> createdEvents) {
+        this.createdEvents = createdEvents;
+    }
+
     public static User loadUserFromDatabase(String userDeviceId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Create a User with empty lists by default
         User user = new User(userDeviceId, "", false, false, false, "", "", false,
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
         db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                // Update the user object with real values
                 user.setAdmin(documentSnapshot.getBoolean("Admin"));
                 user.setEntrant(documentSnapshot.getBoolean("Entrant"));
                 user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
@@ -176,10 +175,10 @@ public class User {
                 user.setName(documentSnapshot.getString("entrantName"));
                 user.setPhoneNum(documentSnapshot.getString("entrantPhone"));
 
-                // Initialize lists even if empty
                 loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
                 loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
                 loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
+                loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents);
             }
         });
 
@@ -188,18 +187,18 @@ public class User {
 
     private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
         db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                    String eventIdRef = doc.getId();
+            for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                String eventIdRef = doc.getId();
 
-                    db.collection("Events").document(eventIdRef).get().addOnSuccessListener(eventDoc -> {
-                            if (eventDoc.exists()) {
-                                String eventId = eventDoc.getString("qrCode_hashData");
-                                if (eventId != null) {
-                                    eventIdsList.add(eventId);
-                                }
-                            }
-                        });
-                }
+                db.collection("Events").document(eventIdRef).get().addOnSuccessListener(eventDoc -> {
+                    if (eventDoc.exists()) {
+                        String eventId = eventDoc.getString("qrCode_hashData");
+                        if (eventId != null) {
+                            eventIdsList.add(eventId);
+                        }
+                    }
+                });
+            }
         });
     }
 }

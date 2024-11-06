@@ -66,9 +66,9 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         settings = barcodeScan.getCameraSettings();
         checkCameraPermissions(); // We have to ask for camera permissions otherwise it only shows a black screen
 
-        if (settings.getRequestedCameraId() != 1){
+        if (settings.getRequestedCameraId() != 0){
             // Sets the default camera to be the front facing camera, in case its not
-            settings.setRequestedCameraId(1);
+            settings.setRequestedCameraId(0);
         }
 
         //settings.setRequestedCameraId(1);
