@@ -16,8 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -34,9 +32,9 @@ public class EventDetailsFragment extends Fragment {
 
     private FirebaseFirestore db;
     private String eventId;
-    private TextView titleTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, attendeesTextView, wlCapacityTextView;
+    private TextView nameTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView;
     private TextView geolocEnabledTextView;
-    Boolean geolocationEnabled;
+    boolean geolocationEnabled;
 
     // Entrant Button:
     private Button joinButton;
@@ -48,8 +46,8 @@ public class EventDetailsFragment extends Fragment {
 
     private String userDeviceId;
     private Bundle eventParameters;
-    private Boolean isInEntrantActivity = false;
-    private Boolean isInOrganizerActivity = false;
+    private boolean isInEntrantActivity = false;
+    private boolean isInOrganizerActivity = false;
     private Bundle QRCodeData;
 
     // ***TO-DO***:
@@ -59,7 +57,7 @@ public class EventDetailsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.entrant_event, container, false);
+        view = inflater.inflate(R.layout.event_details, container, false);
 
         db = FirebaseFirestore.getInstance();
         Bundle args = getArguments();
@@ -84,14 +82,15 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void initializeViews(View view) {
-        titleTextView = view.findViewById(R.id.event_title);
+        nameTextView = view.findViewById(R.id.event_title);
         dateTimeTextView = view.findViewById(R.id.event_date_time);
         regDeadlineTextView = view.findViewById(R.id.registration_deadline);
         facilityNameTextView = view.findViewById(R.id.facility_name);
         facilityLocationTextView = view.findViewById(R.id.facility_name);
         descriptionTextView = view.findViewById(R.id.event_description);
-        attendeesTextView = view.findViewById(R.id.event_number_participants);
-        wlCapacityTextView = view.findViewById(R.id.event_wl_capacity);
+        capacityTextView = view.findViewById(R.id.event_number_participants);
+        waitListTextView = view.findViewById(R.id.event_wl_capacity);
+        // *to add: available slots text view (waitlist capacity - number of users in waitlist)*
 
         // only visible to Entrant:
         joinButton = view.findViewById(R.id.join_button);
@@ -109,13 +108,13 @@ public class EventDetailsFragment extends Fragment {
             public void onEventLoaded(Event event) {
                 if (getContext() == null) return;
 
-                titleTextView.setText(event.getName());
+                nameTextView.setText(event.getName());
                 dateTimeTextView.setText(event.getDate_Time());
                 regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
                 facilityNameTextView.setText("Facility: " + event.getFacilityName());
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                wlCapacityTextView.setText(String.valueOf(event.getWaitListCapacity()));
-                attendeesTextView.setText(String.valueOf(event.getCapacity()));
+                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
+                capacityTextView.setText(String.valueOf(event.getCapacity()));
 
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
@@ -141,7 +140,7 @@ public class EventDetailsFragment extends Fragment {
     private void setupButtonListeners() {
         if (isInEntrantActivity) {
             checkUserInList();
-            joinButton.setEnabled(true);
+            // joinButton.setEnabled(true);
             joinButton.setOnClickListener(v -> handleJoinButtonClick());
         } else if (isInOrganizerActivity) {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
@@ -159,28 +158,27 @@ public class EventDetailsFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY);
-                        return;
+                        setButtonState("Unjoin", Color.GRAY); // User is in the waiting list
+                    } else {
+                        // Check selected list if not in waiting list
+                        db.collection("Events").document(eventId)
+                                .collection("selectedList")
+                                .document(userDeviceId)
+                                .get()
+                                .addOnSuccessListener(selectedSnapshot -> {
+                                    if (selectedSnapshot.exists()) {
+                                        setButtonState("Unjoin", Color.GRAY); // User is in the selected list
+                                    } else {
+                                        setButtonState("Join", Color.BLUE); // User not found in either list
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("EventDetails", "Error checking selected list: " + e.getMessage());
+                                });
                     }
-
-                    // Only check selected list if not in waiting list
-                    db.collection("Events").document(eventId)
-                            .collection("selectedList")
-                            .document(userDeviceId)
-                            .get()
-                            .addOnSuccessListener(selectedSnapshot -> {
-                                if (selectedSnapshot.exists()) {
-                                    joinButton.setText("Unjoin");
-                                    joinButton.setBackgroundColor(Color.GRAY);
-                                } else {
-                                    joinButton.setText("Join");
-                                    joinButton.setBackgroundColor(Color.BLUE);
-                                }
-                            });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("EventDetails", "Error checking user lists: " + e.getMessage());
+                    Log.e("EventDetails", "Error checking waiting list: " + e.getMessage());
                 });
     }
 
@@ -194,6 +192,12 @@ public class EventDetailsFragment extends Fragment {
         } else {
             unjoinEvent();
         }
+    }
+
+    // Helper method to set button state
+    private void setButtonState(String text, int color) {
+        joinButton.setText(text);
+        joinButton.setBackgroundColor(color);
     }
 
     private void handleViewParticipantsButtonClick() {
