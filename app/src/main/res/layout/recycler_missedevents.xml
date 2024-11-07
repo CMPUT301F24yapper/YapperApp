@@ -6,7 +6,7 @@
     <!-- This contains the recyclerView for the registered events list and EventAdapter file to bind the recycler view with the event list. -->
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/recyclerView_missed"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
