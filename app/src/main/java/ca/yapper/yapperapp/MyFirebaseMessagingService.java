@@ -1,83 +1,55 @@
 package ca.yapper.yapperapp;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import ca.yapper.yapperapp.Activities.EntrantActivity;
-import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.NotificationHelper;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-    private static final String TAG = "MyFirebaseMsgService";
-    private static final String CHANNEL_ID = "YapperAppChannel";
+
+    private static final String TAG = "MyFirebaseMessagingSvc";
 
     @Override
-    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-        // Log the message for debugging purposes
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        super.onMessageReceived(remoteMessage);
 
-        // Check if the message contains a notification payload
+        // Check if the message contains notification data
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            // Display notification to the user
-            showNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            String title = remoteMessage.getNotification().getTitle();
+            String body = remoteMessage.getNotification().getBody();
+
+            // Display the notification using NotificationHelper
+            NotificationHelper.displayNotification(getApplicationContext(), title, body);
         }
 
-        // Check if the message contains a data payload
+        // Handle data payload if necessary
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            // Handle data payload if needed
+            // Handle additional data here if needed
         }
     }
 
     @Override
-    public void onNewToken(@NonNull String token) {
-        Log.d(TAG, "Refreshed token: " + token);
-        // Send the new token to your server if needed
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+        Log.d(TAG, "New FCM Token: " + token);
+
+        // You may want to update the token in Firestore if it changes
+        updateTokenInFirestore(token);
     }
 
-    private void showNotification(String title, String message) {
-        // Create a notification channel (required for Android 8.0+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Yapper App Notifications",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
-        }
+    private void updateTokenInFirestore(String token) {
+        // Assuming deviceId is globally accessible or passed here
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Create an intent that will open your main activity when the user taps the notification
-        Intent intent = new Intent(this, EntrantActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        // Build the notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification) // Replace with your app's notification icon
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-        // Show the notification
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(0, builder.build());
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Users").document(deviceId)
+                .update("fcmToken", token)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Token updated successfully"))
+                .addOnFailureListener(e -> Log.w(TAG, "Error updating token", e));
     }
 }
