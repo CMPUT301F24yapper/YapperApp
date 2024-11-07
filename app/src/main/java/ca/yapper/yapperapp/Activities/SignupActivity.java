@@ -16,7 +16,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
-
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 
@@ -29,6 +31,7 @@ public class SignupActivity extends AppCompatActivity {
     private EditText addEntrantEmailEditText;
     private Button signupButton;
     private String fcmToken; // Variable to store the FCM token
+    private static final String CHANNEL_ID = "your_channel_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +43,12 @@ public class SignupActivity extends AppCompatActivity {
         createFirebaseConnection();
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Step 1: Retrieve the FCM token
+
+        // Step 1: Create Notification Channel (for Android 8.0+)
+        createNotificationChannel();
+
+
+        // Step 2: Retrieve the FCM token
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 fcmToken = task.getResult();
@@ -109,6 +117,21 @@ public class SignupActivity extends AppCompatActivity {
         Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Channel Name";
+            String description = "Channel Description";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
     }
 
     private void launchOrganizerActivity() {
