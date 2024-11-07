@@ -1,11 +1,8 @@
 package ca.yapper.yapperapp.UMLClasses;
 
 import android.util.Log;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.zxing.WriterException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +16,17 @@ public class User {
     private String name;
     private String phoneNum;
     private boolean isOptedOut;
+    private String fcmToken; // New field for FCM token
     private ArrayList<String> joinedEvents;
     private ArrayList<String> registeredEvents;
     private ArrayList<String> missedOutEvents;
     private ArrayList<String> createdEvents;
 
-    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
+    // Updated constructor to include fcmToken
+    public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer,
+                String name, String phoneNum, boolean isOptedOut, String fcmToken,
+                ArrayList<String> joinedEvents, ArrayList<String> registeredEvents,
+                ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -33,6 +35,7 @@ public class User {
         this.isOrganizer = isOrganizer;
         this.isAdmin = isAdmin;
         this.isOptedOut = isOptedOut;
+        this.fcmToken = fcmToken; // Initialize the FCM token
         this.joinedEvents = joinedEvents;
         this.registeredEvents = registeredEvents;
         this.missedOutEvents = missedOutEvents;
@@ -45,16 +48,7 @@ public class User {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
-                            // public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer,
-                            // String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
                             User user = new User(
-                                    /** user.setAdmin(documentSnapshot.getBoolean("Admin"));
-                                     user.setEntrant(documentSnapshot.getBoolean("Entrant"));
-                                     user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
-                                     user.setDeviceId(documentSnapshot.getString("deviceId"));
-                                     user.setEmail(documentSnapshot.getString("entrantEmail"));
-                                     user.setName(documentSnapshot.getString("entrantName"));
-                                     user.setPhoneNum(documentSnapshot.getString("entrantPhone")); **/
                                     documentSnapshot.getString("deviceId"),
                                     documentSnapshot.getString("email"),
                                     documentSnapshot.getBoolean("Admin"),
@@ -63,53 +57,24 @@ public class User {
                                     documentSnapshot.getString("entrantName"),
                                     documentSnapshot.getString("entrantPhone"),
                                     documentSnapshot.getBoolean("notificationsEnabled"),
+                                    documentSnapshot.getString("fcmToken"), // Retrieve the FCM token
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
                             listener.onUserLoaded(user);
-                        } // catch (WriterException e) {
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             listener.onUserLoadError("Error creating user");
                         }
                     }
                 });
     }
-        // User user = new User(userDeviceId, "", false, false, false, "", "", false,
-        // new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        /** db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-         if (documentSnapshot.exists()) {
-         loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents);
-         }
-         });
-         return user;
-         } **/
-
-    private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
-        db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
-            for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                String eventIdRef = doc.getId();
-
-                db.collection("Events").document(eventIdRef).get().addOnSuccessListener(eventDoc -> {
-                    if (eventDoc.exists()) {
-                        String eventId = eventDoc.getString("qrCode_hashData");
-                        if (eventId != null) {
-                            eventIdsList.add(eventId);
-                        }
-                    }
-                });
-            }
-        });
-    }
 
     public static User createUserInDatabase(String deviceId, String email, boolean isAdmin,
                                             boolean isEntrant, boolean isOrganizer, String name,
-                                            String phoneNum, boolean isOptedOut) {
+                                            String phoneNum, boolean isOptedOut, String fcmToken) { // Add fcmToken parameter
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         User user = new User(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum,
-                isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+                isOptedOut, fcmToken, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 new ArrayList<>());
 
         Map<String, Object> userData = new HashMap<>();
@@ -121,6 +86,7 @@ public class User {
         userData.put("entrantName", user.getName());
         userData.put("entrantPhone", user.getPhoneNum());
         userData.put("notificationsEnabled", !user.isOptedOut());
+        userData.put("fcmToken", user.getFcmToken()); // Store the FCM token
 
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("created", com.google.firebase.Timestamp.now());
@@ -141,6 +107,15 @@ public class User {
         void onUserLoadError(String error);
     }
 
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
+    // Other existing getters and setters...
     public String getName() {
         return name;
     }
@@ -173,42 +148,12 @@ public class User {
         this.phoneNum = phoneNum;
     }
 
-    public Boolean getIsEntrant() {
-        return isEntrant;
-    }
-
-    public void setIsEntrant(Boolean entrant) {
-        isEntrant = entrant;
-    }
-
-    public Boolean getIsOrganizer() {
-        return isOrganizer;
-    }
-
-    public void setIsOrganizer(Boolean organizer) {
-        isOrganizer = organizer;
-    }
-
-    public Boolean getIsAdmin() {
-        return isAdmin;
-    }
-
-    public void setIsAdmin(Boolean admin) {
-        isAdmin = admin;
-    }
-
     public boolean isOptedOut() {
         return isOptedOut;
     }
 
     public void setOptedOut(boolean optedOut) {
         isOptedOut = optedOut;
-    }
-
-    public void uploadProfilePic(ProfilePic profilePic) {
-    }
-
-    public void removeProfilePic() {
     }
 
     public boolean isAdmin() {
@@ -235,7 +180,7 @@ public class User {
         isOrganizer = organizer;
     }
 
-    public ArrayList<String> joinedEvents() {
+    public ArrayList<String> getJoinedEvents() {
         return joinedEvents;
     }
 
@@ -243,7 +188,7 @@ public class User {
         this.joinedEvents = joinedEvents;
     }
 
-    public ArrayList<String> registeredEvents() {
+    public ArrayList<String> getRegisteredEvents() {
         return registeredEvents;
     }
 
@@ -251,7 +196,7 @@ public class User {
         this.registeredEvents = registeredEvents;
     }
 
-    public ArrayList<String> missedOutEvents() {
+    public ArrayList<String> getMissedOutEvents() {
         return missedOutEvents;
     }
 

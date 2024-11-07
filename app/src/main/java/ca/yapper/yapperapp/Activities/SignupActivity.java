@@ -15,6 +15,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -27,6 +28,7 @@ public class SignupActivity extends AppCompatActivity {
     private EditText addEntrantPhoneEditText;
     private EditText addEntrantEmailEditText;
     private Button signupButton;
+    private String fcmToken; // Variable to store the FCM token
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,17 @@ public class SignupActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
         createFirebaseConnection();
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // Step 1: Retrieve the FCM token
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                fcmToken = task.getResult();
+                Log.d("FCM Token", "Token: " + fcmToken);
+            } else {
+                Log.w("SignupActivity", "Fetching FCM token failed", task.getException());
+            }
+        });
+
         checkUserExists();
     }
 
@@ -76,6 +89,7 @@ public class SignupActivity extends AppCompatActivity {
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
         String entrantEmail = addEntrantEmailEditText.getText().toString();
 
+        // Pass the FCM token to the User creation method
         User.createUserInDatabase(
                 deviceId,
                 entrantEmail,
@@ -84,7 +98,8 @@ public class SignupActivity extends AppCompatActivity {
                 false,  // isOrganizer
                 entrantName,
                 entrantPhone,
-                false   // isOptedOut
+                false,  // isOptedOut
+                fcmToken // Pass the retrieved FCM token here
         );
 
         launchEntrantActivity();
