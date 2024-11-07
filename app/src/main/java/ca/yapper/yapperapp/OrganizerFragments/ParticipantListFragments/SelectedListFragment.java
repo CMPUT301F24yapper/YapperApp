@@ -49,16 +49,31 @@ public class SelectedListFragment extends Fragment {
         return view;
     }
 
-//    private void loadUsersFromFirebase(String eventId) {
-//        Event event = Event.loadEventFromDatabase(eventId);
-//        if (event != null) {
-//            for (String userId : event.selectedList()) {
-//                User user = User.loadUserFromDatabase(userId);
-//                if (user != null) {
-//                    selectedList.add(user);
-//                }
-//            }
-//            adapter.notifyDataSetChanged();
-//        }
-//    }
+    private void loadUsersFromFirebase(String eventId) {
+        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                for (String userId : event.getSelectedList()) {
+                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            selectedList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            Log.e("SelectedListFragment", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onEventLoadError(String error) {
+                Log.e("SelectedListFragment", "Error loading event: " + error);
+            }
+        });
+    }
+
 }

@@ -5,7 +5,7 @@ import java.util.Date;
 public class RejectionNotif extends Notification {
     private String message; // Holds the rejection message
 
-    public RejectionNotif(Date dateTimeStamp, User userTo, User userFrom, String message) {
+    public RejectionNotif(Date dateTimeStamp, String userTo, String userFrom, String message) {
         super(dateTimeStamp, userTo, userFrom, "Event Rejection", message, "Rejection");
         this.message = message;
     }

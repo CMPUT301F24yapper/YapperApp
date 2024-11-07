@@ -1,24 +1,31 @@
 package ca.yapper.yapperapp.UMLClasses;
 
+import android.util.Log;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentReference;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Notification {
+    private String id;                  // Firestore document ID
     private Date dateTimeStamp;
-    private User userTo;
-    private User userFrom;
+    private String userToId;            // Recipient's device ID
+    private String userFromId;          // Sender's device ID
     private String title;
     private String message;
-    private String notificationType; // Type such as "Invitation", "Rejection", "Acceptance", etc.
-    private boolean isRead; // To track if the notification has been viewed by the user
+    private String notificationType;    // Type such as "Invitation", "Rejection", etc.
+    private boolean isRead;             // To track if the notification has been viewed by the user
+
+    // Default constructor required for calls to DataSnapshot.getValue(Notification.class)
+    public Notification() {}
 
     // Constructor with parameters
-    public Notification(Date dateTimeStamp, User userTo, User userFrom, String title, String message, String notificationType) {
+    public Notification(Date dateTimeStamp, String userToId, String userFromId,
+                        String title, String message, String notificationType) {
         this.dateTimeStamp = dateTimeStamp;
-        this.userTo = userTo;
-        this.userFrom = userFrom;
+        this.userToId = userToId;
+        this.userFromId = userFromId;
         this.title = title;
         this.message = message;
         this.notificationType = notificationType;
@@ -26,6 +33,15 @@ public class Notification {
     }
 
     // Getters and Setters
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    // Date and Time
     public Date getDateTimeStamp() {
         return dateTimeStamp;
     }
@@ -34,22 +50,25 @@ public class Notification {
         this.dateTimeStamp = dateTimeStamp;
     }
 
-    public User getUserTo() {
-        return userTo;
+    // Recipient's Device ID
+    public String getUserToId() {
+        return userToId;
     }
 
-    public void setUserTo(User userTo) {
-        this.userTo = userTo;
+    public void setUserToId(String userToId) {
+        this.userToId = userToId;
     }
 
-    public User getUserFrom() {
-        return userFrom;
+    // Sender's Device ID
+    public String getUserFromId() {
+        return userFromId;
     }
 
-    public void setUserFrom(User userFrom) {
-        this.userFrom = userFrom;
+    public void setUserFromId(String userFromId) {
+        this.userFromId = userFromId;
     }
 
+    // Title of the Notification
     public String getTitle() {
         return title;
     }
@@ -58,6 +77,7 @@ public class Notification {
         this.title = title;
     }
 
+    // Message Content
     public String getMessage() {
         return message;
     }
@@ -66,6 +86,7 @@ public class Notification {
         this.message = message;
     }
 
+    // Notification Type
     public String getNotificationType() {
         return notificationType;
     }
@@ -74,30 +95,13 @@ public class Notification {
         this.notificationType = notificationType;
     }
 
+    // Read Status
     public boolean isRead() {
         return isRead;
     }
 
-    public void setRead(boolean isRead) {
-        this.isRead = isRead;
-    }
-
-    // Method to format the notification content based on details
-    public void formatMessage(String eventName, String customMessage) {
-        this.message = String.format("Event: %s | Details: %s", eventName, customMessage);
-    }
-
-    // Placeholder for sending notification logic
-    public void sendNotification() {
-        if (userTo != null && !userTo.isOptedOut()) { // Check if user is not opted out
-            // Logic to send notification via Firebase Cloud Messaging (FCM)
-            System.out.println("Notification sent to " + userTo.getName());
-        }
-    }
-
-    // Method to mark the notification as read
-    public void markAsRead() {
-        this.isRead = true;
+    public void setRead(boolean read) {
+        isRead = read;
     }
 
     // Method to save the notification to Firestore
@@ -107,8 +111,8 @@ public class Notification {
         // Prepare the notification data
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
-        notificationData.put("userToId", userTo); // Assuming User has a getId() method for user ID
-        notificationData.put("userFromId", userFrom); // Assuming User has a getId() method for user ID
+        notificationData.put("userToId", userToId);
+        notificationData.put("userFromId", userFromId);
         notificationData.put("title", title);
         notificationData.put("message", message);
         notificationData.put("notificationType", notificationType);
@@ -117,7 +121,23 @@ public class Notification {
         // Add the notification to the "Notifications" collection
         db.collection("Notifications")
                 .add(notificationData)
-                .addOnSuccessListener(documentReference -> System.out.println("Notification added with ID: " + documentReference.getId()))
-                .addOnFailureListener(e -> System.err.println("Error adding notification: " + e));
+                .addOnSuccessListener(documentReference -> {
+                    setId(documentReference.getId()); // Set the document ID
+                    Log.d("Notification", "Notification added with ID: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
+    }
+
+    // Method to mark the notification as read
+    public void markAsRead() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Notifications").document(id)
+                .update("isRead", true)
+                .addOnSuccessListener(aVoid -> {
+                    isRead = true;
+                    Log.d("Notification", "Notification marked as read");
+                })
+                .addOnFailureListener(e -> Log.e("NotificationError", "Error marking notification as read", e));
     }
 }

@@ -49,16 +49,31 @@ public class FinalListFragment extends Fragment {
         return view;
     }
 
-//    private void loadUsersFromFirebase(String eventId) {
-//        Event event = Event.loadEventFromDatabase(eventId);
-//        if (event != null) {
-//            for (String userId : event.finalList()) {
-//                User user = User.loadUserFromDatabase(userId);
-//                if (user != null) {
-//                    finalList.add(user);
-//                }
-//            }
-//            adapter.notifyDataSetChanged();
-//        }
-//    }
+    private void loadUsersFromFirebase(String eventId) {
+        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                for (String userId : event.getFinalList()) {
+                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            finalList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            Log.e("FinalListFragment", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onEventLoadError(String error) {
+                Log.e("FinalListFragment", "Error loading event: " + error);
+            }
+        });
+    }
+
 }

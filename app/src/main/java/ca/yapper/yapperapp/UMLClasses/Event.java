@@ -19,11 +19,12 @@ public class Event {
     private qrCode QRCode;
     private String registrationDeadline;
     private int waitListCapacity;
-    private ArrayList<String> cancelledList = null;
-    private ArrayList<String> finalList = null;
-    private ArrayList<String> selectedList = null;
-    private ArrayList<String> waitingList = null;
+    private ArrayList<String> cancelledList;
+    private ArrayList<String> finalList;
+    private ArrayList<String> selectedList;
+    private ArrayList<String> waitingList;
 
+    // Constructor
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
                  boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
                  ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
@@ -38,12 +39,13 @@ public class Event {
         this.QRCode = new qrCode(this.name);
         this.registrationDeadline = registrationDeadline;
         this.waitListCapacity = waitListCapacity;
-        this.cancelledList = cancelledList;
-        this.finalList = finalList;
-        this.selectedList = selectedList;
-        this.waitingList = waitingList;
+        this.cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
+        this.finalList = finalList != null ? finalList : new ArrayList<>();
+        this.selectedList = selectedList != null ? selectedList : new ArrayList<>();
+        this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
     }
 
+    // Method to load an event from Firestore
     public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Events").document(hashData).get()
@@ -53,12 +55,12 @@ public class Event {
                             Event event = new Event(
                                     documentSnapshot.getLong("capacity").intValue(),
                                     documentSnapshot.getString("date_Time"),
-                                    "",
+                                    documentSnapshot.getString("description"),
                                     documentSnapshot.getString("facilityLocation"),
                                     documentSnapshot.getString("facilityName"),
                                     documentSnapshot.getBoolean("isGeolocationEnabled"),
                                     documentSnapshot.getString("name"),
-                                    documentSnapshot.getString("regDeadline"),
+                                    documentSnapshot.getString("registrationDeadline"),
                                     documentSnapshot.getLong("waitListCapacity").intValue(),
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
@@ -70,6 +72,7 @@ public class Event {
                 });
     }
 
+    // Method to load user IDs from a subcollection
     public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
         db.collection("Events").document(eventId).collection(subcollectionName)
                 .get()
@@ -89,6 +92,7 @@ public class Event {
                 });
     }
 
+    // Method to create a new event in Firestore
     public static Event createEventInDatabase(int capacity, String dateTime, String description,
                                               String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
                                               String registrationDeadline, int waitListCapacity, String organizerId) {
@@ -112,7 +116,7 @@ public class Event {
             eventData.put("waitListCapacity", event.waitListCapacity);
             eventData.put("organizerId", organizerId);
 
-            // Initialize the four subcollections with empty entries
+            // Initialize the subcollections with placeholder data
             initializeSubcollections(db, eventId);
 
             db.collection("Events").document(eventId).set(eventData);
@@ -127,67 +131,24 @@ public class Event {
         }
     }
 
-    // Method to initialize subcollections for the event with a placeholder document
+    // Initialize subcollections in Firestore with placeholder data
     private static void initializeSubcollections(FirebaseFirestore db, String eventId) {
-        // Define placeholder data with a unique field to indicate it's a placeholder
         Map<String, Object> placeholderData = new HashMap<>();
-        placeholderData.put("placeholder", true); // Placeholder field to avoid empty/random documents
+        placeholderData.put("placeholder", true);
 
-        // Add the placeholder document to each of the four subcollections
         db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
     }
 
+    // Interface for loading event listener
     public interface OnEventLoadedListener {
         void onEventLoaded(Event event);
         void onEventLoadError(String error);
     }
 
-//    public int getCapacity() { return capacity; }
-//    public void setCapacity(int capacity) { this.capacity = capacity; }
-//
-//    public String getDate_Time() { return date_Time; }
-//    public void setDate_Time(String date_Time) { this.date_Time = date_Time; }
-//
-//    public String getDescription() { return description; }
-//    public void setDescription(String description) { this.description = description; }
-//
-//    public String getFacilityLocation() { return facilityLocation; }
-//    public void setFacilityLocation(String facilityLocation) { this.facilityLocation = facilityLocation; }
-//
-//    public String getFacilityName() { return facilityName; }
-//    public void setFacilityName(String facilityName) { this.facilityName = facilityName; }
-//
-//    public boolean isGeolocationEnabled() { return isGeolocationEnabled; }
-//    public void setGeolocationEnabled(boolean isGeolocationEnabled) { this.isGeolocationEnabled = isGeolocationEnabled; }
-//
-//    public String getName() { return name; }
-//    public void setName(String name) { this.name = name; }
-//
-//    public qrCode getQRCode() { return QRCode; }
-//    public void setQRCode(qrCode QRCode) { this.QRCode = QRCode; }
-//
-//    public String getRegistrationDeadline() { return registrationDeadline; }
-//    public void setRegistrationDeadline(String registrationDeadline) { this.registrationDeadline = registrationDeadline; }
-//
-//    public int getWaitListCapacity() { return waitListCapacity; }
-//    public void setWaitListCapacity(int waitListCapacity) { this.waitListCapacity = waitListCapacity; }
-//
-//    public ArrayList<String> cancelledList() { return cancelledList; }
-//    public void setCancelledList(ArrayList<String> cancelledList) { this.cancelledList = cancelledList; }
-//
-//    public ArrayList<String> finalList() { return finalList; }
-//    public void setFinalList(ArrayList<String> finalList) { this.finalList = finalList; }
-//
-//    public ArrayList<String> selectedList() { return selectedList; }
-//    public void setSelectedList(ArrayList<String> selectedList) { this.selectedList = selectedList; }
-//
-//    public ArrayList<String> waitingList() { return waitingList; }
-//    public void setWaitingList(ArrayList<String> waitingList) { this.waitingList = waitingList; }
-
-
+    // Getters and setters for all fields
     public int getCapacity() {
         return capacity;
     }

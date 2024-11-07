@@ -5,7 +5,7 @@ import java.util.Date;
 public class InvitedNotif extends Notification {
     private String message; // Holds the invitation message
 
-    public InvitedNotif(Date dateTimeStamp, User userTo, User userFrom, String message) {
+    public InvitedNotif(Date dateTimeStamp, String userTo, String userFrom, String message) {
         super(dateTimeStamp, userTo, userFrom, "Event Invitation", message, "Invitation");
         this.message = message;
     }

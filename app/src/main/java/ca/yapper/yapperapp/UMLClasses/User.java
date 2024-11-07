@@ -136,6 +136,25 @@ public class User {
         return user;
     }
 
+    public Map<String, Object> toMap() {
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("deviceId", deviceId);
+        userMap.put("email", email);
+        userMap.put("isAdmin", isAdmin);
+        userMap.put("isEntrant", isEntrant);
+        userMap.put("isOrganizer", isOrganizer);
+        userMap.put("name", name);
+        userMap.put("phoneNum", phoneNum);
+        userMap.put("isOptedOut", isOptedOut);
+        userMap.put("joinedEvents", joinedEvents);
+        userMap.put("registeredEvents", registeredEvents);
+        userMap.put("missedOutEvents", missedOutEvents);
+        userMap.put("createdEvents", createdEvents);
+
+        return userMap;
+    }
+
+
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
         void onUserLoadError(String error);

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,25 +40,37 @@ public class CancelledListFragment extends Fragment {
         cancelledList = new ArrayList<>();
         adapter = new UsersAdapter(cancelledList, getContext());
         recyclerView.setAdapter(adapter);
-        // TO-DO: SET 'EVENTID' TO BUNDLE PARAMETER #1 SENT FROM HOMEPAGE TO SPECIFIC EVENT CLICK NAVIGATION!
-        // add in event parameters bundle... etc
+
         db = FirebaseFirestore.getInstance();
-        //loadUsersFromFirebase(eventId);
+        loadUsersFromFirebase(eventId);
 
         return view;
     }
 
-//    private void loadUsersFromFirebase(String eventId) {
-//        Event event = Event.loadEventFromDatabase(eventId);
-//        if (event != null) {
-//            for (String userId : event.cancelledList()) {
-//                User user = User.loadUserFromDatabase(userId);
-//                if (user != null) {
-//                    cancelledList.add(user);
-//                }
-//            }
-//            adapter.notifyDataSetChanged();
-//        }
-//    }
-}
+    private void loadUsersFromFirebase(String eventId) {
+        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                for (String userId : event.getCancelledList()) {
+                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            cancelledList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
 
+                        @Override
+                        public void onUserLoadError(String error) {
+                            Log.e("CancelledListFragment", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onEventLoadError(String error) {
+                Log.e("CancelledListFragment", "Error loading event: " + error);
+            }
+        });
+    }
+}

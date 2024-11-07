@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,27 +14,24 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-import ca.yapper.yapperapp.UMLClasses.Event;
-import ca.yapper.yapperapp.UMLClasses.Event.OnEventLoadedListener;
-import ca.yapper.yapperapp.UsersAdapter;
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-import ca.yapper.yapperapp.UMLClasses.User.OnUserLoadedListener;
+import ca.yapper.yapperapp.UsersAdapter;
 
 public class WaitingListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> usersWaitingList;
-    // private List<>
     private FirebaseFirestore db;
     private String eventId;
+    private Button redrawButton;
 
     @Nullable
     @Override
@@ -45,27 +42,21 @@ public class WaitingListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         usersWaitingList = new ArrayList<>();
-
         adapter = new UsersAdapter(usersWaitingList, getContext());
         recyclerView.setAdapter(adapter);
-        // add in event parameters bundle... etc
+
+        redrawButton = view.findViewById(R.id.Button);
         db = FirebaseFirestore.getInstance();
+
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
             loadWaitingList(eventId);
-        }
-        else {
+        } else {
             Toast.makeText(getContext(), "Error: Unable to get event ID", Toast.LENGTH_SHORT).show();
-            // something else?
         }
-        // to-do: else statement for errors
-        // loadUsersFromFirebase(eventId);
-        /** Log.d("EventDebug", "Loading event with ID: " + eventId);
 
-         Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-        @Override
-        public void onEventLoaded(Event event) {
-        if (getContext() == null) return; **/
+        // Set up button click listener for redrawing
+        redrawButton.setOnClickListener(v -> redrawReplacementApplicant());
 
         return view;
     }
@@ -74,7 +65,7 @@ public class WaitingListFragment extends Fragment {
         ArrayList<String> userIdsStringList = new ArrayList<>();
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
-        Event.loadEventFromDatabase(eventId, new OnEventLoadedListener() {
+        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
                 if (getContext() == null) return;
@@ -106,5 +97,31 @@ public class WaitingListFragment extends Fragment {
                 Log.e("EventDetails", "Error loading event: " + error);
             }
         });
+    }
+
+    private void redrawReplacementApplicant() {
+        if (usersWaitingList.isEmpty()) {
+            Toast.makeText(getContext(), "No applicants in the waiting list", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Randomly select an applicant
+        Random random = new Random();
+        int index = random.nextInt(usersWaitingList.size());
+        User selectedUser = usersWaitingList.get(index);
+
+        // Add selected user to Firestore "selectedList"
+        addSelectedUserToFirestore(selectedUser);
+    }
+
+    private void addSelectedUserToFirestore(User selectedUser) {
+        db.collection("Events").document(eventId).collection("selectedList").document(selectedUser.getDeviceId())
+                .set(selectedUser.toMap())
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Replacement applicant selected: " + selectedUser.getName(), Toast.LENGTH_SHORT).show();
+                    usersWaitingList.remove(selectedUser);  // Optionally, remove from waiting list
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Log.e("FirestoreError", "Error adding to selected list", e));
     }
 }
