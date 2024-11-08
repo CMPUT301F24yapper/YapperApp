@@ -8,6 +8,7 @@ Look to source code in Repo.
 
 ## 3. Code Documentation:
 Look to source code in Repo (we included comments at the top of every important Class / Fragment / Activity, plus JavaDocs comments for methods).
+We were having trouble with Javadocs generation to Github even with correct usage of Javadocs, so for now we have it saved in Google Drive (Link: https://drive.google.com/drive/u/0/folders/1H-nh6iOYAUdf_WoMnQzXoz6IrXrxDXa2)
 
 ## 4. Test Cases:
 Our app currently does not include unit tests because:
