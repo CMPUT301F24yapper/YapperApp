@@ -21,7 +21,11 @@ import java.util.List;
 import ca.yapper.yapperapp.NotificationAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
-
+/**
+ * EntrantNotificationsFragment displays notifications related to the user, such as updates
+ * on events they have registered for or joined. It loads unread notifications from Firestore
+ * and displays them in a RecyclerView.
+ */
 public class EntrantNotificationsFragment extends Fragment {
 
     private RecyclerView notificationsRecyclerView;
@@ -31,7 +35,15 @@ public class EntrantNotificationsFragment extends Fragment {
     private String userDeviceId;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
+     * and loads unread notifications from Firestore.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -52,7 +64,11 @@ public class EntrantNotificationsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads unread notifications from the "Notifications" collection in Firestore, filtering by
+     * the user's device ID and displaying the results in the RecyclerView.
+     * Once loaded, notifications are marked as read.
+     */
     private void loadUnreadNotificationsFromFirestore() {
         db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)  // Query by device ID
@@ -73,7 +89,12 @@ public class EntrantNotificationsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Marks notifications as read in Firestore once they have been loaded and displayed
+     * in the RecyclerView.
+     *
+     * @param notifications The list of notifications to be marked as read.
+     */
     private void markNotificationsAsRead(List<Notification> notifications) {
         for (Notification notification : notifications) {
             db.collection("Notifications")

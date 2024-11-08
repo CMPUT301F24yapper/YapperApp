@@ -18,7 +18,10 @@ import java.util.List;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
-
+/**
+ * FinalListFragment displays the list of users who have been selected in the final list
+ * of participants for a specific event. The list is retrieved from Firestore and displayed in a RecyclerView.
+ */
 public class FinalListFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -28,7 +31,15 @@ public class FinalListFragment extends Fragment {
     private String eventId;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
+     * and loads the final list of participants for the specified event.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -51,14 +62,19 @@ public class FinalListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes the final list by reloading data from Firestore and updating the RecyclerView.
+     */
     public void refreshList() {
         if (getContext() == null) return;
         loadFinalList();
     }
 
 
-
+    /**
+     * Loads the final list from the "finalList" subcollection of the event document in Firestore.
+     * Updates the RecyclerView adapter with the retrieved users.
+     */
     private void loadFinalList() {
         if (getContext() == null) return;
 
