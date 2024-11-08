@@ -39,16 +39,17 @@ public class EntrantActivity extends AppCompatActivity {
                     .replace(R.id.fragment_container, new EntrantHomeFragment())
                     .commit();
 
-            // Also set the home item as selected in bottom nav
+            // Setting the home item as selected in bottom nav
             BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
             bottomNavigationView.setSelectedItemId(R.id.nav_entrant_home);
         }
     }
 
+
+
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // Set up normal click listener
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
 
@@ -78,19 +79,18 @@ public class EntrantActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
-
-        // Hide the current role option
-        popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false);
+        popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false); // Hiding role element
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_organizer) {
-                // Switch to OrganizerActivity
                 Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
                 startActivity(intent);
-                finish(); // Close current activity
+                finish();
                 return true;
             }
             return false;

@@ -37,6 +37,8 @@ public class SignupActivity extends AppCompatActivity {
     private static final String channel_Name = "event_notifications";
     private static final String channel_desc = "Notifications related to event participation";
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +75,6 @@ public class SignupActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
-                            // Display the welcome notification for returning users
                             displayWelcomeNotification();
                             launchEntrantActivity();
                         } else {
@@ -86,14 +87,12 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
+
+
     private void displayWelcomeNotification() {
         // Display a local notification for a welcome message
-        Notification welcomeNotification = new Notification(
-                new Date(),
-                "Welcome back!",
-                "Hello, welcome to the Event Lottery app.",
-                "Welcome"
-        );
+        Notification welcomeNotification = new Notification(new Date(), "Welcome back!",
+                "Hello, welcome to the Event Lottery app.", "Welcome");
         Log.d("SignupActivity", "Attempting to display welcome notification");
         welcomeNotification.displayNotification(this);
     }
@@ -105,6 +104,8 @@ public class SignupActivity extends AppCompatActivity {
         signupButton = findViewById(R.id.signup_button);
         signupButton.setOnClickListener(v -> createUserAndNotify());
     }
+
+
 
     private void createUserAndNotify() {
         String entrantName = addEntrantNameEditText.getText().toString();
@@ -119,15 +120,14 @@ public class SignupActivity extends AppCompatActivity {
         User.createUserInDatabase(
                 deviceId,
                 entrantEmail,
-                false,  // isAdmin
-                true,   // isEntrant
-                false,  // isOrganizer
+                false,   // isAdmin
+                true,           // isEntrant
+                false,         // isOrganizer
                 entrantName,
                 entrantPhone,
-                false   // isOptedOut
+                false        // isOptedOut
         );
 
-        // Display a local notification for successful signup
         Notification signupNotification = new Notification(
                 new Date(),
                 "Welcome to Event Lottery!",
@@ -139,6 +139,8 @@ public class SignupActivity extends AppCompatActivity {
 
         launchEntrantActivity();
     }
+
+
 
     private void launchEntrantActivity() {
         Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);

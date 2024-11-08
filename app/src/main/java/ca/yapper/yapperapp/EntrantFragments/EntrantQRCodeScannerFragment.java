@@ -75,8 +75,9 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         settings = barcodeScan.getCameraSettings();
         checkCameraPermissions();
 
-        if (settings.getRequestedCameraId() != -1) {
-            settings.setRequestedCameraId(-1); // NOTE: If your scanner is displaying pixelated thing, change both 1's to 0's
+        if (settings.getRequestedCameraId() != 1) {
+            settings.setRequestedCameraId(1);
+            // If your scanner is displaying pixelated front Camera, change both 1's to 0's
         }
 
         settings.setAutoFocusEnabled(true);
