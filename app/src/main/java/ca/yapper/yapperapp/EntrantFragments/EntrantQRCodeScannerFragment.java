@@ -36,6 +36,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private Object cameraSetup;
     private CameraManager cameras;
     private String theCamera;
+    private int realCameraId;
 
     private BarcodeCallback scanningResult;
 
@@ -88,19 +89,17 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         for (int i = 0; i < cameraIds.length; i++){
             theCamera = cameraIds[i];
 
-            if (Integer.parseInt(theCamera) == CameraMetadata.LENS_FACING_BACK){
+            CameraCharacteristics cameraConfig = cameras.getCameraCharacteristics(theCamera);
+            realCameraId = cameraConfig.get(CameraCharacteristics.LENS_FACING);
 
-                CameraCharacteristics cameraConfig = cameras.getCameraCharacteristics(theCamera);
-                int cameraWeWant = cameraConfig.get(CameraCharacteristics.LENS_FACING);
-
-                if (cameraWeWant == CameraMetadata.LENS_FACING_BACK){
-                    // cameraWeWant is the actual camera id associated with the selected camera we have
-                    // This value changes based on the users device
-                    if (settings.getRequestedCameraId() != cameraWeWant){
-                        // Sets the default camera to be the front facing camera, in case its not
-                        settings.setRequestedCameraId(cameraWeWant);
-                        Log.d("QR Code", theCamera + " " + CameraMetadata.LENS_FACING_BACK);
-                    }
+            if (realCameraId == 1){
+                // realCameraId is the actual camera id associated with the selected camera we have
+                // This value changes based on the users device
+                if (settings.getRequestedCameraId() != realCameraId){ // Here we are certain that
+                    // the realCameraId is for the back facing camera, regardless of how the device stores it.
+                    // Sets the default camera to be the front facing camera, in case its not
+                    settings.setRequestedCameraId(realCameraId);
+                    Log.d("QR Code", "The Front face camera Id: " + realCameraId + "\nThe actual camera: " + theCamera);
                 }
             }
         }
