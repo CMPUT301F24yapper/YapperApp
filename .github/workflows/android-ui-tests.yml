@@ -39,6 +39,10 @@ jobs:
           build-tools: '30.0.3'
           components: platform-tools
 
-      # Step 5: Run Gradle UI tests
+      # Step 5: Grant execute permission to gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # Step 6: Run Gradle UI tests
       - name: Run UI Tests
         run: ./gradlew connectedAndroidTest
