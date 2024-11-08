@@ -44,9 +44,7 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
-      # Step 6: Ensure google-services.json exists (if used)
       - name: Create google-services.json
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
