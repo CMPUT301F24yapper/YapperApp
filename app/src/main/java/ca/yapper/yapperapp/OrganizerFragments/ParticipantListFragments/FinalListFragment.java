@@ -5,21 +5,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
@@ -33,7 +29,7 @@ public class FinalListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.event_participants_waitlist, container, false);
+        View view = inflater.inflate(R.layout.event_participants_finallist, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -41,39 +37,54 @@ public class FinalListFragment extends Fragment {
         finalList = new ArrayList<>();
         adapter = new UsersAdapter(finalList, getContext());
         recyclerView.setAdapter(adapter);
-        // TO-DO: SET 'EVENTID' TO BUNDLE PARAMETER #1 SENT FROM HOMEPAGE TO SPECIFIC EVENT CLICK NAVIGATION!
-        // add in event parameters bundle... etc
+
         db = FirebaseFirestore.getInstance();
-        //loadUsersFromFirebase(eventId);
+
+        if (getArguments() != null) {
+            eventId = getArguments().getString("eventId");
+            loadFinalList();
+        }
 
         return view;
     }
 
-    private void loadUsersFromFirebase(String eventId) {
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-            @Override
-            public void onEventLoaded(Event event) {
-                for (String userId : event.getFinalList()) {
-                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
-                        @Override
-                        public void onUserLoaded(User user) {
-                            finalList.add(user);
-                            adapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onUserLoadError(String error) {
-                            Log.e("FinalListFragment", "Error loading user: " + error);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onEventLoadError(String error) {
-                Log.e("FinalListFragment", "Error loading event: " + error);
-            }
-        });
+    public void refreshList() {
+        if (getContext() == null) return;
+        loadFinalList();
     }
 
+    private void loadFinalList() {
+        if (getContext() == null) return;
+
+        finalList.clear();
+        adapter.notifyDataSetChanged();
+
+        db.collection("Events").document(eventId)
+                .collection("finalList")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        String userId = document.getId();
+                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (getContext() == null) return;
+                                finalList.add(user);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onUserLoadError(String error) {
+                                if (getContext() == null) return;
+                                Log.e("FinalList", "Error loading user: " + error);
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Error loading final list", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 }
