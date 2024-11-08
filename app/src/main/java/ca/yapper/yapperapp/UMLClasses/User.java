@@ -224,12 +224,6 @@ public class User {
         isOptedOut = optedOut;
     }
 
-    public void uploadProfilePic(ProfilePic profilePic) {
-    }
-
-    public void removeProfilePic() {
-    }
-
     public boolean isAdmin() {
         return isAdmin;
     }

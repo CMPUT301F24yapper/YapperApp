@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
@@ -44,17 +43,6 @@ public class EntrantActivity extends AppCompatActivity {
             BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
             bottomNavigationView.setSelectedItemId(R.id.nav_entrant_home);
         }
-
-        // Fetch the FCM token in Java style
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                String token = task.getResult();
-                Log.d("FCM Token", "FCM registration token: " + token);
-                // Send token to your server if needed
-            } else {
-                Log.w("FCM Token", "Fetching FCM registration token failed", task.getException());
-            }
-        });
     }
 
     private void setupBottomNavigation() {
