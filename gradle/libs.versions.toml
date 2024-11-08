@@ -1,36 +1,56 @@
 [versions]
-agp = "8.6.0"
-androidxJunit = "1.1.3"
+agp = "8.6.1"
+androidxEspressoCore = "3.6.1"
+androidxJunit = "1.2.1"
+androidxJunitVersion = "1.2.1"
 core = "3.4.1"
 coreVersion = "1.6.1"
-espressoCoreVersion = "3.4.0"
+espressoCoreVersion = "3.6.1"
 firebaseBom = "33.5.1"
 glide = "4.12.0"
 junit = "4.13.2"
+junitJupiterApi = "5.8.1"
+junitJupiterApiVersion = "5.8.1"
+junitJupiterEngine = "5.8.1"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
-activity = "1.9.2"
-constraintlayout = "2.1.4"
+activity = "1.9.3"
+constraintlayout = "2.2.0"
 firebaseMessaging = "24.0.3"
 playServicesBase = "18.5.0"
+xjunitJupiterEngine = "5.0.1"
 zxingAndroidEmbedded = "4.3.0"
+junitJupiter = "5.8.1"
 
 [libraries]
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
+#noinspection SimilarGradleDependency
 espresso-core-v340 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
+#noinspection SimilarGradleDependency
+espresso-core-v351 = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspressoCore" }
 espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoCoreVersion" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 google-firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+#noinspection SimilarGradleDependency
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+#noinspection SimilarGradleDependency
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+#noinspection SimilarGradleDependency
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterApi" }
+#noinspection SimilarGradleDependency
+junit-jupiter-api-v501 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterApiVersion" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiterEngine" }
+#noinspection SimilarGradleDependency
 junit-v113 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
+#noinspection SimilarGradleDependency
+junit-v115 = { module = "androidx.test.ext:junit", version.ref = "androidxJunitVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
@@ -38,7 +58,9 @@ firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
 rules = { module = "androidx.test:rules", version.ref = "coreVersion" }
 test-core = { module = "androidx.test:core", version.ref = "coreVersion" }
+xjunit-jupiter-engine = { module = "org junit jupiter: junit-jupiter-engine", version.ref = "xjunitJupiterEngine" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
