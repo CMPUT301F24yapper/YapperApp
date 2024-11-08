@@ -26,10 +26,10 @@ import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 
 public class ProfileFragment extends Fragment {
+
     private FirebaseFirestore db;
     private String deviceId;
     private DocumentReference userRef;
-
     private EditText nameEditText;
     private EditText emailEditText;
     private EditText phoneEditText;
@@ -38,6 +38,8 @@ public class ProfileFragment extends Fragment {
     private Switch notificationsSwitch;
     private LinearLayout notificationsSection;
     private LinearLayout facilitySection;
+
+
 
     @Nullable
     @Override
@@ -59,6 +61,8 @@ public class ProfileFragment extends Fragment {
 
         return view;
     }
+
+
 
     private void initializeViews(View view) {
         nameEditText = view.findViewById(R.id.edit_name);
@@ -84,6 +88,8 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
+
     private void loadUserData() {
         userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
@@ -106,6 +112,8 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+
     private void setupTextChangeListeners() {
         nameEditText.addTextChangedListener(createTextWatcher("entrantName"));
         emailEditText.addTextChangedListener(createTextWatcher("entrantEmail"));
@@ -126,6 +134,8 @@ public class ProfileFragment extends Fragment {
             }
         };
     }
+
+
 
     private void updateField(String field, Object value) {
         Map<String, Object> updates = new HashMap<>();

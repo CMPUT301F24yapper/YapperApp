@@ -20,11 +20,14 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
 public class CancelledListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> cancelledList;
     private FirebaseFirestore db;
     private String eventId;
+
+
 
     @Nullable
     @Override
@@ -33,7 +36,6 @@ public class CancelledListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         cancelledList = new ArrayList<>();
         adapter = new UsersAdapter(cancelledList, getContext());
         recyclerView.setAdapter(adapter);
@@ -48,10 +50,14 @@ public class CancelledListFragment extends Fragment {
         return view;
     }
 
+
+
     public void refreshList() {
         if (getContext() == null) return;
         loadCancelledList();
     }
+
+
 
     private void loadCancelledList() {
         if (getContext() == null) return;

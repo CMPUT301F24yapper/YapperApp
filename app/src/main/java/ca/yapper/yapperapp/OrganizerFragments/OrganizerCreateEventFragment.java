@@ -23,6 +23,7 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class OrganizerCreateEventFragment extends Fragment {
+
     private EditText eventNameEditText;
     private EditText eventFacilityEditText;
     private EditText eventFacilityLocationEditText;
@@ -36,6 +37,8 @@ public class OrganizerCreateEventFragment extends Fragment {
     private String userDeviceId;
     private int selectedYear, selectedMonth, selectedDay;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         return view;
     }
+
+
 
     private void initializeViews(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
@@ -80,6 +85,8 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         datePickerDialog.show();
     }
+
+
 
     private void createEvent() {
         String name = eventNameEditText.getText().toString();

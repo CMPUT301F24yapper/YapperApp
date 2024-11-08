@@ -24,15 +24,17 @@ import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
 public class OrganizerActivity extends AppCompatActivity {
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventsRef = db.collection("Events");
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.organizer_activity_layout);
-
 
         setupBottomNavigation();
 
@@ -43,10 +45,11 @@ public class OrganizerActivity extends AppCompatActivity {
         }
     }
 
+
+
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // Set up normal click listener
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
 
@@ -74,19 +77,18 @@ public class OrganizerActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
-
-        // Hide the current role option
-        popup.getMenu().findItem(R.id.switch_to_organizer).setVisible(false);
+        popup.getMenu().findItem(R.id.switch_to_organizer).setVisible(false); // Hiding role element
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_entrant) {
-                // Switch to EntrantActivity
                 Intent intent = new Intent(OrganizerActivity.this, EntrantActivity.class);
                 startActivity(intent);
-                finish(); // Close current activity
+                finish();
                 return true;
             }
             return false;

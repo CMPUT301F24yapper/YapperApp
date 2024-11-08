@@ -32,25 +32,27 @@ public class JoinedEventsFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recycler_joinededevents, container, false);
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
-
         db = FirebaseFirestore.getInstance();
+
         loadEventsFromFirebase();
 
         return view;
     }
+
+
 
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
@@ -77,7 +79,6 @@ public class JoinedEventsFragment extends Fragment {
                             @Override
                             public void onEventLoaded(Event event) {
                                 if (getContext() == null) return;
-
                                 eventList.add(event);
                                 adapter.notifyDataSetChanged();
                             }
@@ -85,7 +86,6 @@ public class JoinedEventsFragment extends Fragment {
                             @Override
                             public void onEventLoadError(String error) {
                                 if (getContext() == null) return;
-
                                 Log.e("JoinedEvents", "Error loading event " + eventId + ": " + error);
                             }
                         });

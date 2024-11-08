@@ -18,11 +18,12 @@ import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.qrCode;
 
 public class OrganizerQRCodeViewFragment extends Fragment {
-
     private String eventId;
     private qrCode QRCode;
     private Bitmap QRCodeIMG;
     private ImageView imageView;
+
+
 
     @Nullable
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -35,8 +36,7 @@ public class OrganizerQRCodeViewFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
             return view;
         }
-
-        eventId = args.getString("0"); // getting eventID(which is also the hashdata)
+        eventId = args.getString("0");
 
         try {
             QRCode = new qrCode(eventId);
