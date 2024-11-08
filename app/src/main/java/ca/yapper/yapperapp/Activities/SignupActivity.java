@@ -92,7 +92,6 @@ public class SignupActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
-                            displayWelcomeNotification();
                             launchEntrantActivity();
                         } else {
                             setUpSignUpViews();
@@ -104,17 +103,6 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
-
-    /**
-     * Displays a welcome notification to returning users.
-     */
-    private void displayWelcomeNotification() {
-        // Display a local notification for a welcome message
-        Notification welcomeNotification = new Notification(new Date(), "Welcome back!",
-                "Hello, welcome to the Event Lottery app.", "Welcome");
-        Log.d("SignupActivity", "Attempting to display welcome notification");
-        welcomeNotification.displayNotification(this);
-    }
     /**
      * Initializes sign-up form views for new users and sets up the listener for the sign-up button.
      */
@@ -159,7 +147,6 @@ public class SignupActivity extends AppCompatActivity {
                 "Signup Success"
         );
         Log.d("SignupActivity", "Attempting to display signup notification");
-        signupNotification.displayNotification(this);
 
         launchEntrantActivity();
     }

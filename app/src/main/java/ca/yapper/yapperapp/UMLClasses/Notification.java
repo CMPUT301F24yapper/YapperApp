@@ -78,47 +78,10 @@ public class Notification {
 
 
     /**
-     * Displays the notification as a local notification in the app's notification tray.
-     * The notification includes the title, message, and a small icon.
-     *
-     * @param context The context in which to display the notification.
-     */
-    public void displayNotification(Context context) {
-        Log.d("Notification", "Attempting to display notification");
-
-        if (context == null) {
-            Log.e("NotificationError", "Context is null, cannot display notification");
-            return;
-        }
-
-        Log.d("Notification", "Title: " + title);
-        Log.d("Notification", "Message: " + message);
-        Log.d("Notification", "Channel ID: " + channel_Id);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_Id)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        Log.d("Notification", "NotificationManagerCompat initialized");
-
-        int notificationId = (int) System.currentTimeMillis();
-        Log.d("Notification", "Displaying notification with ID: " + notificationId);
-
-        notificationManager.notify(notificationId, builder.build());
-        Log.d("Notification", "Notification displayed successfully");
-
-        saveToDatabase();
-    }
-
-
-    /**
      * Saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
      */
-    public void saveToDatabase() {
+    public void saveToDatabase(String userToId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         Map<String, Object> notificationData = new HashMap<>();
