@@ -2,6 +2,7 @@ package ca.yapper.yapperapp.EntrantFragments;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Bundle;
@@ -88,13 +89,25 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             theCamera = cameraIds[i];
 
             if (Integer.parseInt(theCamera) == CameraMetadata.LENS_FACING_BACK){
-                if (settings.getRequestedCameraId() != Integer.parseInt(theCamera)){
-                    // Sets the default camera to be the front facing camera, in case its not
-                    settings.setRequestedCameraId(Integer.parseInt(theCamera));
-                    Log.d("QR Code", theCamera + " " + CameraMetadata.LENS_FACING_BACK);
+
+                CameraCharacteristics cameraConfig = cameras.getCameraCharacteristics(theCamera);
+                int cameraWeWant = cameraConfig.get(CameraCharacteristics.LENS_FACING);
+
+                if (cameraWeWant == CameraMetadata.LENS_FACING_BACK){
+                    // cameraWeWant is the actual camera id associated with the selected camera we have
+                    // This value changes based on the users device
+                    if (settings.getRequestedCameraId() != cameraWeWant){
+                        // Sets the default camera to be the front facing camera, in case its not
+                        settings.setRequestedCameraId(cameraWeWant);
+                        Log.d("QR Code", theCamera + " " + CameraMetadata.LENS_FACING_BACK);
+                    }
                 }
             }
         }
+
+        //if (settings.getRequestedCameraId() != 0){
+        //    // Sets the default camera to be the front facing camera, in case its not
+        //    settings.setRequestedCameraId(0);
 
         //settings.setRequestedCameraId(1);
         settings.setAutoFocusEnabled(true);
