@@ -18,6 +18,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Random;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
+import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 /**
@@ -155,6 +157,16 @@ public class WaitingListFragment extends Fragment {
                             Random random = new Random();
                             int index = random.nextInt(usersWaitingList.size());
                             User selectedUser = usersWaitingList.get(index);
+
+                            // Create notification
+                            Notification notification = new Notification(
+                                    new Date(),
+                                    "Selected for Event",
+                                    "You have been selected from the waiting list",
+                                    "Selection"
+                            );
+                            notification.saveToDatabase(selectedUser.getDeviceId());
+
                             moveUserToSelectedList(selectedUser, () -> {
                                 completedMoves[0]++;
                                 if (completedMoves[0] == drawCount) {
