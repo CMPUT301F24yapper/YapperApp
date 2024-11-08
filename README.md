@@ -26,5 +26,5 @@ Look to Backlog.
 Our app closely follows the Figma design created during the planning phase. There have been no significant changes or deviations from the original design. Notfication Page Changes can be found here: https://www.figma.com/design/LvuX3OONMMB8AZHy7H7evs/Yapper-App?node-id=0-1
 
 ## 8. Sprint Planning and Reviews:
-You can find our project planning document here.
+You can find our project planning document here: https://docs.google.com/document/d/1r3gN46TJsJ_52aZahp9-sxnLIFVKG7LOSuvvvMBYGXY/edit?tab=t.0
 All meeting minutes are organized and available in this folder: Meeting Minutes Folder. https://drive.google.com/drive/u/0/folders/1X8VXuVYss5d5FKfLBXnMyWdaYjrwcLZw
