@@ -1,6 +1,12 @@
 name: Android CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -9,7 +15,7 @@ jobs:
     steps:
       # Step 1: Check out the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Step 2: Set up JDK 17
       - name: Set up JDK 17
@@ -25,17 +31,30 @@ jobs:
           api-level: 34
           build-tools: 34.0.0
 
-      # Step 4: Make the gradlew file executable
+      # Step 4: Cache Gradle dependencies
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Step 5: Make the gradlew file executable
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
-      # Step 5: Create google-services.json
+      # Step 6: Ensure google-services.json exists (if used)
       - name: Create google-services.json
+        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
 
-      # Step 6: Run Gradle Unit Tests Only
-      - name: Run Unit Tests
-        run: ./gradlew test
+      # Step 7: Verify dependency resolution (optional for debugging)
+      - name: Verify Dependency Resolution
+        run: ./gradlew dependencies --configuration debugUnitTestRuntimeClasspath
 
+      # Step 8: Run Gradle Unit Tests
+      - name: Run Unit Tests
+        run: ./gradlew test --info
