@@ -24,6 +24,8 @@ public class OrganizerQRCodeViewFragment extends Fragment {
     private Bitmap QRCodeIMG;
     private ImageView imageView;
 
+
+
     @Nullable
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.organizer_viewqrcode, container, false);
@@ -35,8 +37,7 @@ public class OrganizerQRCodeViewFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
             return view;
         }
-
-        eventId = args.getString("0"); // getting eventID(which is also the hashdata)
+        eventId = args.getString("0");
 
         try {
             QRCode = new qrCode(eventId);

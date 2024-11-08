@@ -38,19 +38,19 @@ public class MissedOutFragment extends Fragment {
         View view = inflater.inflate(R.layout.recycler_missedevents, container, false);
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
-
         db = FirebaseFirestore.getInstance();
+
         loadEventsFromFirebaseDebug();
 
         return view;
     }
+
+
 
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
@@ -77,7 +77,6 @@ public class MissedOutFragment extends Fragment {
                             @Override
                             public void onEventLoaded(Event event) {
                                 if (getContext() == null) return;
-
                                 eventList.add(event);
                                 adapter.notifyDataSetChanged();
                             }
@@ -85,7 +84,6 @@ public class MissedOutFragment extends Fragment {
                             @Override
                             public void onEventLoadError(String error) {
                                 if (getContext() == null) return;
-
                                 Log.e("MissedEvents", "Error loading event " + eventId + ": " + error);
                             }
                         });
@@ -99,6 +97,8 @@ public class MissedOutFragment extends Fragment {
                     }
                 });
     }
+
+
 
     private void loadEventsFromFirebaseDebug() {
         db.collection("Events")
@@ -118,7 +118,6 @@ public class MissedOutFragment extends Fragment {
                             @Override
                             public void onEventLoaded(Event event) {
                                 if (getContext() == null) return;
-
                                 eventList.add(event);
                                 adapter.notifyDataSetChanged();
                             }
@@ -126,7 +125,6 @@ public class MissedOutFragment extends Fragment {
                             @Override
                             public void onEventLoadError(String error) {
                                 if (getContext() == null) return;
-
                                 Log.e("AllEvents", "Error loading event " + eventId + ": " + error);
                             }
                         });
