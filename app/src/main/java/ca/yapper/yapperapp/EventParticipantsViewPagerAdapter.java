@@ -15,15 +15,20 @@ import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.SelectedL
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 
 public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
+
     private String eventId;
     private final String[] tabTitles = new String[]{"Waiting", "Selected", "Final", "Cancelled"};
     private Map<Integer, Fragment> fragmentMap;
+
+
 
     public EventParticipantsViewPagerAdapter(@NonNull Fragment fragment, String eventId) {
         super(fragment);
         this.eventId = eventId;
         this.fragmentMap = new HashMap<>();
     }
+
+
 
     @NonNull
     @Override
@@ -55,6 +60,8 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
         return fragment;
     }
 
+
+
     public void refreshAllLists() {
         for (Fragment fragment : fragmentMap.values()) {
             if (fragment instanceof WaitingListFragment) {
@@ -71,6 +78,8 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
             }
         }
     }
+
+
 
     @Override
     public int getItemCount() {

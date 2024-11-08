@@ -18,22 +18,23 @@ import java.util.Map;
 import ca.yapper.yapperapp.R;
 
 public class Notification {
-    private String id;                  // Firestore document ID
+
+    private String id;                  // Firestore ID
     private Date dateTimeStamp;
     private String userToId;            // Recipient's device ID
     private String userFromId;          // Sender's device ID
     private String title;
     private String message;
     private String notificationType;    // Type such as "Invitation", "Rejection", etc.
-    private boolean isRead;             // To track if the notification has been viewed by the user
+    private boolean isRead;
     private static final String channel_Id = "event_notifications";
     private static final String channel_Name = "event_notifications";
     private static final String channel_desc = "event_notifications";
 
-    // Default constructor required for calls to DataSnapshot.getValue(Notification.class)
+
+
     public Notification() {}
 
-    // Constructor with parameters
     public Notification(Date dateTimeStamp, String userToId, String userFromId,
                         String title, String message, String notificationType) {
         this.dateTimeStamp = dateTimeStamp;
@@ -42,7 +43,7 @@ public class Notification {
         this.title = title;
         this.message = message;
         this.notificationType = notificationType;
-        this.isRead = false; // Default to false when a notification is created
+        this.isRead = false;
     }
 
     public Notification(Date dateTimeStamp, String title, String message, String notificationType) {
@@ -53,51 +54,43 @@ public class Notification {
         this.isRead = false;
     }
 
-    // Method to display the notification locally and save it to Firestore
+
+
     public void displayNotification(Context context) {
         Log.d("Notification", "Attempting to display notification");
 
-        // Check if the context is not null to avoid any issues
         if (context == null) {
             Log.e("NotificationError", "Context is null, cannot display notification");
             return;
         }
 
-        // Log details of the notification content
         Log.d("Notification", "Title: " + title);
         Log.d("Notification", "Message: " + message);
         Log.d("Notification", "Channel ID: " + channel_Id);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_Id)
-                .setSmallIcon(R.drawable.ic_notification)  // Replace with your app's notification icon
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-
-        // Log that the notification manager is ready
         Log.d("Notification", "NotificationManagerCompat initialized");
 
         int notificationId = (int) System.currentTimeMillis();
-
-        // Log before displaying the notification
         Log.d("Notification", "Displaying notification with ID: " + notificationId);
 
         notificationManager.notify(notificationId, builder.build());
-
-        // Log after displaying the notification
         Log.d("Notification", "Notification displayed successfully");
 
-        // Save the notification to Firestore after displaying it
         saveToDatabase();
     }
 
-    // Method to save the notification to Firestore
+
+
     public void saveToDatabase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Prepare the notification data
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
         notificationData.put("userToId", userToId);
@@ -107,7 +100,6 @@ public class Notification {
         notificationData.put("notificationType", notificationType);
         notificationData.put("isRead", isRead);
 
-        // Add the notification to the "Notifications" collection
         db.collection("Notifications")
                 .add(notificationData)
                 .addOnSuccessListener(documentReference -> {
@@ -117,7 +109,8 @@ public class Notification {
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
     }
 
-    // Method to mark the notification as read
+
+
     public void markAsRead() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -130,7 +123,8 @@ public class Notification {
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error marking notification as read", e));
     }
 
-    // Getters and Setters
+
+
     public String getId() {
         return id;
     }
@@ -183,9 +177,7 @@ public class Notification {
         return notificationType;
     }
 
-    public void setNotificationType(String notificationType) {
-        this.notificationType = notificationType;
-    }
+    public void setNotificationType(String notificationType) {this.notificationType = notificationType;}
 
     public boolean isRead() {
         return isRead;

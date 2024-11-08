@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Event {
+
     private int capacity;
     private String date_Time;
     private String description;
@@ -23,7 +24,8 @@ public class Event {
     private ArrayList<String> selectedList;
     private ArrayList<String> waitingList;
 
-    // Constructor
+
+
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
                  boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
                  ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
@@ -44,7 +46,8 @@ public class Event {
         this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
     }
 
-    // Method to load an event from Firestore
+
+
     public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Events").document(hashData).get()
@@ -71,7 +74,7 @@ public class Event {
                 });
     }
 
-    // Method to load user IDs from a subcollection
+
 
     public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
         ArrayList<String> userIdsList = new ArrayList<>();
@@ -104,13 +107,12 @@ public class Event {
                 });
     }
 
-
     public interface OnUserIdsLoadedListener {
         void onUserIdsLoaded(ArrayList<String> userIdsList);
     }
 
 
-    // Method to create a new event in Firestore
+
     public static Event createEventInDatabase(int capacity, String dateTime, String description,
                                               String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
                                               String registrationDeadline, int waitListCapacity, String organizerId) {
@@ -149,6 +151,8 @@ public class Event {
         }
     }
 
+
+
     // Initialize subcollections in Firestore with placeholder data
     private static void initializeSubcollections(FirebaseFirestore db, String eventId) {
         Map<String, Object> placeholderData = new HashMap<>();
@@ -168,7 +172,6 @@ public class Event {
         void onEventLoadError(String error);
     }
 
-    // Getters and setters for all fields
     public int getCapacity() {
         return capacity;
     }
@@ -197,9 +200,7 @@ public class Event {
         return facilityLocation;
     }
 
-    public void setFacilityLocation(String facilityLocation) {
-        this.facilityLocation = facilityLocation;
-    }
+    public void setFacilityLocation(String facilityLocation) {this.facilityLocation = facilityLocation;}
 
     public String getFacilityName() {
         return facilityName;
@@ -213,9 +214,7 @@ public class Event {
         return isGeolocationEnabled;
     }
 
-    public void setGeolocationEnabled(boolean geolocationEnabled) {
-        isGeolocationEnabled = geolocationEnabled;
-    }
+    public void setGeolocationEnabled(boolean geolocationEnabled) {isGeolocationEnabled = geolocationEnabled;}
 
     public qrCode getQRCode() {
         return QRCode;
@@ -237,25 +236,19 @@ public class Event {
         return registrationDeadline;
     }
 
-    public void setRegistrationDeadline(String registrationDeadline) {
-        this.registrationDeadline = registrationDeadline;
-    }
+    public void setRegistrationDeadline(String registrationDeadline) {this.registrationDeadline = registrationDeadline;}
 
     public int getWaitListCapacity() {
         return waitListCapacity;
     }
 
-    public void setWaitListCapacity(int waitListCapacity) {
-        this.waitListCapacity = waitListCapacity;
-    }
+    public void setWaitListCapacity(int waitListCapacity) {this.waitListCapacity = waitListCapacity;}
 
     public ArrayList<String> getCancelledList() {
         return cancelledList;
     }
 
-    public void setCancelledList(ArrayList<String> cancelledList) {
-        this.cancelledList = cancelledList;
-    }
+    public void setCancelledList(ArrayList<String> cancelledList) {this.cancelledList = cancelledList;}
 
     public ArrayList<String> getFinalList() {
         return finalList;
@@ -269,9 +262,7 @@ public class Event {
         return selectedList;
     }
 
-    public void setSelectedList(ArrayList<String> selectedList) {
-        this.selectedList = selectedList;
-    }
+    public void setSelectedList(ArrayList<String> selectedList) {this.selectedList = selectedList;}
 
     public ArrayList<String> getWaitingList() {
         return waitingList;

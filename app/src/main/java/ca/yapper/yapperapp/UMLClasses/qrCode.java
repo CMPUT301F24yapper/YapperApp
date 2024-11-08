@@ -9,8 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 public class qrCode {
-    // to implement (constructor, Gs & Ss)
-    // TO-DO: CHECK FOR UNIQUE HASH DATA FUNCTION INPUT
+
     private String QRCodeValue;
     private int hashData;
     private QRCodeWriter QRcodeManager;
@@ -34,7 +33,7 @@ public class qrCode {
         if (this.qrCode.getHeight() != 500 || this.qrCode.getWidth() != 500){
             return null;
         }
-        // Bitmap.Config.ARGB_8888 is the color config
+        // Bitmap.Config.ARGB_8888 is color config
         Bitmap QRImg = Bitmap.createBitmap(this.qrCode.getHeight(), this.qrCode.getWidth(), Bitmap.Config.ARGB_8888);
 
         for (int i = 0; i < this.qrCode.getHeight(); i++) {

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class User {
+
     private String deviceId;
     private String email;
     private boolean isAdmin;
@@ -23,6 +24,8 @@ public class User {
     private ArrayList<String> registeredEvents;
     private ArrayList<String> missedOutEvents;
     private ArrayList<String> createdEvents;
+
+
 
     public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
         this.deviceId = deviceId;
@@ -38,6 +41,8 @@ public class User {
         this.missedOutEvents = missedOutEvents;
         this.createdEvents = createdEvents;
     }
+
+
 
     public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -66,7 +71,7 @@ public class User {
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
                             listener.onUserLoaded(user);
-                        } // catch (WriterException e) {
+                        }
                         catch (Exception e) {
                             listener.onUserLoadError("Error creating user");
                         }
@@ -86,6 +91,8 @@ public class User {
          return user;
          } **/
 
+
+
     private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
         db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
             for (DocumentSnapshot doc : queryDocumentSnapshots) {
@@ -102,6 +109,8 @@ public class User {
             }
         });
     }
+
+
 
     public static User createUserInDatabase(String deviceId, String email, boolean isAdmin,
                                             boolean isEntrant, boolean isOrganizer, String name,
@@ -136,6 +145,8 @@ public class User {
         return user;
     }
 
+
+
     public Map<String, Object> toMap() {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("deviceId", deviceId);
@@ -153,6 +164,7 @@ public class User {
 
         return userMap;
     }
+
 
 
     public interface OnUserLoadedListener {
@@ -252,31 +264,23 @@ public class User {
         return joinedEvents;
     }
 
-    public void setJoinedEvents(ArrayList<String> joinedEvents) {
-        this.joinedEvents = joinedEvents;
-    }
+    public void setJoinedEvents(ArrayList<String> joinedEvents) {this.joinedEvents = joinedEvents;}
 
     public ArrayList<String> registeredEvents() {
         return registeredEvents;
     }
 
-    public void setRegisteredEvents(ArrayList<String> registeredEvents) {
-        this.registeredEvents = registeredEvents;
-    }
+    public void setRegisteredEvents(ArrayList<String> registeredEvents) {this.registeredEvents = registeredEvents;}
 
     public ArrayList<String> missedOutEvents() {
         return missedOutEvents;
     }
 
-    public void setMissedOutEvents(ArrayList<String> missedOutEvents) {
-        this.missedOutEvents = missedOutEvents;
-    }
+    public void setMissedOutEvents(ArrayList<String> missedOutEvents) {this.missedOutEvents = missedOutEvents;}
 
     public ArrayList<String> getCreatedEvents() {
         return createdEvents;
     }
 
-    public void setCreatedEvents(ArrayList<String> createdEvents) {
-        this.createdEvents = createdEvents;
-    }
+    public void setCreatedEvents(ArrayList<String> createdEvents) {this.createdEvents = createdEvents;}
 }

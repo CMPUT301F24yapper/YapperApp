@@ -23,6 +23,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
     private List<Event> eventList;
     private Context context;
 
+
+
     public EventsAdapter(List<Event> eventList, Context context) {
         this.eventList = eventList;
         this.context = context;
@@ -34,6 +36,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycleritem_event, parent, false);
         return new EventsViewHolder(view);
     }
+
+
 
     @Override
     public void onBindViewHolder(@NonNull EventsViewHolder holder, int position) {
@@ -78,6 +82,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
             }
         });
     }
+
+
 
     @Override
     public int getItemCount() {
