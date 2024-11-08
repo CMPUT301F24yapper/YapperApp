@@ -5,48 +5,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- RecyclerView for the list of entrants -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.6"
+        android:layout_weight="1"
         android:clipToPadding="false" />
 
-    <!-- Horizontal layout for buttons -->
-    <LinearLayout
+    <Button
+        android:id="@+id/button_draw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="100dp"
-        android:padding="10dp">
-
-        <!-- Redraw Button -->
-        <Button
-            android:id="@+id/button_draw"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="draw entrant"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
-            android:padding="12dp" />
-
-        <!-- New Button -->
-        <Button
-            android:id="@+id/button_redraw"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Redraw entrant"
-            android:backgroundTint="@color/black"
-            android:textColor="@android:color/white"
-            android:padding="12dp"
-            android:layout_marginStart="8dp" />
-
-    </LinearLayout>
+        android:text="Draw Applicant"
+        android:backgroundTint="@color/black"
+        android:textColor="@android:color/white"
+        android:padding="12dp" />
 
 </LinearLayout>

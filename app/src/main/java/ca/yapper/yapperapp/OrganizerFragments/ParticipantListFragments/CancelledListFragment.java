@@ -13,13 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
@@ -46,36 +46,40 @@ public class CancelledListFragment extends Fragment {
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            loadUsersFromFirebase(eventId);
+            loadCancelledList(eventId);
         }
 
         return view;
     }
 
-    private void loadUsersFromFirebase(String eventId) {
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-            @Override
-            public void onEventLoaded(Event event) {
-                for (String userId : event.getCancelledList()) {
-                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
-                        @Override
-                        public void onUserLoaded(User user) {
-                            cancelledList.add(user);
-                            adapter.notifyDataSetChanged();
-                        }
+    private void loadCancelledList(String eventId) {
+        db.collection("Events").document(eventId)
+                .collection("cancelledList")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    cancelledList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        String userId = document.getId();
+                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (getContext() == null) return;
+                                cancelledList.add(user);
+                                adapter.notifyDataSetChanged();
+                            }
 
-                        @Override
-                        public void onUserLoadError(String error) {
-                            Log.e("CancelledListFragment", "Error loading user: " + error);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onEventLoadError(String error) {
-                Log.e("CancelledListFragment", "Error loading event: " + error);
-            }
-        });
+                            @Override
+                            public void onUserLoadError(String error) {
+                                if (getContext() == null) return;
+                                Log.e("CancelledList", "Error loading user: " + error);
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Error loading cancelled list", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
