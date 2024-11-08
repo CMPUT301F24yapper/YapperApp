@@ -64,5 +64,6 @@ dependencies {
     testRuntimeOnly (libs.xjunit.jupiter.engine)
     androidTestImplementation(libs.junit.v115)
     androidTestImplementation(libs.espresso.core.v351)
+    //androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.6.1")
 
 }
