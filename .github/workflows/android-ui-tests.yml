@@ -1,0 +1,58 @@
+name: Android CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Step 3: Set up Android SDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+
+      # Step 4: Make the gradlew file executable
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
+
+      # Step 5: Create google-services.json
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
+      # Step 6: Set up and start the emulator
+      - name: Start emulator
+        run: |
+          adb start-server
+          echo "y" | sdkmanager --install "system-images;android-30;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64" --force
+          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -no-snapshot &
+
+      # Step 7: Wait for the emulator to start
+      - name: Wait for emulator to boot
+        run: |
+          adb wait-for-device
+          adb shell input keyevent 82
+
+      # Step 8: Run Gradle Build
+      - name: Run Gradle Build
+        run: ./gradlew build
+
+      # Step 9: Run Android Instrumentation Tests
+      - name: Run Android Tests
+        run: ./gradlew connectedAndroidTest

@@ -33,19 +33,19 @@ android {
 }
 
 dependencies {
-    implementation("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
 
     // Use Firebase BoM to manage Firebase library versions
-    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation(platform(libs.firebase.bom))
 
     // Declare Firebase libraries without versions; BoM manages these
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-messaging")
+    implementation(libs.firebase.firestore)
+    implementation(libs.google.firebase.messaging)
 
-    implementation("com.google.android.gms:play-services-base:18.2.0")
-    implementation("com.google.zxing:core:3.4.1")
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation(libs.play.services.base)
+    implementation(libs.core)
+    implementation(libs.zxing.android.embedded)
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -55,4 +55,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.test.core)
+    androidTestImplementation(libs.rules)
+    androidTestImplementation(libs.junit.v113)
+    androidTestImplementation(libs.espresso.core.v340)
+    androidTestImplementation(libs.espresso.intents)
+
 }
