@@ -35,7 +35,7 @@ public class JoinedEventsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_joinededevents, container, false);
+        View view = inflater.inflate(R.layout.recycler_joinedevents, container, false);
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 

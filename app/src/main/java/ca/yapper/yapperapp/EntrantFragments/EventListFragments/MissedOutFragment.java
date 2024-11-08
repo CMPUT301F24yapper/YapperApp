@@ -32,29 +32,44 @@ public class MissedOutFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+    private static final String TAG = "MissedOutFragment";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.recycler_registeredevents, container, false);
+        Log.d(TAG, "onCreateView called");
 
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.recycler_missedevents, container, false);
+
+        // Initialize the userDeviceId
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        // Find and set up RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView_missed);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        if (recyclerView == null) {
+            Log.e(TAG, "recyclerView_missed not found in layout");
+        } else {
+            Log.d(TAG, "recyclerView_missed successfully found in layout");
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        eventList = new ArrayList<>();
-        adapter = new EventsAdapter(eventList, getContext());
-        recyclerView.setAdapter(adapter);
+            // Initialize the list and adapter for displaying events
+            eventList = new ArrayList<>();
+            adapter = new EventsAdapter(eventList, getContext());
+            recyclerView.setAdapter(adapter);
 
-        db = FirebaseFirestore.getInstance();
-        loadEventsFromFirebaseDebug();
+            db = FirebaseFirestore.getInstance();
+            loadEventsFromFirebaseDebug();
+        }
 
         return view;
     }
 
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -66,7 +81,9 @@ public class MissedOutFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No missed events found", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "No missed events found", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
 
@@ -76,7 +93,7 @@ public class MissedOutFragment extends Fragment {
                         Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
                             @Override
                             public void onEventLoaded(Event event) {
-                                if (getContext() == null) return;
+                                if (getContext() == null) return; // Fragment might be detached
 
                                 eventList.add(event);
                                 adapter.notifyDataSetChanged();
@@ -86,7 +103,7 @@ public class MissedOutFragment extends Fragment {
                             public void onEventLoadError(String error) {
                                 if (getContext() == null) return;
 
-                                Log.e("MissedEvents", "Error loading event " + eventId + ": " + error);
+                                Log.e(TAG, "Error loading event " + eventId + ": " + error);
                             }
                         });
                     }
@@ -107,7 +124,9 @@ public class MissedOutFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
 
@@ -117,7 +136,7 @@ public class MissedOutFragment extends Fragment {
                         Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
                             @Override
                             public void onEventLoaded(Event event) {
-                                if (getContext() == null) return;
+                                if (getContext() == null) return; // Fragment might be detached
 
                                 eventList.add(event);
                                 adapter.notifyDataSetChanged();
@@ -127,7 +146,7 @@ public class MissedOutFragment extends Fragment {
                             public void onEventLoadError(String error) {
                                 if (getContext() == null) return;
 
-                                Log.e("AllEvents", "Error loading event " + eventId + ": " + error);
+                                Log.e(TAG, "Error loading event " + eventId + ": " + error);
                             }
                         });
                     }

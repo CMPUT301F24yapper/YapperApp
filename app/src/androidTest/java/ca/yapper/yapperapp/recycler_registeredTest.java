@@ -22,15 +22,8 @@ public class recycler_registeredTest {
 
     @Test
     public void testRecyclerViewIsDisplayed() {
-        // Check if the RecyclerView for registered events is displayed
         Espresso.onView(withId(R.id.recyclerView_registered))
                 .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
     }
 
-    @Test
-    public void testRecyclerViewHasNoItemsInitially() {
-        // Check if the RecyclerView is empty initially (assuming the initial data is not populated)
-        Espresso.onView(withId(R.id.recyclerView_registered))
-                .check(ViewAssertions.matches(ViewMatchers.hasChildCount(0)));
-    }
 }

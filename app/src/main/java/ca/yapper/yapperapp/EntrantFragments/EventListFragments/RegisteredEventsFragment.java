@@ -38,11 +38,13 @@ public class RegisteredEventsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recycler_registeredevents, container, false);
 
+        // Retrieve the device ID to use as the user identifier
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        recyclerView = view.findViewById(R.id.recyclerView_missed);
+        recyclerView = view.findViewById(R.id.recyclerView_registered);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Initialize the list and adapter for displaying events
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
@@ -55,7 +57,9 @@ public class RegisteredEventsFragment extends Fragment {
 
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -67,7 +71,9 @@ public class RegisteredEventsFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No registered events found", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "No registered events found", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
 
