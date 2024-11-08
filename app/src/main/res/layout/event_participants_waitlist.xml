@@ -3,8 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <!-- RecyclerView for the list of entrants -->
     <androidx.recyclerview.widget.RecyclerView
@@ -14,17 +13,40 @@
         android:layout_weight="0.6"
         android:clipToPadding="false" />
 
-    <!-- Redraw Button -->
-    <Button
-        android:id="@+id/Button"
-        android:layout_width="wrap_content"
+    <!-- Horizontal layout for buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Redraw entrant"
+        android:orientation="horizontal"
         android:layout_gravity="center"
-        android:backgroundTint="@color/black"
-        android:textColor="@android:color/white"
-        android:padding="12dp"
+        android:gravity="center"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="100dp"/>
+        android:layout_marginBottom="100dp"
+        android:padding="10dp">
+
+        <!-- Redraw Button -->
+        <Button
+            android:id="@+id/button_draw"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="draw entrant"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:padding="12dp" />
+
+        <!-- New Button -->
+        <Button
+            android:id="@+id/button_redraw"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Redraw entrant"
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
 
 </LinearLayout>
