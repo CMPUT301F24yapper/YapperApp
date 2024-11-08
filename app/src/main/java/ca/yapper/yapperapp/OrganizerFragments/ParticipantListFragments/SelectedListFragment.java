@@ -26,7 +26,11 @@ import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
-
+/**
+ * SelectedListFragment displays the list of users selected to participate in a specific event.
+ * This fragment allows for re-selection by drawing users from the waiting list as needed.
+ * The list is retrieved from Firestore and displayed in a RecyclerView.
+ */
 public class SelectedListFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -38,7 +42,15 @@ public class SelectedListFragment extends Fragment {
     private int eventCapacity;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
+     * and loads the selected list for the specified event. Sets up a redraw button for re-selection.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,7 +76,9 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the capacity of the event from Firestore, setting the maximum number of selected participants.
+     */
     private void loadEventCapacity() {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -75,7 +89,9 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes the selected list by reloading data from Firestore and updating the RecyclerView.
+     */
     public void refreshList() {
         if (getContext() == null) return;
 
@@ -105,11 +121,18 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the selected list from the "selectedList" subcollection of the event document in Firestore.
+     * Updates the RecyclerView adapter with the retrieved users.
+     */
     private void loadSelectedList() {
         refreshList();
     }
 
+    /**
+     * Allows re-selection of participants by randomly choosing from the waiting list and moving users to the selected list,
+     * based on the event's capacity. Updates the UI with newly selected participants.
+     */
     private void redrawApplicant() {
         if (selectedList.isEmpty()) {
             Toast.makeText(getContext(), "No users in selected list", Toast.LENGTH_SHORT).show();
@@ -128,7 +151,10 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Draws multiple users from the waiting list if the selected list has space remaining,
+     * moving users from the waiting list to the selected list in Firestore.
+     */
     private void drawFromWaitingList() {
         db.collection("Events").document(eventId)
                 .collection("waitingList")
@@ -175,7 +201,12 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Moves a user from the waiting list to the selected list in Firestore.
+     *
+     * @param user The user to be moved.
+     * @param onComplete Runnable executed once the move is complete.
+     */
     private void moveToSelectedList(User user, Runnable onComplete) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
@@ -195,7 +226,12 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Moves a user from the selected list back to the waiting list in Firestore.
+     * Refreshes the list after the user is moved.
+     *
+     * @param user The user to be moved.
+     */
     private void moveUserToWaitingList(User user) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
@@ -216,7 +252,10 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes all fragments displaying participant lists for the event,
+     * ensuring that UI updates are reflected across all views.
+     */
     private void refreshAllFragments() {
         ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);
         EventParticipantsViewPagerAdapter pagerAdapter = (EventParticipantsViewPagerAdapter) viewPager.getAdapter();

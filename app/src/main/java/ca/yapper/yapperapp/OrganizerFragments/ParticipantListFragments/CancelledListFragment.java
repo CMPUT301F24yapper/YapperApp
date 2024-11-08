@@ -18,7 +18,10 @@ import java.util.List;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
-
+/**
+ * CancelledListFragment displays a list of users who have cancelled their participation
+ * in a specific event. The list is retrieved from Firestore and shown in a RecyclerView.
+ */
 public class CancelledListFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -28,7 +31,15 @@ public class CancelledListFragment extends Fragment {
     private String eventId;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
+     * and loads the cancelled list for the specified event.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -51,14 +62,19 @@ public class CancelledListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes the cancelled list by reloading data from Firestore and updating the RecyclerView.
+     */
     public void refreshList() {
         if (getContext() == null) return;
         loadCancelledList();
     }
 
 
-
+    /**
+     * Loads the cancelled list from the "cancelledList" subcollection of the event document in Firestore.
+     * Updates the RecyclerView adapter with the retrieved users.
+     */
     private void loadCancelledList() {
         if (getContext() == null) return;
 

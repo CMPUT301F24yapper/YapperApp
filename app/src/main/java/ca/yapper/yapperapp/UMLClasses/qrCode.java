@@ -7,7 +7,10 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-
+/**
+ * The qrCode class represents a QR code associated with an event.
+ * It generates a QR code based on a unique identifier for the event and converts it into a bitmap.
+ */
 public class qrCode {
 
     private String QRCodeValue;

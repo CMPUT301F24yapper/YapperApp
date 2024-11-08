@@ -15,9 +15,22 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.ViewPagerAdapter;
-
+/**
+ * EntrantHomeFragment serves as the main home view for Entrants, displaying different
+ * categories of events in tabs: Registered Events, Joined Events, and Missed Out events.
+ * This fragment uses a ViewPager2 with a TabLayout for navigation between these categories.
+ */
 public class EntrantHomeFragment extends Fragment {
 
+    /**
+     * Inflates the fragment layout, sets up the ViewPager2 with a TabLayout, and
+     * configures each tab to display a specific event category.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

@@ -6,7 +6,12 @@ import com.google.zxing.WriterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * The Event class represents an event created by an organizer.
+ * It contains details about the event, such as name, location, date, capacity, and lists
+ * of participants in different stages (waiting, selected, cancelled, final).
+ * The class provides methods to load event details from Firestore and manage participant lists.
+ */
 public class Event {
 
     private int capacity;
@@ -25,7 +30,24 @@ public class Event {
     private ArrayList<String> waitingList;
 
 
-
+    /**
+     * Constructs a new Event with the specified parameters.
+     *
+     * @param capacity Maximum number of attendees.
+     * @param date_Time The date and time of the event.
+     * @param description Event description.
+     * @param facilityLocation The location of the event.
+     * @param facilityName The name of the facility.
+     * @param isGeolocationEnabled True if geolocation is enabled for the event.
+     * @param name The name of the event.
+     * @param registrationDeadline Registration deadline for the event.
+     * @param waitListCapacity Capacity of the waiting list.
+     * @param cancelledList List of users who cancelled participation.
+     * @param finalList Final list of participants.
+     * @param selectedList List of selected participants.
+     * @param waitingList Waiting list of potential participants.
+     * @throws WriterException If there is an error generating the QR code.
+     */
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
                  boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
                  ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
@@ -47,7 +69,12 @@ public class Event {
     }
 
 
-
+    /**
+     * Loads an event from Firestore based on the event ID and returns it through a listener.
+     *
+     * @param hashData The unique ID of the event.
+     * @param listener Listener for handling the loaded event or error.
+     */
     public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Events").document(hashData).get()
@@ -112,7 +139,21 @@ public class Event {
     }
 
 
-
+    /**
+     * Creates and saves a new event in Firestore with the provided details.
+     *
+     * @param capacity The maximum number of attendees.
+     * @param dateTime The event date and time.
+     * @param description The description of the event.
+     * @param facilityLocation The location of the event.
+     * @param facilityName The name of the facility.
+     * @param isGeolocationEnabled Whether geolocation is enabled for the event.
+     * @param name The name of the event.
+     * @param registrationDeadline The registration deadline for the event.
+     * @param waitListCapacity Capacity of the waiting list.
+     * @param organizerId The ID of the organizer creating the event.
+     * @return The created Event instance.
+     */
     public static Event createEventInDatabase(int capacity, String dateTime, String description,
                                               String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
                                               String registrationDeadline, int waitListCapacity, String organizerId) {
@@ -152,8 +193,12 @@ public class Event {
     }
 
 
-
-    // Initialize subcollections in Firestore with placeholder data
+    /**
+     * Initializes Firestore subcollections for the event with placeholder data.
+     *
+     * @param db Firestore instance.
+     * @param eventId The unique ID of the event.
+     */
     private static void initializeSubcollections(FirebaseFirestore db, String eventId) {
         Map<String, Object> placeholderData = new HashMap<>();
         placeholderData.put("placeholder", true);
@@ -166,7 +211,9 @@ public class Event {
 
 
 
-    // Interface for loading event listener
+    /**
+     * Interface for handling the result of loading an event from Firestore.
+     */
     public interface OnEventLoadedListener {
         void onEventLoaded(Event event);
         void onEventLoadError(String error);

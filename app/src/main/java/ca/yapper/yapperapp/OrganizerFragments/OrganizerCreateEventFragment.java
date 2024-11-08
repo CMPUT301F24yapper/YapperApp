@@ -21,7 +21,11 @@ import java.util.Calendar;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-
+/**
+ * OrganizerCreateEventFragment provides a form for organizers to create a new event.
+ * It allows organizers to specify event details, including name, facility, date, capacity,
+ * and geolocation options, and saves the event to Firestore.
+ */
 public class OrganizerCreateEventFragment extends Fragment {
 
     private EditText eventNameEditText;
@@ -38,7 +42,15 @@ public class OrganizerCreateEventFragment extends Fragment {
     private int selectedYear, selectedMonth, selectedDay;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes form fields, and sets up date pickers
+     * and save button click listeners. Retrieves the user's device ID for event creation.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,7 +65,12 @@ public class OrganizerCreateEventFragment extends Fragment {
     }
 
 
-
+    /**
+     * Initializes the UI components of the event creation form, setting up EditText fields
+     * for event details and other necessary views.
+     *
+     * @param view The root view of the fragment layout.
+     */
     private void initializeViews(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
         eventFacilityEditText = view.findViewById(R.id.event_facility_input);
@@ -64,13 +81,20 @@ public class OrganizerCreateEventFragment extends Fragment {
         geolocationSwitch = view.findViewById(R.id.geo_location_toggle);
         saveEventButton = view.findViewById(R.id.save_event_button);
     }
-
+    /**
+     * Sets up listeners for the date and deadline fields, displaying a DatePickerDialog
+     * when clicked, and configures the save button to trigger event creation.
+     */
     private void setupClickListeners() {
         eventDateTimeEditText.setOnClickListener(v -> showDatePickerDialog(eventDateTimeEditText));
         eventDeadlineEditText.setOnClickListener(v -> showDatePickerDialog(eventDeadlineEditText));
         saveEventButton.setOnClickListener(v -> createEvent());
     }
-
+    /**
+     * Displays a DatePickerDialog, allowing the user to select a date for the event or registration deadline.
+     *
+     * @param dateEditText The EditText field where the selected date will be displayed.
+     */
     private void showDatePickerDialog(EditText dateEditText) {
         final Calendar calendar = Calendar.getInstance();
         selectedYear = calendar.get(Calendar.YEAR);
@@ -87,7 +111,10 @@ public class OrganizerCreateEventFragment extends Fragment {
     }
 
 
-
+    /**
+     * Validates the input fields and saves the event details to Firestore.
+     * Displays confirmation messages if successful or error messages if fields are missing.
+     */
     private void createEvent() {
         String name = eventNameEditText.getText().toString();
         if (name.isEmpty()) {

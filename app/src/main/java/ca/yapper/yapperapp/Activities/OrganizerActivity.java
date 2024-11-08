@@ -22,14 +22,23 @@ import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
-
+/**
+ * OrganizerActivity is the main activity for the Organizer user role.
+ * This activity manages the Organizer's home, event creation, and profile views,
+ * allowing navigation between these sections via a BottomNavigationView.
+ * Additionally, it includes options for switching roles to Entrant.
+ */
 public class OrganizerActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventsRef = db.collection("Events");
 
-
-
+    /**
+     * Initializes the activity, setting up the layout and enabling Edge-to-Edge for UI.
+     * Sets up BottomNavigationView for navigating between sections: Home, Create Event, and Profile.
+     *
+     * @param savedInstanceState The state saved in a previous configuration, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,8 +54,11 @@ public class OrganizerActivity extends AppCompatActivity {
         }
     }
 
-
-
+    /**
+     * Sets up the BottomNavigationView for OrganizerActivity.
+     * Loads the appropriate Fragment based on the selected item.
+     * Sets up a long-click listener on the profile item for role-switch options.
+     */
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
@@ -78,7 +90,12 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Displays a menu with options to switch to the Entrant role, allowing the user to open
+     * EntrantActivity and exit OrganizerActivity.
+     *
+     * @param view The view from which this menu is triggered.
+     */
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
