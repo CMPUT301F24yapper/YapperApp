@@ -1,40 +1,40 @@
 name: Android CI
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the code
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Download dependencies
-        run: ./gradlew dependencies
-
+      # Step 3: Set up Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
           api-level: 34
-          build-tools: '34.0.0'
-          target-sdk: 34
+          build-tools: 34.0.0
+          cmake: '3.10.2'  # Specify if CMake is needed for native code (optional)
+          # Add additional components here if needed
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
+      # Step 4: Make the gradlew file executable
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
 
-      - name: Run UI Tests
+      # Step 5: Run Gradle Build
+      - name: Run Gradle Build
+        run: ./gradlew build
+
+      # Step 6: Run Android Instrumentation Tests
+      - name: Run Android Tests
         run: ./gradlew connectedAndroidTest
