@@ -1,10 +1,11 @@
 package ca.yapper.yapperapp;
 
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.CancelledListFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.FinalListFragment;
@@ -12,8 +13,9 @@ import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.SelectedL
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 
 public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
-
     private String eventId;
+    private TabLayout tabLayout;
+    private final String[] tabTitles = new String[]{"Waiting", "Selected", "Final", "Cancelled"};
 
     public EventParticipantsViewPagerAdapter(@NonNull Fragment fragment, String eventId) {
         super(fragment);
@@ -34,12 +36,14 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
             case 2:
                 fragment = new FinalListFragment();
                 break;
-            default:
+            case 3:
                 fragment = new CancelledListFragment();
+                break;
+            default:
+                fragment = new WaitingListFragment();
                 break;
         }
 
-        // Pass eventId to each fragment
         Bundle args = new Bundle();
         args.putString("eventId", eventId);
         fragment.setArguments(args);
@@ -48,6 +52,10 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
+    }
+
+    public String[] getTabTitles() {
+        return tabTitles;
     }
 }
