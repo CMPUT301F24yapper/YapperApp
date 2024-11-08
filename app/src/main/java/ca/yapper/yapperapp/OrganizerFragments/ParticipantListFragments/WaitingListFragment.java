@@ -7,23 +7,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import androidx.viewpager2.widget.ViewPager2;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -36,6 +35,7 @@ public class WaitingListFragment extends Fragment {
     private FirebaseFirestore db;
     private String eventId;
     private Button drawButton;
+    private int eventCapacity;
 
     @Nullable
     @Override
@@ -50,81 +50,117 @@ public class WaitingListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         drawButton = view.findViewById(R.id.button_draw);
-
         db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            loadWaitingList(eventId);
-        } else {
-            Toast.makeText(getContext(), "Error: Unable to get event ID", Toast.LENGTH_SHORT).show();
+            loadEventCapacity();
+            loadWaitingList();
         }
 
-        drawButton.setOnClickListener(v -> drawReplacementApplicant());
-
+        drawButton.setOnClickListener(v -> drawMultipleApplicants());
         return view;
     }
 
-    private void loadWaitingList(String eventId) {
-        Log.d("EventDebug", "Loading event with ID: " + eventId);
+    private void loadEventCapacity() {
+        db.collection("Events").document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
+                    }
+                });
+    }
 
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-            @Override
-            public void onEventLoaded(Event event) {
-                if (getContext() == null) return;
+    public void refreshList() {
+        if (getContext() == null) return;
 
-                event.loadUserIdsFromSubcollection(db, eventId, "waitingList", new Event.OnUserIdsLoadedListener() {
-                    @Override
-                    public void onUserIdsLoaded(ArrayList<String> userIdsList) {
-                        for (String userId : userIdsList) {
-                            User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
-                                @Override
-                                public void onUserLoaded(User user) {
-                                    usersWaitingList.add(user);
-                                    adapter.notifyDataSetChanged();
-                                }
+        usersWaitingList.clear();
+        adapter.notifyDataSetChanged();
 
-                                @Override
-                                public void onUserLoadError(String error) {
-                                    Log.e("UserLoadError", error);
+        db.collection("Events").document(eventId)
+                .collection("waitingList")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        String userId = document.getId();
+                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                if (getContext() == null) return;
+                                usersWaitingList.add(user);
+                                adapter.notifyDataSetChanged();
+                            }
+                            @Override
+                            public void onUserLoadError(String error) {
+                                Log.e("WaitingList", "Error loading user: " + error);
+                            }
+                        });
+                    }
+                });
+    }
+
+    private void loadWaitingList() {
+        refreshList();
+    }
+
+    private void drawMultipleApplicants() {
+        db.collection("Events").document(eventId)
+                .collection("selectedList").get()
+                .addOnSuccessListener(selectedSnapshot -> {
+                    int currentSelectedCount = selectedSnapshot.size();
+                    int remainingSlots = eventCapacity - currentSelectedCount;
+
+                    if (remainingSlots <= 0) {
+                        Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int drawCount = Math.min(remainingSlots, usersWaitingList.size());
+                    final int[] completedMoves = {0};
+
+                    for (int i = 0; i < drawCount; i++) {
+                        if (!usersWaitingList.isEmpty()) {
+                            Random random = new Random();
+                            int index = random.nextInt(usersWaitingList.size());
+                            User selectedUser = usersWaitingList.get(index);
+                            moveUserToSelectedList(selectedUser, () -> {
+                                completedMoves[0]++;
+                                if (completedMoves[0] == drawCount) {
+                                    refreshAllFragments();
                                 }
                             });
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onEventLoadError(String error) {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
-                Log.e("EventDetails", "Error loading event: " + error);
-            }
-        });
     }
 
-    private void drawReplacementApplicant() {
-        if (usersWaitingList.isEmpty()) {
-            Toast.makeText(getContext(), "No applicants in the waiting list", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Random random = new Random();
-        int index = random.nextInt(usersWaitingList.size());
-        User selectedUser = usersWaitingList.get(index);
-
+    private void moveUserToSelectedList(User user, Runnable onComplete) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
-        db.collection("Events").document(eventId)
-                .collection("selectedList")
-                .document(selectedUser.getDeviceId())
-                .set(timestamp)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Applicant selected: " + selectedUser.getName(), Toast.LENGTH_SHORT).show();
-                    usersWaitingList.remove(selectedUser);
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> Log.e("FirestoreError", "Error adding to selected list", e));
+        DocumentReference waitingListRef = db.collection("Events").document(eventId)
+                .collection("waitingList").document(user.getDeviceId());
+        DocumentReference selectedListRef = db.collection("Events").document(eventId)
+                .collection("selectedList").document(user.getDeviceId());
+
+        db.runTransaction(transaction -> {
+            transaction.delete(waitingListRef);
+            transaction.set(selectedListRef, timestamp);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Toast.makeText(getContext(), "User " + user.getName() + " moved to selected list", Toast.LENGTH_SHORT).show();
+            onComplete.run();
+        }).addOnFailureListener(e -> {
+            Log.e("FirestoreError", "Error moving user to selected list", e);
+            onComplete.run();
+        });
+    }
+
+    private void refreshAllFragments() {
+        ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);
+        EventParticipantsViewPagerAdapter pagerAdapter = (EventParticipantsViewPagerAdapter) viewPager.getAdapter();
+        if (pagerAdapter != null) {
+            pagerAdapter.refreshAllLists();
+        }
     }
 }

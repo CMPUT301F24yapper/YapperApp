@@ -5,19 +5,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -45,18 +42,27 @@ public class FinalListFragment extends Fragment {
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            loadFinalList(eventId);
+            loadFinalList();
         }
 
         return view;
     }
 
-    private void loadFinalList(String eventId) {
+    public void refreshList() {
+        if (getContext() == null) return;
+        loadFinalList();
+    }
+
+    private void loadFinalList() {
+        if (getContext() == null) return;
+
+        finalList.clear();
+        adapter.notifyDataSetChanged();
+
         db.collection("Events").document(eventId)
                 .collection("finalList")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    finalList.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
                         User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
@@ -75,6 +81,10 @@ public class FinalListFragment extends Fragment {
                         });
                     }
                 })
-                .addOnFailureListener(e -> Log.e("FinalListFragment", "Error loading final list", e));
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Error loading final list", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

@@ -6,19 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -46,18 +42,27 @@ public class CancelledListFragment extends Fragment {
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            loadCancelledList(eventId);
+            loadCancelledList();
         }
 
         return view;
     }
 
-    private void loadCancelledList(String eventId) {
+    public void refreshList() {
+        if (getContext() == null) return;
+        loadCancelledList();
+    }
+
+    private void loadCancelledList() {
+        if (getContext() == null) return;
+
+        cancelledList.clear();
+        adapter.notifyDataSetChanged();
+
         db.collection("Events").document(eventId)
                 .collection("cancelledList")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    cancelledList.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
                         User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
