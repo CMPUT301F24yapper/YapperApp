@@ -24,18 +24,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Set up Android SDK
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v2
+      # Step 3: Install Android SDK
+      - name: Set up Android Environment
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
-          build-tools: 34.0.0
+          build-tools: "34.0.0"
+          script: echo "Android SDK set up"
 
-      # Step 4: Make the gradlew file executable
+      # Step 4: Make Gradlew executable
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
-      # Step 5: Create google-services.json
+      # Step 5: Add google-services.json
       - name: Create google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
