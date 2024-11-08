@@ -25,16 +25,21 @@ jobs:
           api-level: 34
           build-tools: 34.0.0
           cmake: '3.10.2'  # Specify if CMake is needed for native code (optional)
-          # Add additional components here if needed
 
       # Step 4: Make the gradlew file executable
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
-      # Step 5: Run Gradle Build
+      # Step 5: Create google-services.json
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
+      # Step 6: Run Gradle Build
       - name: Run Gradle Build
         run: ./gradlew build
 
-      # Step 6: Run Android Instrumentation Tests
+      # Step 7: Run Android Instrumentation Tests
       - name: Run Android Tests
         run: ./gradlew connectedAndroidTest
