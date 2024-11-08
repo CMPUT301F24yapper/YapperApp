@@ -20,13 +20,25 @@ import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
-
+/**
+ * EntrantActivity is the main activity for the Entrant user role.
+ * This activity manages the Entrant's home, QR scanner, notifications, and profile views,
+ * allowing navigation between these sections via a BottomNavigationView.
+ * Additionally, it includes options for switching roles to Organizer.
+ */
 public class EntrantActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private CollectionReference usersRef;
     private String deviceId;
 
+    /**
+     * Initializes the activity, setting up the layout and the BottomNavigationView for navigating
+     * between different sections: Home, QR Scanner, Notifications, and Profile.
+     * If the activity is created without a saved instance state, it loads the home fragment by default.
+     *
+     * @param savedInstanceState The state saved in a previous configuration, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +59,11 @@ public class EntrantActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Sets up the BottomNavigationView for EntrantActivity.
+     * Loads the appropriate Fragment based on the selected item.
+     * Sets up a long-click listener on the profile item for role-switch options.
+     */
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
@@ -81,7 +97,12 @@ public class EntrantActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Displays a menu with options to switch to the Organizer role, allowing the user to open
+     * OrganizerActivity and exit EntrantActivity.
+     *
+     * @param view The view from which this menu is triggered.
+     */
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());

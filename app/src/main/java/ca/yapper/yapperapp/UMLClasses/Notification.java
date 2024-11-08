@@ -16,7 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ca.yapper.yapperapp.R;
-
+/**
+ * The Notification class represents a notification sent to users about events or updates.
+ * It contains details about the sender, recipient, title, message, and type of notification.
+ * Notifications can be saved to Firestore, marked as read, and displayed as local notifications.
+ */
 public class Notification {
 
     private String id;                  // Firestore ID
@@ -32,9 +36,20 @@ public class Notification {
     private static final String channel_desc = "event_notifications";
 
 
-
+    /**
+     * Default constructor required for Firestore deserialization.
+     */
     public Notification() {}
-
+    /**
+     * Constructs a Notification with specified details.
+     *
+     * @param dateTimeStamp The timestamp of the notification.
+     * @param userToId The recipient's device ID.
+     * @param userFromId The sender's device ID.
+     * @param title The title of the notification.
+     * @param message The message content of the notification.
+     * @param notificationType The type of notification (e.g., "Invitation", "Rejection").
+     */
     public Notification(Date dateTimeStamp, String userToId, String userFromId,
                         String title, String message, String notificationType) {
         this.dateTimeStamp = dateTimeStamp;
@@ -45,7 +60,14 @@ public class Notification {
         this.notificationType = notificationType;
         this.isRead = false;
     }
-
+    /**
+     * Constructs a Notification without specifying sender and recipient IDs.
+     *
+     * @param dateTimeStamp The timestamp of the notification.
+     * @param title The title of the notification.
+     * @param message The message content of the notification.
+     * @param notificationType The type of notification (e.g., "Invitation", "Rejection").
+     */
     public Notification(Date dateTimeStamp, String title, String message, String notificationType) {
         this.dateTimeStamp = dateTimeStamp;
         this.title = title;
@@ -55,7 +77,12 @@ public class Notification {
     }
 
 
-
+    /**
+     * Displays the notification as a local notification in the app's notification tray.
+     * The notification includes the title, message, and a small icon.
+     *
+     * @param context The context in which to display the notification.
+     */
     public void displayNotification(Context context) {
         Log.d("Notification", "Attempting to display notification");
 
@@ -87,7 +114,10 @@ public class Notification {
     }
 
 
-
+    /**
+     * Saves the notification to Firestore under the "Notifications" collection.
+     * Sets the Firestore document ID for future reference.
+     */
     public void saveToDatabase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -110,7 +140,9 @@ public class Notification {
     }
 
 
-
+    /**
+     * Marks the notification as read in Firestore and updates the local read status.
+     */
     public void markAsRead() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 

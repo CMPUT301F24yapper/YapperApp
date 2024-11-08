@@ -24,7 +24,11 @@ import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-
+/**
+ * RegisteredEventsFragment displays a list of events that the user has registered for.
+ * This fragment retrieves the registered events from Firestore based on the user's device ID
+ * and displays them in a RecyclerView.
+ */
 public class RegisteredEventsFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -34,7 +38,15 @@ public class RegisteredEventsFragment extends Fragment {
     private String userDeviceId;
 
 
-
+    /**
+     * Inflates the fragment layout and initializes Firestore, RecyclerView, and adapter components.
+     * Loads the user's registered events from Firestore.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,7 +66,10 @@ public class RegisteredEventsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the user's registered events from the "registeredEvents" subcollection in Firestore.
+     * Updates the RecyclerView adapter with the retrieved events.
+     */
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();

@@ -9,7 +9,11 @@ import com.google.zxing.WriterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * The User class represents a user in the application with details such as device ID,
+ * contact information, roles, and lists of events they are associated with.
+ * This class provides methods to manage user data in Firestore and retrieve user information.
+ */
 public class User {
 
     private String deviceId;
@@ -26,7 +30,22 @@ public class User {
     private ArrayList<String> createdEvents;
 
 
-
+    /**
+     * Constructs a new User with the specified attributes.
+     *
+     * @param deviceId The unique device ID of the user.
+     * @param email The email address of the user.
+     * @param isAdmin True if the user has admin privileges.
+     * @param isEntrant True if the user has entrant privileges.
+     * @param isOrganizer True if the user has organizer privileges.
+     * @param name The name of the user.
+     * @param phoneNum The phone number of the user.
+     * @param isOptedOut True if the user has opted out of notifications.
+     * @param joinedEvents List of event IDs the user has joined.
+     * @param registeredEvents List of event IDs the user has registered for.
+     * @param missedOutEvents List of event IDs the user missed out on.
+     * @param createdEvents List of event IDs the user created.
+     */
     public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer, String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
         this.deviceId = deviceId;
         this.name = name;
@@ -43,7 +62,13 @@ public class User {
     }
 
 
-
+    /**
+     * Loads a User from Firestore using the specified device ID and provides the result
+     * through the provided listener.
+     *
+     * @param userDeviceId The unique device ID of the user to be loaded.
+     * @param listener The listener to handle success or error when loading the user.
+     */
     public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userDeviceId).get()
@@ -92,7 +117,14 @@ public class User {
          } **/
 
 
-
+    /**
+     * Loads event IDs from a specified subcollection in Firestore and populates the eventIdsList.
+     *
+     * @param db Firestore instance.
+     * @param userDeviceId The unique device ID of the user.
+     * @param subcollectionName The name of the subcollection to load.
+     * @param eventIdsList The list to store retrieved event IDs.
+     */
     private static void loadEventIdsFromSubcollection(FirebaseFirestore db, String userDeviceId, String subcollectionName, ArrayList<String> eventIdsList) {
         db.collection("Users").document(userDeviceId).collection(subcollectionName).get().addOnSuccessListener(queryDocumentSnapshots -> {
             for (DocumentSnapshot doc : queryDocumentSnapshots) {
@@ -111,7 +143,19 @@ public class User {
     }
 
 
-
+    /**
+     * Creates a new user entry in Firestore with the provided details.
+     *
+     * @param deviceId The unique device ID of the user.
+     * @param email The email address of the user.
+     * @param isAdmin True if the user has admin privileges.
+     * @param isEntrant True if the user has entrant privileges.
+     * @param isOrganizer True if the user has organizer privileges.
+     * @param name The name of the user.
+     * @param phoneNum The phone number of the user.
+     * @param isOptedOut True if the user has opted out of notifications.
+     * @return The created User instance.
+     */
     public static User createUserInDatabase(String deviceId, String email, boolean isAdmin,
                                             boolean isEntrant, boolean isOrganizer, String name,
                                             String phoneNum, boolean isOptedOut) {
@@ -146,7 +190,11 @@ public class User {
     }
 
 
-
+    /**
+     * Converts the user's attributes to a Map, suitable for storage in Firestore.
+     *
+     * @return A map containing the user's attributes.
+     */
     public Map<String, Object> toMap() {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("deviceId", deviceId);
@@ -166,7 +214,9 @@ public class User {
     }
 
 
-
+    /**
+     * Interface for handling the result of loading a User from Firestore.
+     */
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
         void onUserLoadError(String error);

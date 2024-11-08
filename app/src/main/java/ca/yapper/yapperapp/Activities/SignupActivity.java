@@ -24,7 +24,11 @@ import java.util.Date;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
-
+/**
+ * SignupActivity is responsible for user registration and Firebase Firestore setup.
+ * It initializes Firebase, checks for existing users, and facilitates new user sign-up
+ * with notifications and redirection based on user role.
+ */
 public class SignupActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
@@ -39,7 +43,12 @@ public class SignupActivity extends AppCompatActivity {
     private static final String channel_desc = "Notifications related to event participation";
 
 
-
+    /**
+     * Initializes the activity, sets up notifications for user roles, and checks if the user
+     * already exists in Firestore.
+     *
+     * @param savedInstanceState The state saved in a previous configuration, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,12 +72,19 @@ public class SignupActivity extends AppCompatActivity {
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         checkUserExists();
     }
-
+    /**
+     * Establishes a Firebase connection and initializes the reference to the "Users" collection.
+     */
     private void createFirebaseConnection() {
         db = FirebaseFirestore.getInstance();
         usersRef = db.collection("Users");
     }
 
+    /**
+     * Checks if a user with the current deviceId exists in Firestore.
+     * If the user exists, it displays a welcome notification and launches EntrantActivity.
+     * Otherwise, it sets up the sign-up form.
+     */
     private void checkUserExists() {
         db.collection("Users").document(deviceId)
                 .get()
@@ -89,7 +105,9 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Displays a welcome notification to returning users.
+     */
     private void displayWelcomeNotification() {
         // Display a local notification for a welcome message
         Notification welcomeNotification = new Notification(new Date(), "Welcome back!",
@@ -97,7 +115,9 @@ public class SignupActivity extends AppCompatActivity {
         Log.d("SignupActivity", "Attempting to display welcome notification");
         welcomeNotification.displayNotification(this);
     }
-
+    /**
+     * Initializes sign-up form views for new users and sets up the listener for the sign-up button.
+     */
     private void setUpSignUpViews() {
         addEntrantNameEditText = findViewById(R.id.name_input);
         addEntrantPhoneEditText = findViewById(R.id.phone_input);
@@ -107,7 +127,10 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Registers a new user in Firestore, then displays a sign-up success notification and
+     * launches EntrantActivity.
+     */
     private void createUserAndNotify() {
         String entrantName = addEntrantNameEditText.getText().toString();
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
@@ -142,13 +165,17 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Launches EntrantActivity, completing the sign-up process for Entrants.
+     */
     private void launchEntrantActivity() {
         Intent intent = new Intent(SignupActivity.this, EntrantActivity.class);
         startActivity(intent);
         finish();
     }
-
+    /**
+     * Launches OrganizerActivity if the user role is changed or set as Organizer.
+     */
     private void launchOrganizerActivity() {
         Intent intent = new Intent(SignupActivity.this, OrganizerActivity.class);
         startActivity(intent);

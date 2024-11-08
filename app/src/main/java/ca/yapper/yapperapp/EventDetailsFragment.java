@@ -31,7 +31,10 @@ import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 
-// class that pulls up Event details from Firestore for BOTH Entrants & Organizers
+/**
+ * The EventDetailsFragment class displays detailed information about a specific event.
+ * This fragment retrieves event details from Firestore and displays them to the user.
+ */
 public class EventDetailsFragment extends Fragment {
 
     private FirebaseFirestore db;
@@ -51,8 +54,15 @@ public class EventDetailsFragment extends Fragment {
 
 
 
-    // ***TO-DO***:
-    // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
+    /**
+     * Inflates the layout for the event details, initializes views, and loads event details from the database.
+     * It also sets visibility for buttons based on the activity (Entrant or Organizer).
+     *
+     * @param inflater The LayoutInflater object to inflate the layout.
+     * @param container The parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState The saved instance state, if any, from the previous instance of the fragment.
+     * @return The root view of the fragment's layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -82,7 +92,11 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Initializes all the UI elements (TextViews, Buttons) from the fragment layout.
+     *
+     * @param view The root view of the fragment's layout.
+     */
     private void initializeViews(View view) {
         nameTextView = view.findViewById(R.id.event_title);
         dateTimeTextView = view.findViewById(R.id.event_date_time);
@@ -101,7 +115,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the details of the event from the Firestore database and populates the corresponding UI elements.
+     * If geolocation is enabled for the event, the UI is updated to show a warning about geolocation requirements.
+     */
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
@@ -140,7 +157,12 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Sets up button listeners based on the activity type (Entrant or Organizer).
+     *
+     * If the user is in the Entrant activity, it enables the join/unjoin button and checks if the user is already in the list.
+     * If the user is in the Organizer activity, it enables buttons to view participants, edit the event, or view the QR code.
+     */
     private void setupButtonListeners() {
         Log.d("setupbuttonlisteners", "Setting up button listeners");
 
@@ -157,7 +179,9 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
+     */
     private void checkUserInList() {
         // if (userDeviceId == null) return;
         Log.d("checkuserinlist", "checking if user in list (waiting or selected)");
@@ -195,7 +219,11 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Handles the join button click. If the user clicks "Join", it checks if geolocation is required.
+     * If geolocation is required, it prompts the user to confirm. If not, it proceeds to join the event.
+     * If the button displays "Unjoin", it unjoins the user from the event.
+     */
     private void handleJoinButtonClick() {
         Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
@@ -211,14 +239,21 @@ public class EventDetailsFragment extends Fragment {
             unjoinEvent();
         }
     }
-
+    /**
+     * Sets the state of the join button (text and background color).
+     *
+     * @param text The text to be displayed on the button.
+     * @param color The background color of the button.
+     */
     private void setButtonState(String text, int color) {
         joinButton.setText(text);
         joinButton.setBackgroundColor(color);
     }
 
 
-
+    /**
+     * Handles the "View Participants" button click. Opens a new fragment to display the list of participants.
+     */
     private void handleViewParticipantsButtonClick() {
         ViewParticipantsFragment viewParticipantsFragment = new ViewParticipantsFragment();
         Bundle args = new Bundle();
@@ -230,13 +265,17 @@ public class EventDetailsFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
-
+    /**
+     * Handles the "Edit Event" button click. (This feature is currently to be implemented.)
+     */
     private void handleEditEventButtonClick() {
         // **TO IMPLEMENT**
     }
 
 
-
+    /**
+     * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
+     */
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
         QRCodeData.putString("0", eventId);
@@ -247,7 +286,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Shows a dialog to warn the user that geolocation is required for this event.
+     * If the user confirms, the event will be joined.
+     */
     private void showGeolocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
@@ -258,7 +300,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
+     * If successful, it updates the join button to display "Unjoin" and shows a success message.
+     */
     private void joinEvent() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
@@ -299,7 +344,10 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Unjoins the user from the event. It removes the user from both the event's waiting list and their list of joined events.
+     * If successful, it updates the join button to display "Join" and shows a success message.
+     */
     private void unjoinEvent() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
@@ -336,7 +384,12 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * Sets the visibility of the UI elements based on the type of activity the user is in (Entrant or Organizer).
+     *
+     * If the user is in the Entrant activity, it shows the join button and hides organizer-specific buttons.
+     * If the user is in the Organizer activity, it shows buttons for viewing participants, editing the event, and viewing the QR code.
+     */
     private void setVisibilityBasedOnActivity() {
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;

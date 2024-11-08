@@ -27,7 +27,11 @@ import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
-
+/**
+ * WaitingListFragment displays the list of users on the waiting list for a specific event.
+ * This fragment allows drawing from the waiting list to fill available slots in the selected list.
+ * The list is retrieved from Firestore and displayed in a RecyclerView.
+ */
 public class WaitingListFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -39,7 +43,15 @@ public class WaitingListFragment extends Fragment {
     private int eventCapacity;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
+     * and loads the waiting list for the specified event. Sets up a draw button to move users to the selected list.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -66,7 +78,9 @@ public class WaitingListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the capacity of the event from Firestore, setting the maximum number of participants allowed.
+     */
     private void loadEventCapacity() {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -77,7 +91,9 @@ public class WaitingListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes the waiting list by reloading data from Firestore and updating the RecyclerView.
+     */
     public void refreshList() {
         if (getContext() == null) return;
 
@@ -107,11 +123,18 @@ public class WaitingListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the waiting list from the "waitingList" subcollection of the event document in Firestore.
+     * Updates the RecyclerView adapter with the retrieved users.
+     */
     private void loadWaitingList() {
         refreshList();
     }
 
+    /**
+     * Draws multiple users from the waiting list, filling available slots in the selected list
+     * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
+     */
     private void drawMultipleApplicants() {
         db.collection("Events").document(eventId)
                 .collection("selectedList").get()
@@ -144,7 +167,13 @@ public class WaitingListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Moves a user from the waiting list to the selected list in Firestore.
+     * Displays a confirmation message and updates the UI.
+     *
+     * @param user The user to be moved.
+     * @param onComplete Runnable executed once the move is complete.
+     */
     private void moveUserToSelectedList(User user, Runnable onComplete) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
@@ -168,7 +197,10 @@ public class WaitingListFragment extends Fragment {
     }
 
 
-
+    /**
+     * Refreshes all fragments displaying participant lists for the event,
+     * ensuring that UI updates are reflected across all views.
+     */
     private void refreshAllFragments() {
         ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);
         EventParticipantsViewPagerAdapter pagerAdapter = (EventParticipantsViewPagerAdapter) viewPager.getAdapter();
