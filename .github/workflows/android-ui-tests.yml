@@ -1,4 +1,4 @@
-name: Android CI
+name: Run Unit Tests
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,25 +31,16 @@ jobs:
           api-level: 34
           build-tools: 34.0.0
 
-      # Step 4: Cache Gradle dependencies
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # Step 5: Make the gradlew file executable
-      - name: Make Gradlew Executable
-        run: chmod +x ./gradlew
-
-      # Step 6: Create google-services.json
+      # Step 4: Create google-services.json
       - name: Create google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
 
-      # Step 7: Run Gradle Unit Tests
+      # Step 5: Make gradlew executable
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
+
+      # Step 6: Run only unit tests
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --info
+        run: ./gradlew testDebugUnitTest
