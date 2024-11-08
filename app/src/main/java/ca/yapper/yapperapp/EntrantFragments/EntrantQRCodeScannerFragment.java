@@ -1,5 +1,9 @@
 package ca.yapper.yapperapp.EntrantFragments;
 
+import android.content.Context;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +32,9 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private ViewfinderView overlay;
     private FirebaseFirestore db;
     private Bundle eventData;
+    private Object cameraSetup;
+    private CameraManager cameras;
+    private String theCamera;
 
     private BarcodeCallback scanningResult;
 
@@ -38,7 +45,11 @@ public class EntrantQRCodeScannerFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance(); // For Checking what event the QRCode is from
 
-        initializeScan(view);
+        try {
+            initializeScan(view);
+        } catch (CameraAccessException e) {
+            throw new RuntimeException(e);
+        }
         showOverlay(view);
 
         return view;
@@ -61,14 +72,28 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         barcodeScan.resume();
     }
 
-    private void initializeScan(View view){
+    private void initializeScan(View view) throws CameraAccessException {
         barcodeScan = view.findViewById(R.id.barcode_view);
         settings = barcodeScan.getCameraSettings();
         checkCameraPermissions(); // We have to ask for camera permissions otherwise it only shows a black screen
 
-        if (settings.getRequestedCameraId() != 0){
-            // Sets the default camera to be the front facing camera, in case its not
-            settings.setRequestedCameraId(0);
+        // Here we get access to the cameras, for dealing with camera bug across devices
+        // and different camera setups.
+        cameraSetup = getActivity().getSystemService(Context.CAMERA_SERVICE);
+        cameras = (CameraManager) cameraSetup;
+
+        String[] cameraIds = cameras.getCameraIdList();
+
+        for (int i = 0; i < cameraIds.length; i++){
+            theCamera = cameraIds[i];
+
+            if (Integer.parseInt(theCamera) == CameraMetadata.LENS_FACING_BACK){
+                if (settings.getRequestedCameraId() != Integer.parseInt(theCamera)){
+                    // Sets the default camera to be the front facing camera, in case its not
+                    settings.setRequestedCameraId(Integer.parseInt(theCamera));
+                    Log.d("QR Code", theCamera + " " + CameraMetadata.LENS_FACING_BACK);
+                }
+            }
         }
 
         //settings.setRequestedCameraId(1);
@@ -84,7 +109,6 @@ public class EntrantQRCodeScannerFragment extends Fragment {
 
     private void checkCameraPermissions() {
         String[] permissions = {"android.permission.CAMERA"};
-        // checkSelfPermission return 0 if the permission to use the camera is already given
         if (ContextCompat.checkSelfPermission(getContext(), "android.permission.CAMERA") != 0) {
             // This launches the pop up showing options for the camera permissions.
             requestPermissions(permissions, 1); // The request code is just like a tag, can be any integer
@@ -94,8 +118,6 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     }
 
     private void getEvent(FirebaseFirestore db, String QRScanResult) {
-        // REPLACE SAMPLEEVENTID WITH QRSCANRESULT ONCE QR GENERATION IS WORKING
-
         // Check if QRScanResult contains extra segments, and extract the last segment if needed
         String[] segments = QRScanResult.split("/");  // Split by "/" to get segments
         String documentId = segments[segments.length - 1]; // Use the last segment as the document ID
