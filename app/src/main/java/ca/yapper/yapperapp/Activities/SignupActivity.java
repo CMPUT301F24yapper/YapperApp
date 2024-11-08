@@ -1,6 +1,9 @@
 package ca.yapper.yapperapp.Activities;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -16,7 +19,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Date;
+
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class SignupActivity extends AppCompatActivity {
@@ -27,12 +33,27 @@ public class SignupActivity extends AppCompatActivity {
     private EditText addEntrantPhoneEditText;
     private EditText addEntrantEmailEditText;
     private Button signupButton;
+    private static final String channel_Id = "event_notifications";
+    private static final String channel_Name = "event_notifications";
+    private static final String channel_desc = "Notifications related to event participation";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.signup_page_fragment);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channel_Id, channel_Name, NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription(channel_desc);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+                Log.d("SignupActivity", "Notification channel created");
+            } else {
+                Log.e("SignupActivity", "NotificationManager is null, channel creation failed");
+            }
+        }
 
         FirebaseApp.initializeApp(this);
         createFirebaseConnection();
@@ -52,6 +73,8 @@ public class SignupActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
+                            // Display the welcome notification for returning users
+                            displayWelcomeNotification();
                             launchEntrantActivity();
                         } else {
                             setUpSignUpViews();
@@ -63,18 +86,35 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
+    private void displayWelcomeNotification() {
+        // Display a local notification for a welcome message
+        Notification welcomeNotification = new Notification(
+                new Date(),
+                "Welcome back!",
+                "Hello, welcome to the Event Lottery app.",
+                "Welcome"
+        );
+        Log.d("SignupActivity", "Attempting to display welcome notification");
+        welcomeNotification.displayNotification(this);
+    }
+
     private void setUpSignUpViews() {
         addEntrantNameEditText = findViewById(R.id.name_input);
         addEntrantPhoneEditText = findViewById(R.id.phone_input);
         addEntrantEmailEditText = findViewById(R.id.email_input);
         signupButton = findViewById(R.id.signup_button);
-        signupButton.setOnClickListener(v -> createUserInFirestore());
+        signupButton.setOnClickListener(v -> createUserAndNotify());
     }
 
-    private void createUserInFirestore() {
+    private void createUserAndNotify() {
         String entrantName = addEntrantNameEditText.getText().toString();
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
         String entrantEmail = addEntrantEmailEditText.getText().toString();
+
+        if (entrantName.isEmpty() || entrantPhone.isEmpty() || entrantEmail.isEmpty()) {
+            Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         User.createUserInDatabase(
                 deviceId,
@@ -86,6 +126,16 @@ public class SignupActivity extends AppCompatActivity {
                 entrantPhone,
                 false   // isOptedOut
         );
+
+        // Display a local notification for successful signup
+        Notification signupNotification = new Notification(
+                new Date(),
+                "Welcome to Event Lottery!",
+                "Hello " + entrantName + ", you have successfully signed up.",
+                "Signup Success"
+        );
+        Log.d("SignupActivity", "Attempting to display signup notification");
+        signupNotification.displayNotification(this);
 
         launchEntrantActivity();
     }
