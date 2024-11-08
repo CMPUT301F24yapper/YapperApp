@@ -36,7 +36,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private Object cameraSetup;
     private CameraManager cameras;
     private String theCamera;
-    private int realCameraId;
+    private int realCameraFacing;
 
     private BarcodeCallback scanningResult;
 
@@ -70,8 +70,9 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             // Here we switch fragments
             getEvent(db, String.valueOf(QRScanResult));
         };
-        barcodeScan.decodeContinuous(scanningResult);
         barcodeScan.resume();
+        barcodeScan.decodeContinuous(scanningResult);
+        //barcodeScan.resume();
     }
 
     private void initializeScan(View view) throws CameraAccessException {
@@ -81,32 +82,37 @@ public class EntrantQRCodeScannerFragment extends Fragment {
 
         // Here we get access to the cameras, for dealing with camera bug across devices
         // and different camera setups.
-        cameraSetup = getActivity().getSystemService(Context.CAMERA_SERVICE);
-        cameras = (CameraManager) cameraSetup;
+//        cameraSetup = getActivity().getSystemService(Context.CAMERA_SERVICE);
+//        cameras = (CameraManager) cameraSetup;
+//
+//        String[] cameraIds = cameras.getCameraIdList();
+//
+//        int count = 0;
+//
+//        for (int i = 0; i <= cameraIds.length; i++){
+//            theCamera = cameraIds[i];
+//
+//            CameraCharacteristics cameraConfig = cameras.getCameraCharacteristics(theCamera);
+//            realCameraFacing = cameraConfig.get(CameraCharacteristics.LENS_FACING);
+//            Log.d("QR Code", "The Front face camera Id: " + realCameraFacing + "\nThe actual camera: " + theCamera + " cameraIds" + cameraIds);
+//            count++;
+//
+//            if (realCameraFacing == 1){
+//                // realCameraId is the actual camera id associated with the selected camera we have
+//                // This value changes based on the users device
+//                if (settings.getRequestedCameraId() != Integer.parseInt(theCamera)){ // Here we are certain that
+//                    // the realCameraId is for the back facing camera, regardless of how the device stores it.
+//                    // Sets the default camera to be the front facing camera, in case its not
+//                    settings.setRequestedCameraId(Integer.parseInt(theCamera));
+//                }
+//
+//            }
+//        }
 
-        String[] cameraIds = cameras.getCameraIdList();
-
-        for (int i = 0; i < cameraIds.length; i++){
-            theCamera = cameraIds[i];
-
-            CameraCharacteristics cameraConfig = cameras.getCameraCharacteristics(theCamera);
-            realCameraId = cameraConfig.get(CameraCharacteristics.LENS_FACING);
-
-            if (realCameraId == 1){
-                // realCameraId is the actual camera id associated with the selected camera we have
-                // This value changes based on the users device
-                if (settings.getRequestedCameraId() != realCameraId){ // Here we are certain that
-                    // the realCameraId is for the back facing camera, regardless of how the device stores it.
-                    // Sets the default camera to be the front facing camera, in case its not
-                    settings.setRequestedCameraId(realCameraId);
-                    Log.d("QR Code", "The Front face camera Id: " + realCameraId + "\nThe actual camera: " + theCamera);
-                }
-            }
+        if (settings.getRequestedCameraId() != -1) {
+            // Sets the default camera to be the front facing camera, in case its not
+            settings.setRequestedCameraId(-1); // NOTE: If your scanner is displaying pixelated thing, change both 1's to 0's
         }
-
-        //if (settings.getRequestedCameraId() != 0){
-        //    // Sets the default camera to be the front facing camera, in case its not
-        //    settings.setRequestedCameraId(0);
 
         //settings.setRequestedCameraId(1);
         settings.setAutoFocusEnabled(true);
