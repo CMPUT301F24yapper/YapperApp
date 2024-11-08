@@ -20,11 +20,14 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
 public class CancelledListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> cancelledList;
     private FirebaseFirestore db;
     private String eventId;
+
+
 
     @Nullable
     @Override

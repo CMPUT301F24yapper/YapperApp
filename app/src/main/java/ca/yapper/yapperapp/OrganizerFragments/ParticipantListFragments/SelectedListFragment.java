@@ -28,6 +28,7 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
 public class SelectedListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> selectedList;
@@ -36,6 +37,8 @@ public class SelectedListFragment extends Fragment {
     private Button redrawButton;
     private int eventCapacity;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -43,12 +46,11 @@ public class SelectedListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         selectedList = new ArrayList<>();
         adapter = new UsersAdapter(selectedList, getContext());
         recyclerView.setAdapter(adapter);
-
         redrawButton = view.findViewById(R.id.button_redraw);
+
         db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
@@ -61,6 +63,8 @@ public class SelectedListFragment extends Fragment {
         return view;
     }
 
+
+
     private void loadEventCapacity() {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -69,6 +73,8 @@ public class SelectedListFragment extends Fragment {
                     }
                 });
     }
+
+
 
     public void refreshList() {
         if (getContext() == null) return;
@@ -98,6 +104,8 @@ public class SelectedListFragment extends Fragment {
                 });
     }
 
+
+
     private void loadSelectedList() {
         refreshList();
     }
@@ -118,6 +126,8 @@ public class SelectedListFragment extends Fragment {
         User selectedUser = selectedList.get(index);
         moveUserToWaitingList(selectedUser);
     }
+
+
 
     private void drawFromWaitingList() {
         db.collection("Events").document(eventId)
@@ -164,6 +174,8 @@ public class SelectedListFragment extends Fragment {
                 });
     }
 
+
+
     private void moveToSelectedList(User user, Runnable onComplete) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
@@ -181,6 +193,8 @@ public class SelectedListFragment extends Fragment {
             onComplete.run();
         });
     }
+
+
 
     private void moveUserToWaitingList(User user) {
         Map<String, Object> timestamp = new HashMap<>();
@@ -200,6 +214,8 @@ public class SelectedListFragment extends Fragment {
             drawFromWaitingList();
         });
     }
+
+
 
     private void refreshAllFragments() {
         ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);

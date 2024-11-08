@@ -26,6 +26,7 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class SignupActivity extends AppCompatActivity {
+
     private FirebaseFirestore db;
     private CollectionReference usersRef;
     private String deviceId;

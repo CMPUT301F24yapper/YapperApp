@@ -32,6 +32,8 @@ public class MissedOutFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

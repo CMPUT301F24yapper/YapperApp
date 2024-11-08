@@ -24,6 +24,7 @@ import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
 public class OrganizerActivity extends AppCompatActivity {
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventsRef = db.collection("Events");
 

@@ -15,10 +15,13 @@ import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 
 public class ViewParticipantsFragment extends Fragment {
+
     private String eventId;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private EventParticipantsViewPagerAdapter viewPagerAdapter;
+
+
 
     @Nullable
     @Override

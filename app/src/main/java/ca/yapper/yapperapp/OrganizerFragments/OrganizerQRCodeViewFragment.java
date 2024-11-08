@@ -18,7 +18,6 @@ import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.qrCode;
 
 public class OrganizerQRCodeViewFragment extends Fragment {
-
     private String eventId;
     private qrCode QRCode;
     private Bitmap QRCodeIMG;

@@ -22,6 +22,7 @@ import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
 public class EntrantActivity extends AppCompatActivity {
+
     private FirebaseFirestore db;
     private CollectionReference usersRef;
     private String deviceId;
