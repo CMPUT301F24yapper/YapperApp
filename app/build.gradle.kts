@@ -34,6 +34,10 @@ android {
 
 dependencies {
     implementation(libs.glide)
+    implementation(libs.espresso.core)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.ext.junit)
+    androidTestImplementation(libs.ext.junit)
     annotationProcessor(libs.compiler)
 
     // Use Firebase BoM to manage Firebase library versions
@@ -52,13 +56,13 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(libs.test.core)
-    androidTestImplementation(libs.rules)
-    androidTestImplementation(libs.junit.v113)
-    androidTestImplementation(libs.espresso.core.v340)
-    androidTestImplementation(libs.espresso.intents)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+
+    //testImplementation("junit:junit:4.13.2")
+    testImplementation (libs.junit.jupiter.api.v501)
+    testRuntimeOnly (libs.xjunit.jupiter.engine)
+    androidTestImplementation(libs.junit.v115)
+    androidTestImplementation(libs.espresso.core.v351)
 
 }
