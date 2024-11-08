@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
-
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHolder> {
@@ -25,18 +24,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     @NonNull
     @Override
     public UsersAdapter.UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_participants_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.event_participants_item, parent, false);
         return new UsersAdapter.UsersViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull UsersAdapter.UsersViewHolder holder, int position) {
         User user = userList.get(position);
-
-        // Set the text views
         holder.userNameTextView.setText(user.getName());
-        // other text views relevant to User?
-
     }
 
     @Override
@@ -49,7 +45,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
 
         public UsersViewHolder(@NonNull View itemView) {
             super(itemView);
-            userNameTextView = itemView.findViewById(R.id.event_name);
+            userNameTextView = itemView.findViewById(R.id.entrant_name);
         }
     }
 }
