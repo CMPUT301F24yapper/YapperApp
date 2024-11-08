@@ -13,7 +13,11 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
-
+/**
+ * ViewParticipantsFragment displays tabs for viewing different participant lists
+ * (e.g., Waiting, Selected, Final, Cancelled) for a specific event.
+ * The fragment sets up a TabLayout with a ViewPager2 for navigation between lists.
+ */
 public class ViewParticipantsFragment extends Fragment {
 
     private String eventId;
@@ -22,7 +26,15 @@ public class ViewParticipantsFragment extends Fragment {
     private EventParticipantsViewPagerAdapter viewPagerAdapter;
 
 
-
+    /**
+     * Inflates the fragment layout, retrieves the event ID from arguments, and
+     * initializes the ViewPager2 and TabLayout for navigating between participant lists.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

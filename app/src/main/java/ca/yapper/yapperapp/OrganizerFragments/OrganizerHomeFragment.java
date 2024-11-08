@@ -25,7 +25,11 @@ import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-
+/**
+ * OrganizerHomeFragment displays a list of events created by the organizer.
+ * The fragment retrieves events from Firestore and displays them in a RecyclerView,
+ * allowing organizers to view their events and manage participants.
+ */
 public class OrganizerHomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -35,7 +39,15 @@ public class OrganizerHomeFragment extends Fragment {
     private String userDeviceId;
 
 
-
+    /**
+     * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
+     * and loads the list of events created by the organizer.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -57,7 +69,10 @@ public class OrganizerHomeFragment extends Fragment {
     }
 
 
-
+    /**
+     * Loads the organizer's created events from the "createdEvents" subcollection in Firestore.
+     * Updates the RecyclerView adapter with the retrieved events.
+     */
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
