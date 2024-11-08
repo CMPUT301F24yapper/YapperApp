@@ -26,7 +26,6 @@ public class EntrantHomeFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
         ViewPager2 viewPager = view.findViewById(R.id.viewPager);
 
-        // Set up the adapter for ViewPager
         viewPager.setAdapter(new ViewPagerAdapter(this));
 
         // Attach TabLayout and ViewPager

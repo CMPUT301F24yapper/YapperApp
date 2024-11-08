@@ -34,6 +34,8 @@ public class OrganizerHomeFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,6 +55,8 @@ public class OrganizerHomeFragment extends Fragment {
 
         return view;
     }
+
+
 
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {

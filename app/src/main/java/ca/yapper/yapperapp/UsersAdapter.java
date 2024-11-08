@@ -29,11 +29,13 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
         return new UsersAdapter.UsersViewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull UsersAdapter.UsersViewHolder holder, int position) {
         User user = userList.get(position);
         holder.userNameTextView.setText(user.getName());
     }
+
 
     @Override
     public int getItemCount() {

@@ -20,11 +20,14 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
 public class FinalListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> finalList;
     private FirebaseFirestore db;
     private String eventId;
+
+
 
     @Nullable
     @Override
@@ -33,7 +36,6 @@ public class FinalListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         finalList = new ArrayList<>();
         adapter = new UsersAdapter(finalList, getContext());
         recyclerView.setAdapter(adapter);
@@ -48,10 +50,14 @@ public class FinalListFragment extends Fragment {
         return view;
     }
 
+
+
     public void refreshList() {
         if (getContext() == null) return;
         loadFinalList();
     }
+
+
 
     private void loadFinalList() {
         if (getContext() == null) return;

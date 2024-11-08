@@ -29,6 +29,7 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
 public class WaitingListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> usersWaitingList;
@@ -36,6 +37,8 @@ public class WaitingListFragment extends Fragment {
     private String eventId;
     private Button drawButton;
     private int eventCapacity;
+
+
 
     @Nullable
     @Override
@@ -62,6 +65,8 @@ public class WaitingListFragment extends Fragment {
         return view;
     }
 
+
+
     private void loadEventCapacity() {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -70,6 +75,8 @@ public class WaitingListFragment extends Fragment {
                     }
                 });
     }
+
+
 
     public void refreshList() {
         if (getContext() == null) return;
@@ -98,6 +105,8 @@ public class WaitingListFragment extends Fragment {
                     }
                 });
     }
+
+
 
     private void loadWaitingList() {
         refreshList();
@@ -134,6 +143,8 @@ public class WaitingListFragment extends Fragment {
                 });
     }
 
+
+
     private void moveUserToSelectedList(User user, Runnable onComplete) {
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
@@ -155,6 +166,8 @@ public class WaitingListFragment extends Fragment {
             onComplete.run();
         });
     }
+
+
 
     private void refreshAllFragments() {
         ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);

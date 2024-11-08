@@ -39,25 +39,20 @@ public class EventDetailsFragment extends Fragment {
     private TextView nameTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView;
     private TextView geolocEnabledTextView;
     boolean geolocationEnabled;
-
-    // Entrant Button:
-    private Button joinButton;
-
-    // Organizer Buttons:
-    private Button viewParticipantsButton;
+    private Button joinButton; // Entrant Button:
+    private Button viewParticipantsButton; // Organizer Buttons:
     private Button editEventButton;
     private Button viewQRCodeButton;
-
     private String userDeviceId;
-    private Bundle eventParameters;
     private boolean isInEntrantActivity = false;
     private boolean isInOrganizerActivity = false;
     private Bundle QRCodeData;
+    private View view;
+
+
 
     // ***TO-DO***:
     // IMPLEMENT EVENT POSTER PART OF EVENT FRAGMENT (UPLOAD EVENT POSTER LOGIC!)
-    private View view;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -78,12 +73,15 @@ public class EventDetailsFragment extends Fragment {
 
         if (eventId != null && !eventId.isEmpty()) {
             loadEventDetails();
-        } else {
+        }
+        else {
             Toast.makeText(getContext(), "Error: Invalid event ID", Toast.LENGTH_SHORT).show();
         }
 
         return view;
     }
+
+
 
     private void initializeViews(View view) {
         nameTextView = view.findViewById(R.id.event_title);
@@ -96,13 +94,13 @@ public class EventDetailsFragment extends Fragment {
         waitListTextView = view.findViewById(R.id.event_wl_capacity);
         // *to add: available slots text view (waitlist capacity - number of users in waitlist)*
 
-        // only visible to Entrant:
-        joinButton = view.findViewById(R.id.join_button);
-        // only visible to Organizer:
-        viewParticipantsButton = view.findViewById(R.id.button_view_participants);
+        joinButton = view.findViewById(R.id.join_button); // only visible to Entrant:
+        viewParticipantsButton = view.findViewById(R.id.button_view_participants); // only visible to Organizer:
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
     }
+
+
 
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
@@ -141,6 +139,8 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
+
     private void setupButtonListeners() {
         Log.d("setupbuttonlisteners", "Setting up button listeners");
 
@@ -155,6 +155,8 @@ public class EventDetailsFragment extends Fragment {
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
         }
     }
+
+
 
     private void checkUserInList() {
         // if (userDeviceId == null) return;
@@ -192,6 +194,8 @@ public class EventDetailsFragment extends Fragment {
         Log.d("checkuserinlist", "user not in any list");
     }
 
+
+
     private void handleJoinButtonClick() {
         Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
@@ -208,20 +212,19 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-    // Helper method to set button state
     private void setButtonState(String text, int color) {
         joinButton.setText(text);
         joinButton.setBackgroundColor(color);
     }
 
+
+
     private void handleViewParticipantsButtonClick() {
-        /// Create a new instance of ViewParticipantsFragment and pass the eventId
         ViewParticipantsFragment viewParticipantsFragment = new ViewParticipantsFragment();
         Bundle args = new Bundle();
-        args.putString("eventId", eventId); // Pass eventId to ViewParticipantsFragment
+        args.putString("eventId", eventId); // Pass to ViewParticipantsFragment
         viewParticipantsFragment.setArguments(args);
 
-        // Start the fragment transaction
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, viewParticipantsFragment)
                 .addToBackStack(null)
@@ -232,14 +235,18 @@ public class EventDetailsFragment extends Fragment {
         // **TO IMPLEMENT**
     }
 
+
+
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
-        QRCodeData.putString("0", eventId); // Here we pass the eventID to display its QR code value
-        // Then we swap to the fragment to view the QR Code
+        QRCodeData.putString("0", eventId);
+
         OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
         newFragment.setArguments(QRCodeData);
         getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
     }
+
+
 
     private void showGeolocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -249,6 +256,8 @@ public class EventDetailsFragment extends Fragment {
                 .create()
                 .show();
     }
+
+
 
     private void joinEvent() {
         if (userDeviceId == null) {
@@ -289,6 +298,8 @@ public class EventDetailsFragment extends Fragment {
                 });
     }
 
+
+
     private void unjoinEvent() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
@@ -323,6 +334,8 @@ public class EventDetailsFragment extends Fragment {
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });
     }
+
+
 
     private void setVisibilityBasedOnActivity() {
         if (getActivity() instanceof EntrantActivity) {

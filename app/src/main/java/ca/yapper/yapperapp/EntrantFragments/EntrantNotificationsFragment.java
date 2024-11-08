@@ -30,6 +30,8 @@ public class EntrantNotificationsFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -40,7 +42,6 @@ public class EntrantNotificationsFragment extends Fragment {
 
         notificationsRecyclerView = view.findViewById(R.id.notifications_recycler_view);
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         notificationList = new ArrayList<>();
         notificationAdapter = new NotificationAdapter(notificationList);
         notificationsRecyclerView.setAdapter(notificationAdapter);
@@ -49,6 +50,8 @@ public class EntrantNotificationsFragment extends Fragment {
 
         return view;
     }
+
+
 
     private void loadUnreadNotificationsFromFirestore() {
         db.collection("Notifications")
@@ -60,18 +63,21 @@ public class EntrantNotificationsFragment extends Fragment {
                     notificationList.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Notification notification = document.toObject(Notification.class);
-                        notification.setId(document.getId());  // Set Firestore document ID
+                        notification.setId(document.getId());
                         notificationList.add(notification);
                     }
                     notificationAdapter.notifyDataSetChanged();
-                    markNotificationsAsRead(notificationList);  // Mark notifications as read
+                    markNotificationsAsRead(notificationList);
                 })
                 .addOnFailureListener(e -> Log.e("NotificationsError", "Error loading notifications", e));
     }
 
+
+
     private void markNotificationsAsRead(List<Notification> notifications) {
         for (Notification notification : notifications) {
-            db.collection("Notifications").document(notification.getId())
+            db.collection("Notifications")
+                    .document(notification.getId())
                     .update("isRead", true)
                     .addOnSuccessListener(aVoid -> Log.d("Notifications", "Notification marked as read"))
                     .addOnFailureListener(e -> Log.e("NotificationsError", "Error marking notification as read", e));
