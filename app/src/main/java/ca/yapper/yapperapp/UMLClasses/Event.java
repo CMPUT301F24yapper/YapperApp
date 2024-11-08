@@ -1,6 +1,5 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import android.util.Log;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
@@ -73,7 +72,10 @@ public class Event {
     }
 
     // Method to load user IDs from a subcollection
-    public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, ArrayList<String> userIdsList) {
+
+    public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
+        ArrayList<String> userIdsList = new ArrayList<>();
+
         db.collection("Events").document(eventId).collection(subcollectionName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -87,10 +89,26 @@ public class Event {
                                             userIdsList.add(deviceId);
                                         }
                                     }
+
+                                    // Call the listener only after all documents are processed
+                                    if (userIdsList.size() == queryDocumentSnapshots.size()) {
+                                        listener.onUserIdsLoaded(userIdsList);
+                                    }
                                 });
+                    }
+
+                    // Handle case when there are no documents in subcollection
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onUserIdsLoaded(userIdsList);
                     }
                 });
     }
+
+
+    public interface OnUserIdsLoadedListener {
+        void onUserIdsLoaded(ArrayList<String> userIdsList);
+    }
+
 
     // Method to create a new event in Firestore
     public static Event createEventInDatabase(int capacity, String dateTime, String description,
@@ -141,6 +159,8 @@ public class Event {
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
     }
+
+
 
     // Interface for loading event listener
     public interface OnEventLoadedListener {

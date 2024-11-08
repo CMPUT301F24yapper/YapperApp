@@ -32,6 +32,7 @@ public class WaitingListFragment extends Fragment {
     private FirebaseFirestore db;
     private String eventId;
     private Button redrawButton;
+    private Button redrawAllButton;  // new button
 
     @Nullable
     @Override
@@ -45,7 +46,9 @@ public class WaitingListFragment extends Fragment {
         adapter = new UsersAdapter(usersWaitingList, getContext());
         recyclerView.setAdapter(adapter);
 
-        redrawButton = view.findViewById(R.id.Button);
+        redrawButton = view.findViewById(R.id.button_redraw);  // Updated ID
+        redrawAllButton = view.findViewById(R.id.button_draw);  // New button ID
+
         db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
@@ -55,14 +58,18 @@ public class WaitingListFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Unable to get event ID", Toast.LENGTH_SHORT).show();
         }
 
-        // Set up button click listener for redrawing
+        // Set up button click listener for redrawing a single entrant
         redrawButton.setOnClickListener(v -> redrawReplacementApplicant());
+
+        // Set up button click listener for redrawing all entrants
+        redrawAllButton.setOnClickListener(v -> redrawAllEntrantsAndInvite());
 
         return view;
     }
 
+// Inside WaitingListFragment class
+
     private void loadWaitingList(String eventId) {
-        ArrayList<String> userIdsStringList = new ArrayList<>();
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
         Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
@@ -70,24 +77,26 @@ public class WaitingListFragment extends Fragment {
             public void onEventLoaded(Event event) {
                 if (getContext() == null) return;
 
-                // Load user IDs from Firestore
-                event.loadUserIdsFromSubcollection(db, eventId, "waitingList", userIdsStringList);
+                // Use callback to handle loaded user IDs
+                event.loadUserIdsFromSubcollection(db, eventId, "waitingList", new Event.OnUserIdsLoadedListener() {
+                    @Override
+                    public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                        for (String userId : userIdsList) {
+                            User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                                @Override
+                                public void onUserLoaded(User user) {
+                                    usersWaitingList.add(user);
+                                    adapter.notifyDataSetChanged();
+                                }
 
-                // Assuming user objects are created after loading IDs
-                for (String userId : userIdsStringList) {
-                    User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
-                        @Override
-                        public void onUserLoaded(User user) {
-                            usersWaitingList.add(user);
-                            adapter.notifyDataSetChanged();
+                                @Override
+                                public void onUserLoadError(String error) {
+                                    Log.e("UserLoadError", error);
+                                }
+                            });
                         }
-
-                        @Override
-                        public void onUserLoadError(String error) {
-                            Log.e("UserLoadError", error);
-                        }
-                    });
-                }
+                    }
+                });
             }
 
             @Override
@@ -123,5 +132,19 @@ public class WaitingListFragment extends Fragment {
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> Log.e("FirestoreError", "Error adding to selected list", e));
+    }
+
+    // New method for redrawing all entrants and sending invites
+    private void redrawAllEntrantsAndInvite() {
+        if (usersWaitingList.isEmpty()) {
+            Toast.makeText(getContext(), "No applicants in the waiting list", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        for (User user : usersWaitingList) {
+            // Add each user to Firestore "selectedList"
+            addSelectedUserToFirestore(user);
+        }
+        Toast.makeText(getContext(), "All remaining entrants have been selected and invited.", Toast.LENGTH_SHORT).show();
     }
 }
