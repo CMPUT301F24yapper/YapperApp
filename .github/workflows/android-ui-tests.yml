@@ -22,8 +22,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: 34
-          build-tools: 34.0.0
+          api-level: 30  # Use a slightly older API level
+          build-tools: 30.0.3
 
       # Step 4: Make the gradlew file executable
       - name: Make Gradlew Executable
@@ -41,13 +41,14 @@ jobs:
           adb start-server
           echo "y" | sdkmanager --install "system-images;android-30;google_apis;x86_64"
           echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64" --force
-          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -no-snapshot &
+          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -no-snapshot -gpu swiftshader_indirect &
 
-      # Step 7: Wait for the emulator to start
+      # Step 7: Wait for the emulator to start (with timeout)
       - name: Wait for emulator to boot
         run: |
           adb wait-for-device
-          adb shell input keyevent 82
+          adb shell 'while [[ $(getprop sys.boot_completed) -ne 1 ]]; do sleep 5; done' # Wait until fully booted
+        timeout-minutes: 10  # Adjust if needed
 
       # Step 8: Run Gradle Build
       - name: Run Gradle Build
