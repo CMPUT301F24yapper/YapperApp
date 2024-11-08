@@ -24,34 +24,23 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Step 3: Install Android SDK and Build Tools
-      - name: Install Android SDK and Build Tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
-          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      # Step 3: Set up Android SDK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: 34.0.0
 
-      # Step 4: Set environment variables
-      - name: Set environment variables
-        run: |
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
-
-      # Step 5: Make Gradlew executable
+      # Step 4: Make Gradlew executable
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
-      # Step 6: Add google-services.json
+      # Step 5: Create google-services.json
       - name: Create google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
 
-      # Step 7: Run Unit Tests
+      # Step 6: Run Unit Tests
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --info
