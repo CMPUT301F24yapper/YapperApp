@@ -16,8 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -253,10 +255,30 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Create timestamp data
         Map<String, Object> entrantData = new HashMap<>();
         entrantData.put("timestamp", FieldValue.serverTimestamp());
-        db.collection("Events").document(eventId).collection("waitingList")
-                .document(userDeviceId).set(entrantData)
+
+        // Start a batch write
+        WriteBatch batch = db.batch();
+
+        // Add to event's waiting list
+        DocumentReference eventWaitingListRef = db.collection("Events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(userDeviceId);
+        batch.set(eventWaitingListRef, entrantData);
+
+        // Add to user's joined events
+        DocumentReference userJoinedEventsRef = db.collection("Users")
+                .document(userDeviceId)
+                .collection("joinedEvents")
+                .document(eventId);
+        batch.set(userJoinedEventsRef, entrantData);
+
+        // Commit the batch
+        batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     joinButton.setText("Unjoin");
                     joinButton.setBackgroundColor(Color.GRAY);
@@ -273,8 +295,25 @@ public class EventDetailsFragment extends Fragment {
             return;
         }
 
-        db.collection("Events").document(eventId).collection("waitingList")
-                .document(userDeviceId).delete()
+        // Start a batch write
+        WriteBatch batch = db.batch();
+
+        // Remove from event's waiting list
+        DocumentReference eventWaitingListRef = db.collection("Events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(userDeviceId);
+        batch.delete(eventWaitingListRef);
+
+        // Remove from user's joined events
+        DocumentReference userJoinedEventsRef = db.collection("Users")
+                .document(userDeviceId)
+                .collection("joinedEvents")
+                .document(eventId);
+        batch.delete(userJoinedEventsRef);
+
+        // Commit the batch
+        batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     joinButton.setText("Join");
                     joinButton.setBackgroundColor(Color.BLUE);

@@ -1,10 +1,13 @@
 package ca.yapper.yapperapp;
 
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+import com.google.android.material.tabs.TabLayout;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.CancelledListFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.FinalListFragment;
@@ -12,12 +15,14 @@ import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.SelectedL
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 
 public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
-
     private String eventId;
+    private final String[] tabTitles = new String[]{"Waiting", "Selected", "Final", "Cancelled"};
+    private Map<Integer, Fragment> fragmentMap;
 
     public EventParticipantsViewPagerAdapter(@NonNull Fragment fragment, String eventId) {
         super(fragment);
         this.eventId = eventId;
+        this.fragmentMap = new HashMap<>();
     }
 
     @NonNull
@@ -34,20 +39,45 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
             case 2:
                 fragment = new FinalListFragment();
                 break;
-            default:
+            case 3:
                 fragment = new CancelledListFragment();
+                break;
+            default:
+                fragment = new WaitingListFragment();
                 break;
         }
 
-        // Pass eventId to each fragment
         Bundle args = new Bundle();
         args.putString("eventId", eventId);
         fragment.setArguments(args);
+
+        fragmentMap.put(position, fragment);
         return fragment;
+    }
+
+    public void refreshAllLists() {
+        for (Fragment fragment : fragmentMap.values()) {
+            if (fragment instanceof WaitingListFragment) {
+                ((WaitingListFragment) fragment).refreshList();
+            }
+            else if (fragment instanceof SelectedListFragment) {
+                ((SelectedListFragment) fragment).refreshList();
+            }
+            else if (fragment instanceof FinalListFragment && ((FinalListFragment) fragment).isAdded()) {
+                ((FinalListFragment) fragment).refreshList();
+            }
+            else if (fragment instanceof CancelledListFragment && ((CancelledListFragment) fragment).isAdded()) {
+                ((CancelledListFragment) fragment).refreshList();
+            }
+        }
     }
 
     @Override
     public int getItemCount() {
-        return 3;
+        return tabTitles.length;
+    }
+
+    public String[] getTabTitles() {
+        return tabTitles;
     }
 }

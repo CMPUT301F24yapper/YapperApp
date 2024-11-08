@@ -3,28 +3,24 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
-    <!-- RecyclerView for the list of entrants -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.6"
+        android:layout_weight="1"
         android:clipToPadding="false" />
 
-    <!-- Redraw Button -->
     <Button
-        android:id="@+id/Button"
-        android:layout_width="wrap_content"
+        android:id="@+id/button_draw"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Redraw entrant"
-        android:layout_gravity="center"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="100dp"
+        android:text="Draw Applicant"
         android:backgroundTint="@color/black"
         android:textColor="@android:color/white"
-        android:padding="12dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="100dp"/>
+        android:padding="12dp" />
 
 </LinearLayout>
