@@ -30,6 +30,7 @@ Look to Backlog.
 ## 7. User Interface Mockups and Storyboard Sequences:
 
 Our app closely follows the Figma design created during the planning phase. There have been no significant changes or deviations from the original design.
+Notfication Page Changes can be found here: https://www.figma.com/design/LvuX3OONMMB8AZHy7H7evs/Yapper-App?node-id=0-1
 
 ## 8. Sprint Planning and Reviews: 
 
