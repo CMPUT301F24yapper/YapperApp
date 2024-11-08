@@ -58,18 +58,14 @@ public class profilelayoutTest {
      */
     @Test
     public void testInputFieldsDisplayAndText() {
-        // Ensure profile layout is open
         Espresso.onView(ViewMatchers.withId(R.id.nav_entrant_profile)).perform(ViewActions.click());
 
-        // Check if the name field is displayed
         Espresso.onView(ViewMatchers.withId(R.id.edit_name))
                 .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
 
-        // Check if the email field is displayed
         Espresso.onView(ViewMatchers.withId(R.id.edit_email))
                 .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
 
-        // Check if the phone number field is displayed and has a hint "Optional"
         Espresso.onView(ViewMatchers.withId(R.id.edit_phone))
                 .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
                 .check(ViewAssertions.matches(ViewMatchers.withHint("Optional")));
@@ -80,15 +76,12 @@ public class profilelayoutTest {
      */
     @Test
     public void testNotificationsSwitch() {
-        // Ensure profile layout is open
         Espresso.onView(ViewMatchers.withId(R.id.nav_entrant_profile)).perform(ViewActions.click());
 
-        // Check if the notifications switch is displayed and perform a toggle action
         Espresso.onView(ViewMatchers.withId(R.id.switch_notifications))
                 .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
                 .perform(ViewActions.click());
 
-        // Optionally verify switch state (on/off) if required
     }
 
 }
