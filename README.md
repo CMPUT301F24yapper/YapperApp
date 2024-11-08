@@ -11,10 +11,7 @@ Look to source code in Repo (we included comments at the top of every important 
 We were having trouble with Javadocs generation to Github even with correct usage of Javadocs, so for now we have it saved in Google Drive (Link: https://drive.google.com/drive/u/0/folders/1H-nh6iOYAUdf_WoMnQzXoz6IrXrxDXa2)
 
 ## 4. Test Cases:
-Our app currently does not include unit tests because:
-
-• Most methods do not have return variables, making them unsuitable for unit testing.
-• Many methods are tightly integrated with Firestore, which requires interaction with a live database.
+Our app currently does not include unit tests because: most methods do not have return variables, making them unsuitable for unit testing, & many methods are tightly integrated with Firestore, which requires interaction with a live database.
 The Unit Tests, however, are integrated with Github Actions. We will write more for our PP4 submission. In terms of UI Tests, it can be run locally.
 
 ## 5. Object-Oriented Design:
