@@ -36,11 +36,14 @@ public class MissedOutFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+    private static final String TAG = "MissedOutFragment";
+
 
     /**
      * Inflates the fragment layout and initializes Firestore, RecyclerView, and adapter components.
      * Loads the user's missed events from Firestore.
      *
+     * 
      * @param inflater LayoutInflater used to inflate the fragment layout.
      * @param container The parent view that this fragment's UI is attached to.
      * @param savedInstanceState Previous state data, if any.
@@ -49,8 +52,12 @@ public class MissedOutFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView called");
+
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.recycler_missedevents, container, false);
 
+        // Initialize the userDeviceId
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -71,7 +78,9 @@ public class MissedOutFragment extends Fragment {
      */
     private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -83,7 +92,9 @@ public class MissedOutFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No missed events found", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "No missed events found", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
 
@@ -124,7 +135,9 @@ public class MissedOutFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        }
                         return;
                     }
 
