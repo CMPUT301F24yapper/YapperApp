@@ -4,6 +4,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -106,12 +107,25 @@ public class EntrantActivity extends AppCompatActivity {
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
-        popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false); // Hiding role element
+
+        // Hide current role option
+        popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false);
+
+        // Check if user is admin before showing admin option
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        FirebaseFirestore.getInstance().collection("Users").document(deviceId).get()
+                .addOnSuccessListener(document -> {
+                    Boolean isAdmin = document.getBoolean("Admin");
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin != null && isAdmin);
+                });
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_organizer) {
-                Intent intent = new Intent(EntrantActivity.this, OrganizerActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(this, OrganizerActivity.class));
+                finish();
+                return true;
+            } else if (item.getItemId() == R.id.switch_to_admin) {
+                startActivity(new Intent(this, AdminActivity.class));
                 finish();
                 return true;
             }

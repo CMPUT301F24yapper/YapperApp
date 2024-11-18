@@ -6,4 +6,7 @@
     <item
         android:id="@+id/switch_to_organizer"
         android:title="Switch to Organizer" />
+    <item
+        android:id="@+id/switch_to_admin"
+        android:title="Switch to Admin" />
 </menu>
