@@ -35,6 +35,9 @@
         <activity
             android:name=".Activities.OrganizerActivity"
             android:exported="true" />
+        <activity
+            android:name=".Activities.AdminActivity"
+            android:exported="true" />
 
         <!-- Firebase Messaging Service -->
         <service

@@ -2,6 +2,7 @@ package ca.yapper.yapperapp.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -99,12 +100,23 @@ public class OrganizerActivity extends AppCompatActivity {
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
-        popup.getMenu().findItem(R.id.switch_to_organizer).setVisible(false); // Hiding role element
+
+        popup.getMenu().findItem(R.id.switch_to_organizer).setVisible(false);
+
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        FirebaseFirestore.getInstance().collection("Users").document(deviceId).get()
+                .addOnSuccessListener(document -> {
+                    Boolean isAdmin = document.getBoolean("Admin");
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin != null && isAdmin);
+                });
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_entrant) {
-                Intent intent = new Intent(OrganizerActivity.this, EntrantActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(this, EntrantActivity.class));
+                finish();
+                return true;
+            } else if (item.getItemId() == R.id.switch_to_admin) {
+                startActivity(new Intent(this, AdminActivity.class));
                 finish();
                 return true;
             }
