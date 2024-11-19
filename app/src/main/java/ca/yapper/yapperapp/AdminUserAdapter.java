@@ -1,12 +1,14 @@
 package ca.yapper.yapperapp;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -30,23 +32,32 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.User
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-        holder.profileName.setText(user.getName());
-        // Profile image loading would go here
+        String displayName = user.getName();
+        if (displayName == null || displayName.isEmpty()) {
+            displayName = user.getEmail();
+            if (displayName == null || displayName.isEmpty()) {
+                displayName = "Unknown User";
+            }
+        }
+        holder.profileName.setText(displayName);
 
         holder.itemView.setOnClickListener(v -> {
-            // Implement removal confirmation dialog here
-            showRemoveConfirmationDialog(user);
+            AdminRemoveProfileFragment fragment = new AdminRemoveProfileFragment();
+            Bundle args = new Bundle();
+            args.putString("userId", user.getDeviceId());
+            fragment.setArguments(args);
+
+            ((FragmentActivity) context).getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
     @Override
     public int getItemCount() {
         return userList.size();
-    }
-
-    private void showRemoveConfirmationDialog(User user) {
-        // Show dialog using admin_deleteconfirmation.xml
-        // On confirm, call AdminDatabase.removeUser(user.getDeviceId())
     }
 
     static class UserViewHolder extends RecyclerView.ViewHolder {

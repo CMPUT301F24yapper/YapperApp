@@ -1,11 +1,13 @@
 package ca.yapper.yapperapp;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -34,19 +36,22 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         holder.eventLocation.setText(event.getFacilityName());
 
         holder.itemView.setOnClickListener(v -> {
-            // Implement removal confirmation dialog here
-            showRemoveConfirmationDialog(event);
+            AdminRemoveEventFragment fragment = new AdminRemoveEventFragment();
+            Bundle args = new Bundle();
+            args.putString("eventId", String.valueOf(event.getQRCode().getHashData()));
+            fragment.setArguments(args);
+
+            ((FragmentActivity) context).getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
     @Override
     public int getItemCount() {
         return eventList.size();
-    }
-
-    private void showRemoveConfirmationDialog(Event event) {
-        // Show dialog using admin_deleteconfirmation.xml
-        // On confirm, call AdminDatabase.removeEvent(event.getQRCode().getHashData())
     }
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
