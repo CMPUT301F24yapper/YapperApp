@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class AdminRemoveEventFragment extends Fragment {
@@ -42,7 +43,7 @@ public class AdminRemoveEventFragment extends Fragment {
     }
 
     private void loadEventDetails() {
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
                 eventTitle.setText(event.getName());

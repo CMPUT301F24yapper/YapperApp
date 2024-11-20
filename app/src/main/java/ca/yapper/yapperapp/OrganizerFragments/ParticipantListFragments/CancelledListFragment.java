@@ -15,6 +15,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
+
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -87,7 +89,7 @@ public class CancelledListFragment extends Fragment {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
-                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 if (getContext() == null) return;

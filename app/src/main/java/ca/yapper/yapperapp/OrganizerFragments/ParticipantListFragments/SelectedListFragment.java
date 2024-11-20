@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
@@ -106,7 +108,7 @@ public class SelectedListFragment extends Fragment {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
-                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 if (getContext() == null) return;
@@ -182,7 +184,7 @@ public class SelectedListFragment extends Fragment {
                             String userId = userDoc.getId();
                             waitingUsers.remove(index);
 
-                            User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                            EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                                 @Override
                                 public void onUserLoaded(User user) {
                                     moveToSelectedList(user, () -> {
