@@ -48,17 +48,17 @@ public class EntrantDatabase {
         return tcs.getTask();
     }
 
-    public static void checkUserInEvent(String eventId, String userId, OrganizerDatabase.OnUserCheckListener listener) {
+    public static void checkUserInEvent(String eventId, String userId, EntrantDatabase.OnUserCheckListener listener) {
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(document -> listener.onUserInList(document.exists()))
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
-    public static void joinEvent(String eventId, String userId, OrganizerDatabase.OnOperationCompleteListener listener) {
+    public static void joinEvent(String eventId, String userId, OnOperationCompleteListener listener) {
         // Implement join event logic using Firestore batch writes
 
         // Create timestamp data
-        /** Map<String, Object> entrantData = new HashMap<>();
+        Map<String, Object> entrantData = new HashMap<>();
         entrantData.put("timestamp", FieldValue.serverTimestamp());
 
         // Start a batch write
@@ -80,19 +80,33 @@ public class EntrantDatabase {
 
         // Commit the batch
         batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    joinButton.setText("Unjoin");
-                    joinButton.setBackgroundColor(Color.GRAY);
-                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                }); **/
-    }
+                .addOnSuccessListener(aVoid -> listener.onComplete(true))
+                .addOnFailureListener(e -> listener.onComplete(false));
+        }
 
-    public static void unjoinEvent(String eventId, String userId, OrganizerDatabase.OnOperationCompleteListener listener) {
-        // Implement unjoin event logic using Firestore batch writes
-    }
+    public static void unjoinEvent(String eventId, String userId, EntrantDatabase.OnOperationCompleteListener listener) {
+     // Start a batch write
+            WriteBatch batch = db.batch();
+
+            // Remove from event's waiting list
+            DocumentReference eventWaitingListRef = db.collection("Events")
+                    .document(eventId)
+                    .collection("waitingList")
+                    .document(userId);
+            batch.delete(eventWaitingListRef);
+
+            // Remove from user's joined events
+            DocumentReference userJoinedEventsRef = db.collection("Users")
+                    .document(userId)
+                    .collection("joinedEvents")
+                    .document(eventId);
+            batch.delete(userJoinedEventsRef);
+
+            // Commit the batch
+            batch.commit()
+                    .addOnSuccessListener(aVoid -> listener.onComplete(true))
+                    .addOnFailureListener(e -> listener.onComplete(false));
+        }
 
     /**
      * Loads a User from Firestore using the specified device ID and provides the result
