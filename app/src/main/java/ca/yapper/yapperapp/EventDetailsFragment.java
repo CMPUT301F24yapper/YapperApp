@@ -26,6 +26,7 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -379,45 +380,27 @@ public class EventDetailsFragment extends Fragment {
      * If successful, it updates the join button to display "Unjoin" and shows a success message.
      */
     private void joinEvent() {
-        if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
-            return;
+            if (userDeviceId == null) {
+                Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            EntrantDatabase.joinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
+                @Override
+                public void onComplete(boolean success) {
+                    if (getContext() == null) return;
+
+                    if (success) {
+                        joinButton.setText("Unjoin");
+                        joinButton.setBackgroundColor(Color.GRAY);
+                        Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
         }
-        OrganizerDatabase.OnOperationCompleteListener listener = null;
-        OrganizerDatabase.joinEvent(eventId, userDeviceId, listener);
-        /** 
-        // Create timestamp data
-        Map<String, Object> entrantData = new HashMap<>();
-        entrantData.put("timestamp", FieldValue.serverTimestamp());
 
-        // Start a batch write
-        WriteBatch batch = db.batch();
-
-        // Add to event's waiting list
-        DocumentReference eventWaitingListRef = db.collection("Events")
-                .document(eventId)
-                .collection("waitingList")
-                .document(userDeviceId);
-        batch.set(eventWaitingListRef, entrantData);
-
-        // Add to user's joined events
-        DocumentReference userJoinedEventsRef = db.collection("Users")
-                .document(userDeviceId)
-                .collection("joinedEvents")
-                .document(eventId);
-        batch.set(userJoinedEventsRef, entrantData); **/
-
-        // Commit the batch
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    joinButton.setText("Unjoin");
-                    joinButton.setBackgroundColor(Color.GRAY);
-                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                });
-    }
 
 
     /**
@@ -430,6 +413,22 @@ public class EventDetailsFragment extends Fragment {
             return;
         }
 
+        EntrantDatabase.unjoinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
+            @Override
+            public void onComplete(boolean success) {
+                if (getContext() == null) return;
+
+                if (success) {
+                    joinButton.setText("Join");
+                    joinButton.setBackgroundColor(Color.BLUE);
+                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        /**
         // Start a batch write
         WriteBatch batch = db.batch();
 
@@ -456,7 +455,7 @@ public class EventDetailsFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                });
+                });**/
     }
 
 
