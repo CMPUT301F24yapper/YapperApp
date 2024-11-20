@@ -16,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
@@ -29,8 +30,8 @@ import ca.yapper.yapperapp.R;
  */
 public class EntrantActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db;
-    private CollectionReference usersRef;
+    //private FirebaseFirestore db;
+    //private CollectionReference usersRef;
     private String deviceId;
 
     /**
@@ -111,13 +112,22 @@ public class EntrantActivity extends AppCompatActivity {
         // Hide current role option
         popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false);
 
+        EntrantDatabase.checkIfUserIsAdmin(deviceId)
+                .addOnSuccessListener(isAdmin -> {
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin);
+                })
+                .addOnFailureListener(e -> {
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(false);
+                });
+
+        /**
         // Check if user is admin before showing admin option
         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         FirebaseFirestore.getInstance().collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
                     Boolean isAdmin = document.getBoolean("Admin");
                     popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin != null && isAdmin);
-                });
+                }); **/
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_organizer) {

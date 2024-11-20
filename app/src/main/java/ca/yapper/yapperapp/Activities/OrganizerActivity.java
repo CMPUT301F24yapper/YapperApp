@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -31,8 +32,9 @@ import ca.yapper.yapperapp.R;
  */
 public class OrganizerActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference eventsRef = db.collection("Events");
+    // private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    // private CollectionReference eventsRef = db.collection("Events");
+    private String deviceId;
 
     /**
      * Initializes the activity, setting up the layout and enabling Edge-to-Edge for UI.
@@ -61,6 +63,8 @@ public class OrganizerActivity extends AppCompatActivity {
      * Sets up a long-click listener on the profile item for role-switch options.
      */
     private void setupBottomNavigation() {
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
@@ -103,12 +107,21 @@ public class OrganizerActivity extends AppCompatActivity {
 
         popup.getMenu().findItem(R.id.switch_to_organizer).setVisible(false);
 
-        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        OrganizerDatabase.checkIfUserIsAdmin(deviceId)
+                .addOnSuccessListener(isAdmin -> {
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin);
+                })
+                .addOnFailureListener(e -> {
+                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(false);
+                });
+
+        /**
+        //String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         FirebaseFirestore.getInstance().collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
                     Boolean isAdmin = document.getBoolean("Admin");
                     popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin != null && isAdmin);
-                });
+                }); **/
 
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.switch_to_entrant) {
