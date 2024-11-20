@@ -46,6 +46,8 @@ public class EntrantActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.entrant_activity_layout);
 
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
         this.setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         setupBottomNavigation();
 
