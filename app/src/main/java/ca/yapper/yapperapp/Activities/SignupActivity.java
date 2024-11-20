@@ -24,6 +24,7 @@ import java.util.Date;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
+import ca.yapper.yapperapp.Databases.SignUpDatabase;
 /**
  * SignupActivity is responsible for user registration and Firebase Firestore setup.
  * It initializes Firebase, checks for existing users, and facilitates new user sign-up
@@ -31,8 +32,8 @@ import ca.yapper.yapperapp.UMLClasses.User;
  */
 public class SignupActivity extends AppCompatActivity {
 
-    private FirebaseFirestore db;
-    private CollectionReference usersRef;
+    // private FirebaseFirestore db;
+    // private CollectionReference usersRef;
     private String deviceId;
     private EditText addEntrantNameEditText;
     private EditText addEntrantPhoneEditText;
@@ -54,7 +55,7 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.signup_page_fragment);
-
+        // to do: could move this notification logic into its own method (e.g. "setUpNotificationChannel")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channel_Id, channel_Name, NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(channel_desc);
@@ -67,18 +68,20 @@ public class SignupActivity extends AppCompatActivity {
             }
         }
 
-        FirebaseApp.initializeApp(this);
-        createFirebaseConnection();
+        // FirebaseApp.initializeApp(this);
+        // createFirebaseConnection();
+
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
         checkUserExists();
     }
     /**
      * Establishes a Firebase connection and initializes the reference to the "Users" collection.
      */
-    private void createFirebaseConnection() {
+    /** private void createFirebaseConnection() {
         db = FirebaseFirestore.getInstance();
         usersRef = db.collection("Users");
-    }
+    } **/
 
     /**
      * Checks if a user with the current deviceId exists in Firestore.
@@ -86,21 +89,18 @@ public class SignupActivity extends AppCompatActivity {
      * Otherwise, it sets up the sign-up form.
      */
     private void checkUserExists() {
-        db.collection("Users").document(deviceId)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            launchEntrantActivity();
-                        } else {
-                            setUpSignUpViews();
-                        }
-                    } else {
-                        Log.w("SignupActivity", "Error checking user existence", task.getException());
-                        Toast.makeText(SignupActivity.this, "Error connecting to database.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        SignUpDatabase.checkUserExists(deviceId)
+            .addOnSuccessListener(exists -> {
+                if (exists) {
+                    launchEntrantActivity();
+                } else {
+                    setUpSignUpViews();
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.w("SignupActivity", "Error checking user existence", e);
+                Toast.makeText(this, "Error connecting to database.", Toast.LENGTH_SHORT).show();
+            });
     }
 
     /**
@@ -111,6 +111,7 @@ public class SignupActivity extends AppCompatActivity {
         addEntrantPhoneEditText = findViewById(R.id.phone_input);
         addEntrantEmailEditText = findViewById(R.id.email_input);
         signupButton = findViewById(R.id.signup_button);
+
         signupButton.setOnClickListener(v -> createUserAndNotify());
     }
 
@@ -129,6 +130,16 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
+        SignUpDatabase.createUser(deviceId, entrantName, entrantPhone, entrantEmail)
+                .addOnSuccessListener(aVoid -> {
+                    showSignupSuccessNotification(entrantName);
+                    launchEntrantActivity();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("SignupActivity", "Error creating user", e);
+                    Toast.makeText(this, "Error signing up. Please try again.", Toast.LENGTH_SHORT).show();
+                });
+        /**
         User.createUserInDatabase(
                 deviceId,
                 entrantEmail,
@@ -148,9 +159,21 @@ public class SignupActivity extends AppCompatActivity {
         );
         Log.d("SignupActivity", "Attempting to display signup notification");
 
-        launchEntrantActivity();
+        launchEntrantActivity(); **/
     }
 
+    /**
+     * Displays a signup success notification.
+     */
+    private void showSignupSuccessNotification(String entrantName) {
+        Notification signupNotification = new Notification(
+                new Date(),
+                "Welcome to Event Lottery!",
+                "Hello " + entrantName + ", you have successfully signed up.",
+                "Signup Success"
+        );
+        Log.d("SignupActivity", "Signup success notification displayed.");
+    }
 
     /**
      * Launches EntrantActivity, completing the sign-up process for Entrants.
