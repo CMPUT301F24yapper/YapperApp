@@ -59,8 +59,10 @@ public class EntrantNotificationsFragment extends Fragment {
                     notificationList.clear();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         Notification notification = document.toObject(Notification.class);
-                        notification.setId(document.getId());
-                        notificationList.add(notification);
+                        if (notification != null && document.getId() != null) {
+                            notification.setId(document.getId());
+                            notificationList.add(notification);
+                        }
                     }
                     notificationAdapter.notifyDataSetChanged();
                     markNotificationsAsRead(notificationList);
@@ -70,10 +72,13 @@ public class EntrantNotificationsFragment extends Fragment {
 
     private void markNotificationsAsRead(List<Notification> notifications) {
         for (Notification notification : notifications) {
-            db.collection("Notifications").document(notification.getId())
-                    .update("isRead", true)
-                    .addOnSuccessListener(aVoid -> Log.d("Notifications", "Notification marked as read"))
-                    .addOnFailureListener(e -> Log.e("NotificationsError", "Error marking notification as read", e));
+            String notificationId = notification.getId();
+            if (notificationId != null && !notificationId.isEmpty()) {
+                db.collection("Notifications").document(notificationId)
+                        .update("isRead", true)
+                        .addOnSuccessListener(aVoid -> Log.d("Notifications", "Notification marked as read"))
+                        .addOnFailureListener(e -> Log.e("NotificationsError", "Error marking notification as read", e));
+            }
         }
     }
 }
