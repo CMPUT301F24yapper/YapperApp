@@ -30,6 +30,7 @@ import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingLi
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 
 /**
  * The EventDetailsFragment class displays detailed information about a specific event.
@@ -37,7 +38,7 @@ import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
  */
 public class EventDetailsFragment extends Fragment {
 
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
     private TextView nameTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView;
     private TextView geolocEnabledTextView;
@@ -68,7 +69,7 @@ public class EventDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.event_details, container, false);
 
-        db = FirebaseFirestore.getInstance();
+        //db = FirebaseFirestore.getInstance();
         Bundle args = getArguments();
         if (args == null || !args.containsKey("0")) {
             Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
@@ -122,7 +123,7 @@ public class EventDetailsFragment extends Fragment {
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
 
-        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+        /** Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
                 if (getContext() == null) return;
@@ -153,7 +154,38 @@ public class EventDetailsFragment extends Fragment {
                 Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
                 Log.e("EventDetails", "Error loading event: " + error);
             }
+        }); **/
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (getContext() == null) return;
+
+                nameTextView.setText(event.getName());
+                dateTimeTextView.setText(event.getDate_Time());
+                regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
+                facilityNameTextView.setText("Facility: " + event.getFacilityName());
+                facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
+                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
+                capacityTextView.setText(String.valueOf(event.getCapacity()));
+
+                geolocationEnabled = event.isGeolocationEnabled();
+                if (geolocationEnabled) {
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    if (geoLocationRequired != null) {
+                        geoLocationRequired.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                setupButtonListeners();
+            }
+
+            @Override
+            public void onEventLoadError(String error) {
+                if (getContext() == null) return;
+                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+            }
         });
+
     }
 
 
@@ -183,8 +215,23 @@ public class EventDetailsFragment extends Fragment {
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
     private void checkUserInList() {
+        OrganizerDatabase.checkUserInEvent(eventId, userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+            @Override
+            public void onUserInList(boolean inList) {
+                if (inList) {
+                    setButtonState("Unjoin", Color.GRAY);
+                } else {
+                    setButtonState("Join", Color.BLUE);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
         // if (userDeviceId == null) return;
-        Log.d("checkuserinlist", "checking if user in list (waiting or selected)");
+        /** Log.d("checkuserinlist", "checking if user in list (waiting or selected)");
         db.collection("Events").document(eventId)
                 .collection("waitingList")
                 .document(userDeviceId)
@@ -215,7 +262,8 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     Log.e("EventDetails", "Error checking waiting list: " + e.getMessage());
                 });
-        Log.d("checkuserinlist", "user not in any list");
+        Log.d("checkuserinlist", "user not in any list"); **/
+
     }
 
 
@@ -228,6 +276,30 @@ public class EventDetailsFragment extends Fragment {
         Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
+                showGeolocationWarningDialog();
+            } else {
+                OrganizerDatabase.joinEvent(eventId, userDeviceId, success -> {
+                    if (success) {
+                        setButtonState("Unjoin", Color.GRAY);
+                        Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Error joining the event.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        } else {
+            OrganizerDatabase.unjoinEvent(eventId, userDeviceId, success -> {
+                if (success) {
+                    setButtonState("Join", Color.BLUE);
+                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error unjoining the event.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        /**
+        if (joinButton.getText().equals("Join")) {
+            if (geolocationEnabled) {
                 Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
                 showGeolocationWarningDialog();
             } else {
@@ -237,8 +309,10 @@ public class EventDetailsFragment extends Fragment {
         } else {
             Log.d("EventDetailsFragment", "Unjoining event");
             unjoinEvent();
-        }
+        } **/
     }
+
+
     /**
      * Sets the state of the join button (text and background color).
      *
@@ -309,7 +383,9 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        OrganizerDatabase.OnOperationCompleteListener listener = null;
+        OrganizerDatabase.joinEvent(eventId, userDeviceId, listener);
+        /** 
         // Create timestamp data
         Map<String, Object> entrantData = new HashMap<>();
         entrantData.put("timestamp", FieldValue.serverTimestamp());
@@ -329,7 +405,7 @@ public class EventDetailsFragment extends Fragment {
                 .document(userDeviceId)
                 .collection("joinedEvents")
                 .document(eventId);
-        batch.set(userJoinedEventsRef, entrantData);
+        batch.set(userJoinedEventsRef, entrantData); **/
 
         // Commit the batch
         batch.commit()

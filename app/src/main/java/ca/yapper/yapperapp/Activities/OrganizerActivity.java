@@ -48,6 +48,8 @@ public class OrganizerActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.organizer_activity_layout);
 
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
         setupBottomNavigation();
 
         if (savedInstanceState == null) {
@@ -63,7 +65,6 @@ public class OrganizerActivity extends AppCompatActivity {
      * Sets up a long-click listener on the profile item for role-switch options.
      */
     private void setupBottomNavigation() {
-        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 

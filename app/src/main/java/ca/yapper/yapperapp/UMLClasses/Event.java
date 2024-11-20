@@ -75,7 +75,7 @@ public class Event {
      * @param hashData The unique ID of the event.
      * @param listener Listener for handling the loaded event or error.
      */
-    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
+    /** public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Events").document(hashData).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -99,10 +99,9 @@ public class Event {
                         }
                     }
                 });
-    }
+    } **/
 
-
-
+    /**
     public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
         ArrayList<String> userIdsList = new ArrayList<>();
 
@@ -132,11 +131,11 @@ public class Event {
                         listener.onUserIdsLoaded(userIdsList);
                     }
                 });
-    }
+    } **/
 
-    public interface OnUserIdsLoadedListener {
+    /** public interface OnUserIdsLoadedListener {
         void onUserIdsLoaded(ArrayList<String> userIdsList);
-    }
+    } **/
 
 
     /**
@@ -154,7 +153,7 @@ public class Event {
      * @param organizerId The ID of the organizer creating the event.
      * @return The created Event instance.
      */
-    public static Event createEventInDatabase(int capacity, String dateTime, String description,
+    /** public static Event createEventInDatabase(int capacity, String dateTime, String description,
                                               String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
                                               String registrationDeadline, int waitListCapacity, String organizerId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -190,7 +189,7 @@ public class Event {
         } catch (WriterException e) {
             return null;
         }
-    }
+    } **/
 
 
     /**
@@ -199,7 +198,8 @@ public class Event {
      * @param db Firestore instance.
      * @param eventId The unique ID of the event.
      */
-    private static void initializeSubcollections(FirebaseFirestore db, String eventId) {
+    /**
+    public static void initializeSubcollections(FirebaseFirestore db, String eventId) {
         Map<String, Object> placeholderData = new HashMap<>();
         placeholderData.put("placeholder", true);
 
@@ -207,17 +207,18 @@ public class Event {
         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
-    }
+    } **/
 
 
 
     /**
      * Interface for handling the result of loading an event from Firestore.
      */
+    /**
     public interface OnEventLoadedListener {
         void onEventLoaded(Event event);
         void onEventLoadError(String error);
-    }
+    } **/
 
     public int getCapacity() {
         return capacity;
