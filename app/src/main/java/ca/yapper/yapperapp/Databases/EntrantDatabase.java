@@ -1,9 +1,15 @@
 package ca.yapper.yapperapp.Databases;
 
+import android.graphics.Color;
+import android.widget.Toast;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +43,61 @@ public class EntrantDatabase {
                 .addOnFailureListener(tcs::setException);
 
         return tcs.getTask();
+    }
+
+    public static void checkUserInEvent(String eventId, String userId, OrganizerDatabase.OnUserCheckListener listener) {
+        db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
+                .addOnSuccessListener(document -> listener.onUserInList(document.exists()))
+                .addOnFailureListener(e -> listener.onError(e.getMessage()));
+    }
+
+    public static void joinEvent(String eventId, String userId, OrganizerDatabase.OnOperationCompleteListener listener) {
+        // Implement join event logic using Firestore batch writes
+
+        // Create timestamp data
+        /** Map<String, Object> entrantData = new HashMap<>();
+        entrantData.put("timestamp", FieldValue.serverTimestamp());
+
+        // Start a batch write
+        WriteBatch batch = db.batch();
+
+        // Add to event's waiting list
+        DocumentReference eventWaitingListRef = db.collection("Events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(userId);
+        batch.set(eventWaitingListRef, entrantData);
+
+        // Add to user's joined events
+        DocumentReference userJoinedEventsRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+        batch.set(userJoinedEventsRef, entrantData);
+
+        // Commit the batch
+        batch.commit()
+                .addOnSuccessListener(aVoid -> {
+                    joinButton.setText("Unjoin");
+                    joinButton.setBackgroundColor(Color.GRAY);
+                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
+                }); **/
+    }
+
+    public static void unjoinEvent(String eventId, String userId, OrganizerDatabase.OnOperationCompleteListener listener) {
+        // Implement unjoin event logic using Firestore batch writes
+    }
+
+    public interface OnUserCheckListener {
+        void onUserInList(boolean inList);
+        void onError(String error);
+    }
+
+    public interface OnOperationCompleteListener {
+        void onComplete(boolean success);
     }
 
 }

@@ -73,48 +73,20 @@ public class OrganizerDatabase {
 
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
-                .addOnSuccessListener(document -> listener.onUserInList(document.exists()))
-                .addOnFailureListener(e -> listener.onError(e.getMessage()));
-    }
-
-    public static void joinEvent(String eventId, String userId, OnOperationCompleteListener listener) {
-        // Implement join event logic using Firestore batch writes
-
-        // Create timestamp data
-        Map<String, Object> entrantData = new HashMap<>();
-        entrantData.put("timestamp", FieldValue.serverTimestamp());
-
-        // Start a batch write
-        WriteBatch batch = db.batch();
-
-        // Add to event's waiting list
-        DocumentReference eventWaitingListRef = db.collection("Events")
-                .document(eventId)
-                .collection("waitingList")
-                .document(userId);
-        batch.set(eventWaitingListRef, entrantData);
-
-        // Add to user's joined events
-        DocumentReference userJoinedEventsRef = db.collection("Users")
-                .document(userId)
-                .collection("joinedEvents")
-                .document(eventId);
-        batch.set(userJoinedEventsRef, entrantData);
-
-        // Commit the batch
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    joinButton.setText("Unjoin");
-                    joinButton.setBackgroundColor(Color.GRAY);
-                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                .addOnSuccessListener(waitingListDoc -> {
+                    if (waitingListDoc.exists()) {
+                        listener.onUserInList(true);
+                    }
+                    else {
+                        // Check selectedList only if not found in waitingList
+                        db.collection("Events").document(eventId).collection("selectedList").document(userId).get()
+                                .addOnSuccessListener(selectedListDoc -> {
+                                    listener.onUserInList(selectedListDoc.exists()); // User found in selectedList or not at all
+                                })
+                                .addOnFailureListener(e -> listener.onError(e.getMessage()));
+                    }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    public static void unjoinEvent(String eventId, String userId, OnOperationCompleteListener listener) {
-        // Implement unjoin event logic using Firestore batch writes
+                .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
     public interface OnUserCheckListener {
