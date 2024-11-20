@@ -274,6 +274,7 @@ public class EventDetailsFragment extends Fragment {
      */
     private void handleJoinButtonClick() {
         Log.d("EventDetailsFragment", "Join button clicked");
+        /**
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
                 showGeolocationWarningDialog();
@@ -296,8 +297,7 @@ public class EventDetailsFragment extends Fragment {
                     Toast.makeText(getContext(), "Error unjoining the event.", Toast.LENGTH_SHORT).show();
                 }
             });
-        }
-        /**
+        } **/
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
                 Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
@@ -309,7 +309,7 @@ public class EventDetailsFragment extends Fragment {
         } else {
             Log.d("EventDetailsFragment", "Unjoining event");
             unjoinEvent();
-        } **/
+        }
     }
 
 
