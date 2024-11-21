@@ -15,6 +15,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
+
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -27,7 +30,7 @@ public class FinalListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> finalList;
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
 
 
@@ -51,7 +54,7 @@ public class FinalListFragment extends Fragment {
         adapter = new UsersAdapter(finalList, getContext());
         recyclerView.setAdapter(adapter);
 
-        db = FirebaseFirestore.getInstance();
+        //db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -61,7 +64,6 @@ public class FinalListFragment extends Fragment {
         return view;
     }
 
-
     /**
      * Refreshes the final list by reloading data from Firestore and updating the RecyclerView.
      */
@@ -69,7 +71,6 @@ public class FinalListFragment extends Fragment {
         if (getContext() == null) return;
         loadFinalList();
     }
-
 
     /**
      * Loads the final list from the "finalList" subcollection of the event document in Firestore.
@@ -81,13 +82,47 @@ public class FinalListFragment extends Fragment {
         finalList.clear();
         adapter.notifyDataSetChanged();
 
+        OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "finalList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            @Override
+            public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                for (String userId : userIdsList) {
+                    // For each userId, fetch the corresponding User object
+                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            if (getContext() == null) return;
+
+                            // Add the User to the cancelledList and notify the adapter
+                            finalList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            if (getContext() == null) return;
+
+                            Log.e("FinalList", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Error loading user IDs: " + error, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+        /**
         db.collection("Events").document(eventId)
                 .collection("finalList")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
-                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 if (getContext() == null) return;
@@ -108,5 +143,5 @@ public class FinalListFragment extends Fragment {
                         Toast.makeText(getContext(), "Error loading final list", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
+    } **/
 }

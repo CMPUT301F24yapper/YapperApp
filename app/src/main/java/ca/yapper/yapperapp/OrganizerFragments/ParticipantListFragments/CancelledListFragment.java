@@ -11,10 +11,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -27,9 +29,8 @@ public class CancelledListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> cancelledList;
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
-
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
@@ -51,8 +52,7 @@ public class CancelledListFragment extends Fragment {
         adapter = new UsersAdapter(cancelledList, getContext());
         recyclerView.setAdapter(adapter);
 
-        db = FirebaseFirestore.getInstance();
-
+        //db = FirebaseFirestore.getInstance();
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
             loadCancelledList();
@@ -61,7 +61,6 @@ public class CancelledListFragment extends Fragment {
         return view;
     }
 
-
     /**
      * Refreshes the cancelled list by reloading data from Firestore and updating the RecyclerView.
      */
@@ -69,7 +68,6 @@ public class CancelledListFragment extends Fragment {
         if (getContext() == null) return;
         loadCancelledList();
     }
-
 
     /**
      * Loads the cancelled list from the "cancelledList" subcollection of the event document in Firestore.
@@ -81,13 +79,47 @@ public class CancelledListFragment extends Fragment {
         cancelledList.clear();
         adapter.notifyDataSetChanged();
 
-        db.collection("Events").document(eventId)
+        OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "cancelledList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            @Override
+            public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                for (String userId : userIdsList) {
+                    // For each userId, fetch the corresponding User object
+                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            if (getContext() == null) return;
+
+                            // Add the User to the cancelledList and notify the adapter
+                            cancelledList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            if (getContext() == null) return;
+
+                            Log.e("CancelledList", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Error loading user IDs: " + error, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+        /** db.collection("Events").document(eventId)
                 .collection("cancelledList")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         String userId = document.getId();
-                        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 if (getContext() == null) return;
@@ -108,5 +140,5 @@ public class CancelledListFragment extends Fragment {
                         Toast.makeText(getContext(), "Error loading cancelled list", Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
+    } **/
 }
