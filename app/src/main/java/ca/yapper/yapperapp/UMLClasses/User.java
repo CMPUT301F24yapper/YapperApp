@@ -55,21 +55,16 @@ public class User {
         this.createdEvents = createdEvents;
     }
 
-
     // User user = new User(userDeviceId, "", false, false, false, "", "", false,
         // new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        /** db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
-         if (documentSnapshot.exists()) {
-         loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
-         loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents);
-         }
-         });
-         return user;
-         } **/
-
-
+        //db.collection("Users").document(userDeviceId).get().addOnSuccessListener(documentSnapshot -> {
+         //if (documentSnapshot.exists()) {
+         //loadEventIdsFromSubcollection(db, userDeviceId, "joinedEvents", user.joinedEvents);
+         //loadEventIdsFromSubcollection(db, userDeviceId, "registeredEvents", user.registeredEvents);
+         //loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
+         //loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents); } });
+         //return user; }
+    
     /**
      * Converts the user's attributes to a Map, suitable for storage in Firestore.
      *

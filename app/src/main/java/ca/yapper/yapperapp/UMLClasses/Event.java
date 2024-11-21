@@ -6,6 +6,7 @@ import com.google.zxing.WriterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 /**
  * The Event class represents an event created by an organizer.
  * It contains details about the event, such as name, location, date, capacity, and lists
@@ -68,74 +69,54 @@ public class Event {
         this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
     }
 
-
     /**
      * Loads an event from Firestore based on the event ID and returns it through a listener.
      *
      * @param hashData The unique ID of the event.
      * @param listener Listener for handling the loaded event or error.
      */
-    /** public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Events").document(hashData).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        try {
-                            Event event = new Event(
-                                    documentSnapshot.getLong("capacity").intValue(),
-                                    documentSnapshot.getString("date_Time"),
-                                    documentSnapshot.getString("description"),
-                                    documentSnapshot.getString("facilityLocation"),
-                                    documentSnapshot.getString("facilityName"),
-                                    documentSnapshot.getBoolean("isGeolocationEnabled"),
-                                    documentSnapshot.getString("name"),
-                                    documentSnapshot.getString("registrationDeadline"),
-                                    documentSnapshot.getLong("waitListCapacity").intValue(),
-                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
-                            );
-                            listener.onEventLoaded(event);
-                        } catch (WriterException e) {
-                            listener.onEventLoadError("Error creating event");
-                        }
-                    }
-                });
-    } **/
+    //public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
+        //FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //db.collection("Events").document(hashData).get()
+                //.addOnSuccessListener(documentSnapshot -> {
+                    //if (documentSnapshot.exists()) {
+                        //try {
+                            //Event event = new Event(
+                                    //documentSnapshot.getLong("capacity").intValue(),
+                                    //documentSnapshot.getString("date_Time"),
+                                    //documentSnapshot.getString("description"),
+                                    //documentSnapshot.getString("facilityLocation"),
+                                    //documentSnapshot.getString("facilityName"),
+                                    //documentSnapshot.getBoolean("isGeolocationEnabled"),
+                                    //documentSnapshot.getString("name"),
+                                    //documentSnapshot.getString("registrationDeadline"),
+                                    //documentSnapshot.getLong("waitListCapacity").intValue(),
+                                    //new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>() ); listener.onEventLoaded(event);
+                        //} catch (WriterException e) {
+                            //listener.onEventLoadError("Error creating event"); } } });}
 
-    /**
-    public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
-        ArrayList<String> userIdsList = new ArrayList<>();
-
-        db.collection("Events").document(eventId).collection(subcollectionName)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String userIdRef = doc.getId();
-                        db.collection("Users").document(userIdRef).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    if (userDoc.exists()) {
-                                        String deviceId = userDoc.getString("deviceId");
-                                        if (deviceId != null) {
-                                            userIdsList.add(deviceId);
-                                        }
-                                    }
-
+    //public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
+        //ArrayList<String> userIdsList = new ArrayList<>();
+        //db.collection("Events").document(eventId).collection(subcollectionName)
+                //.get()
+                //.addOnSuccessListener(queryDocumentSnapshots -> {
+                    //for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        //String userIdRef = doc.getId();
+                        //db.collection("Users").document(userIdRef).get()
+                                //.addOnSuccessListener(userDoc -> {
+                                    //if (userDoc.exists()) {
+                                        //String deviceId = userDoc.getString("deviceId");
+                                        //if (deviceId != null) {
+                                            //userIdsList.add(deviceId); } }
                                     // Call the listener only after all documents are processed
-                                    if (userIdsList.size() == queryDocumentSnapshots.size()) {
-                                        listener.onUserIdsLoaded(userIdsList);
-                                    }
-                                });
-                    }
-
+                                    //if (userIdsList.size() == queryDocumentSnapshots.size()) {
+                                        //listener.onUserIdsLoaded(userIdsList); } }); }
                     // Handle case when there are no documents in subcollection
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        listener.onUserIdsLoaded(userIdsList);
-                    }
-                });
-    } **/
+                    //if (queryDocumentSnapshots.isEmpty()) {
+                        //listener.onUserIdsLoaded(userIdsList); } }); }
 
-    /** public interface OnUserIdsLoadedListener {
-        void onUserIdsLoaded(ArrayList<String> userIdsList);
-    } **/
+    //public interface OnUserIdsLoadedListener {
+        //void onUserIdsLoaded(ArrayList<String> userIdsList); } **/
 
 
     /**
@@ -153,44 +134,33 @@ public class Event {
      * @param organizerId The ID of the organizer creating the event.
      * @return The created Event instance.
      */
-    /** public static Event createEventInDatabase(int capacity, String dateTime, String description,
-                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
-                                              String registrationDeadline, int waitListCapacity, String organizerId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        try {
-            Event event = new Event(capacity, dateTime, description, facilityLocation,
-                    facilityName, isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-
-            String eventId = Integer.toString(event.getQRCode().getHashData());
-            Map<String, Object> eventData = new HashMap<>();
-            eventData.put("capacity", event.capacity);
-            eventData.put("date_Time", event.date_Time);
-            eventData.put("description", event.description);
-            eventData.put("facilityLocation", event.facilityLocation);
-            eventData.put("facilityName", event.facilityName);
-            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled);
-            eventData.put("name", event.name);
-            eventData.put("qrCode_hashData", event.QRCode.getHashData());
-            eventData.put("registrationDeadline", event.registrationDeadline);
-            eventData.put("waitListCapacity", event.waitListCapacity);
-            eventData.put("organizerId", organizerId);
-
+    //public static Event createEventInDatabase(int capacity, String dateTime, String description, String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity, String organizerId) {
+        //FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //try {
+            //Event event = new Event(capacity, dateTime, description, facilityLocation,
+                    //facilityName, isGeolocationEnabled, name, registrationDeadline, waitListCapacity, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            //String eventId = Integer.toString(event.getQRCode().getHashData());
+            //Map<String, Object> eventData = new HashMap<>();
+            //eventData.put("capacity", event.capacity);
+            //eventData.put("date_Time", event.date_Time);
+            //eventData.put("description", event.description);
+            //eventData.put("facilityLocation", event.facilityLocation);
+            //eventData.put("facilityName", event.facilityName);
+            //eventData.put("isGeolocationEnabled", event.isGeolocationEnabled);
+            //eventData.put("name", event.name);
+            //eventData.put("qrCode_hashData", event.QRCode.getHashData());
+            //eventData.put("registrationDeadline", event.registrationDeadline);
+            //eventData.put("waitListCapacity", event.waitListCapacity);
+            //eventData.put("organizerId", organizerId);
             // Initialize the subcollections with placeholder data
-            initializeSubcollections(db, eventId);
-
-            db.collection("Events").document(eventId).set(eventData);
-
-            Map<String, Object> eventRef = new HashMap<>();
-            eventRef.put("timestamp", com.google.firebase.Timestamp.now());
-            db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
-
-            return event;
-        } catch (WriterException e) {
-            return null;
-        }
-    } **/
-
+            //initializeSubcollections(db, eventId);
+            //db.collection("Events").document(eventId).set(eventData);
+            //Map<String, Object> eventRef = new HashMap<>();
+            //eventRef.put("timestamp", com.google.firebase.Timestamp.now());
+            //db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
+            //return event;
+        //} catch (WriterException e) {
+            //return null; } } **/
 
     /**
      * Initializes Firestore subcollections for the event with placeholder data.
@@ -198,27 +168,20 @@ public class Event {
      * @param db Firestore instance.
      * @param eventId The unique ID of the event.
      */
-    /**
-    public static void initializeSubcollections(FirebaseFirestore db, String eventId) {
-        Map<String, Object> placeholderData = new HashMap<>();
-        placeholderData.put("placeholder", true);
-
-        db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
-    } **/
-
-
+    //public static void initializeSubcollections(FirebaseFirestore db, String eventId) {
+        //Map<String, Object> placeholderData = new HashMap<>();
+        //placeholderData.put("placeholder", true);
+        //db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
+        //db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
+        //db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
+        //db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData); }
 
     /**
      * Interface for handling the result of loading an event from Firestore.
      */
-    /**
-    public interface OnEventLoadedListener {
-        void onEventLoaded(Event event);
-        void onEventLoadError(String error);
-    } **/
+    //public interface OnEventLoadedListener {
+        //void onEventLoaded(Event event);
+        //void onEventLoadError(String error); }
 
     public int getCapacity() {
         return capacity;

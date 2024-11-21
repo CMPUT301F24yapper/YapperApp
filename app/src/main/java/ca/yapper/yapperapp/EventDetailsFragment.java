@@ -16,14 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.WriteBatch;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
@@ -53,8 +45,6 @@ public class EventDetailsFragment extends Fragment {
     private boolean isInOrganizerActivity = false;
     private Bundle QRCodeData;
     private View view;
-
-
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -93,7 +83,6 @@ public class EventDetailsFragment extends Fragment {
         return view;
     }
 
-
     /**
      * Initializes all the UI elements (TextViews, Buttons) from the fragment layout.
      *
@@ -116,13 +105,42 @@ public class EventDetailsFragment extends Fragment {
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
     }
 
-
     /**
      * Loads the details of the event from the Firestore database and populates the corresponding UI elements.
      * If geolocation is enabled for the event, the UI is updated to show a warning about geolocation requirements.
      */
     private void loadEventDetails() {
         Log.d("EventDebug", "Loading event with ID: " + eventId);
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                if (getContext() == null) return;
+
+                nameTextView.setText(event.getName());
+                dateTimeTextView.setText(event.getDate_Time());
+                regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
+                facilityNameTextView.setText("Facility: " + event.getFacilityName());
+                facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
+                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
+                capacityTextView.setText(String.valueOf(event.getCapacity()));
+
+                geolocationEnabled = event.isGeolocationEnabled();
+                if (geolocationEnabled) {
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    if (geoLocationRequired != null) {
+                        geoLocationRequired.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                setupButtonListeners();
+            }
+
+            @Override
+            public void onEventLoadError(String error) {
+                if (getContext() == null) return;
+                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         /** Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
             @Override
@@ -156,39 +174,7 @@ public class EventDetailsFragment extends Fragment {
                 Log.e("EventDetails", "Error loading event: " + error);
             }
         }); **/
-        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
-            @Override
-            public void onEventLoaded(Event event) {
-                if (getContext() == null) return;
-
-                nameTextView.setText(event.getName());
-                dateTimeTextView.setText(event.getDate_Time());
-                regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
-                facilityNameTextView.setText("Facility: " + event.getFacilityName());
-                facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
-                capacityTextView.setText(String.valueOf(event.getCapacity()));
-
-                geolocationEnabled = event.isGeolocationEnabled();
-                if (geolocationEnabled) {
-                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                    if (geoLocationRequired != null) {
-                        geoLocationRequired.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                setupButtonListeners();
-            }
-
-            @Override
-            public void onEventLoadError(String error) {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
-
     }
-
 
     /**
      * Sets up button listeners based on the activity type (Entrant or Organizer).
@@ -210,7 +196,6 @@ public class EventDetailsFragment extends Fragment {
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
         }
     }
-
 
     /**
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
@@ -264,9 +249,7 @@ public class EventDetailsFragment extends Fragment {
                     Log.e("EventDetails", "Error checking waiting list: " + e.getMessage());
                 });
         Log.d("checkuserinlist", "user not in any list"); **/
-
     }
-
 
     /**
      * Handles the join button click. If the user clicks "Join", it checks if geolocation is required.
@@ -275,6 +258,18 @@ public class EventDetailsFragment extends Fragment {
      */
     private void handleJoinButtonClick() {
         Log.d("EventDetailsFragment", "Join button clicked");
+        if (joinButton.getText().equals("Join")) {
+            if (geolocationEnabled) {
+                Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
+                showGeolocationWarningDialog();
+            } else {
+                Log.d("EventDetailsFragment", "Joining event directly");
+                joinEvent();
+            }
+        } else {
+            Log.d("EventDetailsFragment", "Unjoining event");
+            unjoinEvent();
+        }
         /**
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
@@ -299,20 +294,7 @@ public class EventDetailsFragment extends Fragment {
                 }
             });
         } **/
-        if (joinButton.getText().equals("Join")) {
-            if (geolocationEnabled) {
-                Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
-                showGeolocationWarningDialog();
-            } else {
-                Log.d("EventDetailsFragment", "Joining event directly");
-                joinEvent();
-            }
-        } else {
-            Log.d("EventDetailsFragment", "Unjoining event");
-            unjoinEvent();
-        }
     }
-
 
     /**
      * Sets the state of the join button (text and background color).
@@ -324,7 +306,6 @@ public class EventDetailsFragment extends Fragment {
         joinButton.setText(text);
         joinButton.setBackgroundColor(color);
     }
-
 
     /**
      * Handles the "View Participants" button click. Opens a new fragment to display the list of participants.
@@ -340,13 +321,13 @@ public class EventDetailsFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
+
     /**
      * Handles the "Edit Event" button click. (This feature is currently to be implemented.)
      */
     private void handleEditEventButtonClick() {
         // **TO IMPLEMENT**
     }
-
 
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
@@ -360,7 +341,6 @@ public class EventDetailsFragment extends Fragment {
         getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
     }
 
-
     /**
      * Shows a dialog to warn the user that geolocation is required for this event.
      * If the user confirms, the event will be joined.
@@ -373,7 +353,6 @@ public class EventDetailsFragment extends Fragment {
                 .create()
                 .show();
     }
-
 
     /**
      * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
@@ -400,8 +379,6 @@ public class EventDetailsFragment extends Fragment {
                 }
             });
         }
-
-
 
     /**
      * Unjoins the user from the event. It removes the user from both the event's waiting list and their list of joined events.
@@ -457,7 +434,6 @@ public class EventDetailsFragment extends Fragment {
                     Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 });**/
     }
-
 
     /**
      * Sets the visibility of the UI elements based on the type of activity the user is in (Entrant or Organizer).

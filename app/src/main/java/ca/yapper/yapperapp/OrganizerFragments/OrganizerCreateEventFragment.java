@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import java.util.Calendar;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -153,7 +154,7 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
-        Event.createEventInDatabase(
+        OrganizerDatabase.createEventInDatabase(
                 capacityInt,
                 dateTime,
                 "",  // Empty description

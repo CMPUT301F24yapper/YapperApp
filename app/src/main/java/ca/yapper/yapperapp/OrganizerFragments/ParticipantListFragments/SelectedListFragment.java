@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
@@ -40,7 +41,7 @@ public class SelectedListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> selectedList;
-    private FirebaseFirestore db;
+    //private FirebaseFirestore db;
     private String eventId;
     private Button redrawButton;
     private int eventCapacity;
@@ -67,7 +68,7 @@ public class SelectedListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         redrawButton = view.findViewById(R.id.button_redraw);
 
-        db = FirebaseFirestore.getInstance();
+        //db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -84,12 +85,13 @@ public class SelectedListFragment extends Fragment {
      * Loads the capacity of the event from Firestore, setting the maximum number of selected participants.
      */
     private void loadEventCapacity() {
-        db.collection("Events").document(eventId).get()
+        OrganizerDatabase.loadEventCapacity(eventId);
+        /**db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         eventCapacity = documentSnapshot.getLong("capacity").intValue();
                     }
-                });
+                }); **/
     }
 
 
@@ -102,7 +104,40 @@ public class SelectedListFragment extends Fragment {
         selectedList.clear();
         adapter.notifyDataSetChanged();
 
-        db.collection("Events").document(eventId)
+        OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "selectedList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            @Override
+            public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                for (String userId : userIdsList) {
+                    // For each userId, fetch the corresponding User object
+                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        @Override
+                        public void onUserLoaded(User user) {
+                            if (getContext() == null) return;
+
+                            // Add the User to the cancelledList and notify the adapter
+                            selectedList.add(user);
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onUserLoadError(String error) {
+                            if (getContext() == null) return;
+
+                            Log.e("SelectedList", "Error loading user: " + error);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Error loading user IDs: " + error, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        /** db.collection("Events").document(eventId)
                 .collection("selectedList")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -121,7 +156,7 @@ public class SelectedListFragment extends Fragment {
                             }
                         });
                     }
-                });
+                }); **/
     }
 
 
@@ -160,7 +195,56 @@ public class SelectedListFragment extends Fragment {
      * moving users from the waiting list to the selected list in Firestore.
      */
     private void drawFromWaitingList() {
-        db.collection("Events").document(eventId)
+        OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            @Override
+            public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                if (userIdsList.isEmpty()) {
+                    Toast.makeText(getContext(), "No users in waiting list", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                int remainingSlots = eventCapacity - selectedList.size();
+                int availableUsers = userIdsList.size();
+                int drawCount = Math.min(remainingSlots, availableUsers);
+                final int[] completedMoves = {0};
+
+                List<String> waitingUserIds = new ArrayList<>(userIdsList);
+
+                for (int i = 0; i < drawCount; i++) {
+                    if (!waitingUserIds.isEmpty()) {
+                        Random random = new Random();
+                        int index = random.nextInt(waitingUserIds.size());
+                        String userId = waitingUserIds.get(index);
+                        waitingUserIds.remove(index);
+
+                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                            @Override
+                            public void onUserLoaded(User user) {
+                                moveToSelectedList(user, () -> {
+                                    completedMoves[0]++;
+                                    if (completedMoves[0] == drawCount) {
+                                        refreshAllFragments();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onUserLoadError(String error) {
+                                completedMoves[0]++;
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Error loading waiting list: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+        /** db.collection("Events").document(eventId)
                 .collection("waitingList")
                 .get()
                 .addOnSuccessListener(waitingListSnapshot -> {
@@ -201,8 +285,7 @@ public class SelectedListFragment extends Fragment {
                             });
                         }
                     }
-                });
-    }
+                }); **/
 
 
     /**
@@ -212,7 +295,26 @@ public class SelectedListFragment extends Fragment {
      * @param onComplete Runnable executed once the move is complete.
      */
     private void moveToSelectedList(User user, Runnable onComplete) {
-        Map<String, Object> timestamp = new HashMap<>();
+        Notification notification = new Notification(
+                new Date(),
+                "Selected for Event",
+                "You have been selected from the waiting list",
+                "Selection"
+        );
+        notification.saveToDatabase(user.getDeviceId());
+
+        OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+            @Override
+            public void onComplete(boolean success) {
+                if (success) {
+                    onComplete.run();
+                } else {
+                    Toast.makeText(getContext(), "Failed to move user to selected list", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+        /** Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
         DocumentReference waitingListRef = db.collection("Events").document(eventId)
@@ -236,7 +338,7 @@ public class SelectedListFragment extends Fragment {
         }).addOnSuccessListener(aVoid -> {
             onComplete.run();
         });
-    }
+    } **/
 
 
     /**
@@ -246,7 +348,19 @@ public class SelectedListFragment extends Fragment {
      * @param user The user to be moved.
      */
     private void moveUserToWaitingList(User user) {
-        Map<String, Object> timestamp = new HashMap<>();
+        OrganizerDatabase.moveUserToWaitingList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+            @Override
+            public void onComplete(boolean success) {
+                if (success) {
+                    refreshAllFragments();
+                    drawFromWaitingList();
+                } else {
+                    Toast.makeText(getContext(), "Failed to move user to waiting list", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+        /**Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
         DocumentReference selectedListRef = db.collection("Events").document(eventId)
@@ -262,7 +376,8 @@ public class SelectedListFragment extends Fragment {
             refreshAllFragments();
             drawFromWaitingList();
         });
-    }
+    }**/
+
 
 
     /**

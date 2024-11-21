@@ -9,11 +9,13 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -21,6 +23,21 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 public class OrganizerDatabase {
 
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    static int eventCapacity;
+
+    public interface OnUserCheckListener {
+        void onUserInList(boolean inList);
+        void onError(String error);
+    }
+
+    public interface OnDataFetchListener<T> {
+        void onFetch(T data);
+        void onError(Exception e);
+    }
+
+    public interface OnOperationCompleteListener {
+        void onComplete(boolean success);
+    }
 
     /**
      * Checks if the user is an admin based on their device ID.
@@ -28,6 +45,7 @@ public class OrganizerDatabase {
      * @param deviceId The unique device ID of the user.
      * @return A Task that resolves to true if the user is an admin, false otherwise.
      */
+
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
@@ -89,16 +107,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
-    public interface OnUserCheckListener {
-        void onUserInList(boolean inList);
-        void onError(String error);
-    }
-
-    public interface OnOperationCompleteListener {
-        void onComplete(boolean success);
-    }
-
-    public static void loadUserIdsFromSubcollection(FirebaseFirestore db, String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
+    public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
         ArrayList<String> userIdsList = new ArrayList<>();
 
         db.collection("Events").document(eventId).collection(subcollectionName)
@@ -129,8 +138,23 @@ public class OrganizerDatabase {
                 });
     }
 
+    public static void loadEventCapacity(String eventId) {
+
+        db.collection("Events").document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
+                    }
+                    else {
+                        // implement error logic
+                    }
+                });
+    }
+
     public interface OnUserIdsLoadedListener {
         void onUserIdsLoaded(ArrayList<String> userIdsList);
+
+        void onError(String error);
     }
 
     /**
@@ -208,6 +232,109 @@ public class OrganizerDatabase {
     public interface OnEventLoadedListener {
         void onEventLoaded(Event event);
         void onEventLoadError(String error);
+    }
+
+    public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        DocumentReference waitingListRef = db.collection("Events").document(eventId)
+                .collection("waitingList").document(userId);
+        DocumentReference selectedListRef = db.collection("Events").document(eventId)
+                .collection("selectedList").document(userId);
+
+        db.runTransaction(transaction -> {
+                    transaction.delete(waitingListRef);
+                    transaction.set(selectedListRef, timestamp);
+                    return null;
+                }).addOnSuccessListener(aVoid -> listener.onComplete(true))
+                .addOnFailureListener(e -> listener.onComplete(false));
+    }
+
+    public static void moveUserToWaitingList(String eventId, String userId, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        DocumentReference selectedListRef = db.collection("Events").document(eventId)
+                .collection("selectedList").document(userId);
+        DocumentReference waitingListRef = db.collection("Events").document(eventId)
+                .collection("waitingList").document(userId);
+
+        db.runTransaction(transaction -> {
+                    transaction.delete(selectedListRef);
+                    transaction.set(waitingListRef, timestamp);
+                    return null;
+                }).addOnSuccessListener(aVoid -> listener.onComplete(true))
+                .addOnFailureListener(e -> listener.onComplete(false));
+    }
+
+    public static void getSelectedListCount(String eventId, OnDataFetchListener<Integer> listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Events").document(eventId)
+                .collection("selectedList").get()
+                .addOnSuccessListener(snapshot -> {
+                    listener.onFetch(snapshot.size());
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        if (userDeviceId == null) {
+            listener.onEventsLoadError("Error: Unable to get user ID");
+            return;
+        }
+
+        db.collection("Users")
+                .document(userDeviceId)
+                .collection("createdEvents")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> eventIds = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        eventIds.add(document.getId());
+                    }
+                    listener.onEventsLoaded(eventIds);
+                })
+                .addOnFailureListener(e -> {
+                    listener.onEventsLoadError("Error loading events: " + e.getMessage());
+                });
+    }
+
+    // Define an interface for callback
+    public interface OnEventsLoadedListener {
+        void onEventsLoaded(List<String> eventIds);
+        void onEventsLoadError(String error);
+    }
+
+    public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
+        db.collection("Users").document(deviceId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Retrieve the facilityName and location fields
+                        String facilityName = document.getString("facilityName");
+                        String location = document.getString("location");
+
+                        // Check if the data is available
+                        if (facilityName != null && location != null) {
+                            listener.onFacilityDataLoaded(facilityName, location); // Send the data to the listener
+                        } else {
+                            listener.onError("Facility data not found");
+                        }
+                    } else {
+                        listener.onError("User not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
+    }
+
+    // Define an interface to handle the result when the facility data is loaded
+    public interface OnFacilityDataLoadedListener {
+        void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
+        void onError(String error);                                        // When there's an error
     }
 
 }
