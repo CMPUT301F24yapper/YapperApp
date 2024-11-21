@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -33,8 +36,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
@@ -59,6 +60,7 @@ public class ProfileFragment extends Fragment {
     private TextView removePicture;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private String userDeviceId;
+    private Bitmap generatedProfilePicture;
 
     @Nullable
     @Override
@@ -136,7 +138,12 @@ public class ProfileFragment extends Fragment {
 
     private void removeProfilePicture() {
         updateField("profileImage", null); // Reset the Firestore field
-        profileImage.setImageResource(R.drawable.ic_profile_placeholder); // Reset to placeholder
+
+        Bitmap bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888);
+        generatedProfilePicture = bitmap;
+        generateProfileImage(generatedProfilePicture);
+
+        profileImage.setImageBitmap(generatedProfilePicture); // Reset to generated pic
         Toast.makeText(getContext(), "Profile picture removed", Toast.LENGTH_SHORT).show();
     }
 
@@ -248,15 +255,20 @@ public class ProfileFragment extends Fragment {
         EntrantDatabase.loadProfileImage(userDeviceId, new EntrantDatabase.OnProfileImageLoadedListener() {
             @Override
             public void onProfileImageLoaded(String base64Image) {
+                Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+                generatedProfilePicture = bitmap;
+                generateProfileImage(generatedProfilePicture);
+
                 if (base64Image != null) {
-                    Bitmap bitmap = decodeBase64ToBitmap(base64Image);
+                    bitmap = decodeBase64ToBitmap(base64Image);
                     if (bitmap != null) {
                         profileImage.setImageBitmap(bitmap);
                     } else {
-                        profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        //profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        profileImage.setImageBitmap(generatedProfilePicture);
                     }
                 } else {
-                    profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    profileImage.setImageBitmap(generatedProfilePicture);
                 }
             }
 
@@ -266,6 +278,37 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
+
+    private void generateProfileImage(Bitmap bitmap){
+        Canvas imageName = new Canvas(bitmap);
+        Paint textStyle = new Paint();
+        String profileName = nameEditText.getText().toString();
+        float textSizeOnScreen = textStyle.measureText(profileName);
+
+        textStyle.setColor(Color.BLACK);
+        textStyle.setTextSize(40);
+        textStyle.setTextAlign(Paint.Align.CENTER);
+
+        while (textSizeOnScreen >= imageName.getWidth()){
+            textStyle.setTextSize(textStyle.getTextSize() - 2);
+            textSizeOnScreen = textStyle.measureText(profileName);
+        }
+
+        imageName.drawColor(Color.GREEN); // replace with hash value
+        imageName.drawText(profileName,imageName.getWidth() / 2, imageName.getHeight() / 2, textStyle);
+    }
+
+//    private String stringToRGB(String string){
+//        int value = string.charAt(0);
+//        int rgb = 0x000000;
+//        rgb = (value | rgb) << 2;
+//        value = string.charAt(1);
+//        rgb = (value | rgb) << 2;
+//        value = string.charAt(2);
+//        rgb = (value | rgb) << 2;
+//
+//        return Integer.toString(rgb);
+//    }
 
     private void setupTextChangeListeners() {
         nameEditText.addTextChangedListener(createTextWatcher("entrantName"));
