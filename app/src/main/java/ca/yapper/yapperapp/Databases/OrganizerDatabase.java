@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 
@@ -45,6 +46,20 @@ public class OrganizerDatabase {
      * @param deviceId The unique device ID of the user.
      * @return A Task that resolves to true if the user is an admin, false otherwise.
      */
+
+    /**
+     * Interface for handling the result of loading an event from Firestore.
+     */
+    public interface OnEventLoadedListener {
+        void onEventLoaded(Event event);
+        void onEventLoadError(String error);
+    }
+
+    public interface OnUserIdsLoadedListener {
+        void onUserIdsLoaded(ArrayList<String> userIdsList);
+
+        void onError(String error);
+    }
 
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
@@ -113,7 +128,37 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).collection(subcollectionName)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onUserIdsLoaded(userIdsList);
+                        return;
+                    }
+                    int totalDocs = queryDocumentSnapshots.size();
+                    AtomicInteger processedDocs = new AtomicInteger(0);
+
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String userIdRef = doc.getId();
+
+                        // Skip invalid placeholder documents by checking the `Users` collection
+                        db.collection("Users").document(userIdRef).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    if (userDoc.exists()) {
+                                        String deviceId = userDoc.getString("deviceId");
+                                        if (deviceId != null) {
+                                            userIdsList.add(deviceId);
+                                        }
+                                    }
+                                    // Check if all documents have been processed
+                                    if (processedDocs.incrementAndGet() == totalDocs) {
+                                        listener.onUserIdsLoaded(userIdsList);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    if (processedDocs.incrementAndGet() == totalDocs) {
+                                        listener.onUserIdsLoaded(userIdsList);
+                                    }
+                                });
+                    } });
+                    /**for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         String userIdRef = doc.getId();
                         db.collection("Users").document(userIdRef).get()
                                 .addOnSuccessListener(userDoc -> {
@@ -135,7 +180,7 @@ public class OrganizerDatabase {
                     if (queryDocumentSnapshots.isEmpty()) {
                         listener.onUserIdsLoaded(userIdsList);
                     }
-                });
+                });**/
     }
 
     public static void loadEventCapacity(String eventId) {
@@ -151,11 +196,6 @@ public class OrganizerDatabase {
                 });
     }
 
-    public interface OnUserIdsLoadedListener {
-        void onUserIdsLoaded(ArrayList<String> userIdsList);
-
-        void onError(String error);
-    }
 
     /**
      * Creates and saves a new event in Firestore with the provided details.
@@ -217,22 +257,17 @@ public class OrganizerDatabase {
      * @param eventId The unique ID of the event.
      */
     public static void initializeSubcollections(FirebaseFirestore db, String eventId) {
-        Map<String, Object> placeholderData = new HashMap<>();
+        // Empty implementation - no placeholder data added
+        // Subcollections will be implicitly created when documents are added later
+        /**Map<String, Object> placeholderData = new HashMap<>();
         placeholderData.put("placeholder", true);
 
         db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);
+        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
 
-    /**
-     * Interface for handling the result of loading an event from Firestore.
-     */
-    public interface OnEventLoadedListener {
-        void onEventLoaded(Event event);
-        void onEventLoadError(String error);
-    }
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();

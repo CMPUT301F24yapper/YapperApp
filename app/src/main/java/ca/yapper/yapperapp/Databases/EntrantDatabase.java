@@ -96,18 +96,9 @@ public class EntrantDatabase {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
-                            // public User(String deviceId, String email, boolean isAdmin, boolean isEntrant, boolean isOrganizer,
-                            // String name, String phoneNum, boolean isOptedOut, ArrayList<String> joinedEvents, ArrayList<String> registeredEvents, ArrayList<String> missedOutEvents, ArrayList<String> createdEvents) {
                             User user = new User(
-                                    /** user.setAdmin(documentSnapshot.getBoolean("Admin"));
-                                     user.setEntrant(documentSnapshot.getBoolean("Entrant"));
-                                     user.setOrganizer(documentSnapshot.getBoolean("Organizer"));
-                                     user.setDeviceId(documentSnapshot.getString("deviceId"));
-                                     user.setEmail(documentSnapshot.getString("entrantEmail"));
-                                     user.setName(documentSnapshot.getString("entrantName"));
-                                     user.setPhoneNum(documentSnapshot.getString("entrantPhone")); **/
                                     documentSnapshot.getString("deviceId"),
-                                    documentSnapshot.getString("email"),
+                                    documentSnapshot.getString("entrantEmail"),
                                     documentSnapshot.getBoolean("Admin"),
                                     documentSnapshot.getBoolean("Entrant"),
                                     documentSnapshot.getBoolean("Organizer"),
@@ -159,12 +150,13 @@ public class EntrantDatabase {
 
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("created", com.google.firebase.Timestamp.now());
-
+        /**
+        // DON'T NEED SUBCOLLECTION INSTANTIATION (is directly instantiated when applicable, i.e. when they join, cancel, are selected for an event...)
         db.collection("Users").document(deviceId).set(userData);
         db.collection("Users").document(deviceId).collection("joinedEvents").document("placeholder").set(timestamp);
         db.collection("Users").document(deviceId).collection("registeredEvents").document("placeholder").set(timestamp);
         db.collection("Users").document(deviceId).collection("missedOutEvents").document("placeholder").set(timestamp);
-        db.collection("Users").document(deviceId).collection("createdEvents").document("placeholder").set(timestamp);
+        db.collection("Users").document(deviceId).collection("createdEvents").document("placeholder").set(timestamp); **/
 
         Log.d("User", "User and subcollections created");
 
