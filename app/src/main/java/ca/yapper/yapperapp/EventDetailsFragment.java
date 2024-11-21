@@ -133,6 +133,13 @@ public class EventDetailsFragment extends Fragment {
                     }
                 }
 
+                String description = event.getDescription();
+                if (description != null && !description.isEmpty()) {
+                    descriptionTextView.setText(description);
+                } else {
+                    descriptionTextView.setText("No description provided.");
+                }
+
                 setupButtonListeners();
             }
 
