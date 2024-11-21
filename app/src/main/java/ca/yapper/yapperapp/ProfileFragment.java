@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -174,6 +175,7 @@ public class ProfileFragment extends Fragment {
                 if (user != null) {
                     nameEditText.setText(user.getName());
                     emailEditText.setText(user.getEmail());
+                    Log.e("ProfileFragment", "On User loaded: " + user.getEmail());
                     phoneEditText.setText(user.getPhoneNum());
 
                     // If the facility section is visible, load facility-related data
