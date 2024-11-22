@@ -49,6 +49,7 @@ public class NotificationsDatabase {
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
         db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)
+                .whereEqualTo("isRead", false)          // Load only unread notifications
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Notification> notifications = new ArrayList<>();

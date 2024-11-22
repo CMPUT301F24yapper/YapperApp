@@ -50,7 +50,6 @@ public class EntrantNotificationsFragment extends Fragment {
                 notificationList.clear();
                 notificationList.addAll(notifications);
                 notificationAdapter.notifyDataSetChanged();
-                markNotificationsAsRead(notifications);
             }
 
             @Override
@@ -60,10 +59,5 @@ public class EntrantNotificationsFragment extends Fragment {
         });
     }
 
-    private void markNotificationsAsRead(List<Notification> notifications) {
-        for (Notification notification : notifications) {
-            NotificationsDatabase.markNotificationAsRead(notification.getId())
-                    .addOnFailureListener(e -> Log.e("NotificationsError", "Error marking notification as read", e));
-        }
-    }
+
 }
