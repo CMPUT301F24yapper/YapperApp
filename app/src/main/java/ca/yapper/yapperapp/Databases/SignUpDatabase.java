@@ -18,7 +18,7 @@ public class SignUpDatabase {
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     /**
-     * Checks if a user exists in the database based on the device ID.
+     * Checks if a user exists in the database based on the device ID (used by SignupActivity...)
      */
     public static Task<Boolean> checkUserExists(String deviceId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();

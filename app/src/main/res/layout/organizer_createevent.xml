@@ -90,17 +90,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Event Facility:"
+            android:text="Description:"
             android:textSize="16sp"
             android:textStyle="bold"
             android:paddingEnd="8dp" />
 
         <EditText
-            android:id="@+id/event_facility_input"
+            android:id="@+id/event_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:hint="Event Facility"
+            android:hint="Event Description"
             android:textSize="20dp"
             android:inputType="textPersonName" />
     </LinearLayout>
@@ -129,6 +129,31 @@
             android:hint="dd/mm/yyyy"
             android:inputType="date" />
     </LinearLayout>
+
+    <!-- Time Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Time:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" />
+
+        <EditText
+            android:id="@+id/time_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:hint="hh:mm"
+            android:inputType="time" />
+    </LinearLayout>
+
 
     <!-- Number of Attendees Field -->
     <LinearLayout
@@ -201,7 +226,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:textSize="20dp"
-            android:hint="mm/dd/yyyy"
+            android:hint="dd/mm/yyyy"
             android:inputType="date" />
     </LinearLayout>
 

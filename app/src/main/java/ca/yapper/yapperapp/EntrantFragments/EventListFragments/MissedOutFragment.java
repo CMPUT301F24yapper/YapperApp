@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -90,7 +91,7 @@ public class MissedOutFragment extends Fragment {
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         String eventId = document.getId();
 
-                        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
                             @Override
                             public void onEventLoaded(Event event) {
                                 if (getContext() == null) return;
@@ -131,7 +132,7 @@ public class MissedOutFragment extends Fragment {
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         String eventId = document.getId();
 
-                        Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
+                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
                             @Override
                             public void onEventLoaded(Event event) {
                                 if (getContext() == null) return;

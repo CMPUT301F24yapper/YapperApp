@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.yapper.yapperapp.Databases.NotificationsDatabase;
 import ca.yapper.yapperapp.R;
 /**
  * The Notification class represents a notification sent to users about events or updates.
@@ -76,25 +77,14 @@ public class Notification {
         this.isRead = false;
     }
 
-    public Notification(Date dateTimeStamp, boolean isRead, String message, String notificationType, String title, String userFromId, String userToId, String id) {
-        this.dateTimeStamp = dateTimeStamp;
-        this.isRead = isRead;
-        this.message = message;
-        this.notificationType = notificationType;
-        this.title = title;
-        this.userFromId = userFromId;
-        this.userToId = userToId;
-        this.id = id;
-    }
-
-
     /**
      * Saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
      */
     public void saveToDatabase(String userToId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        NotificationsDatabase.saveToDatabase(dateTimeStamp, userToId, userFromId, title, message, notificationType, isRead);
 
+        /**FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
         notificationData.put("userToId", userToId);
@@ -110,15 +100,15 @@ public class Notification {
                     setId(documentReference.getId()); // Set the document ID
                     Log.d("Notification", "Notification added with ID: " + documentReference.getId());
                 })
-                .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
+                .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e)); **/
     }
-
 
     /**
      * Marks the notification as read in Firestore and updates the local read status.
      */
     public void markAsRead() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        NotificationsDatabase.markNotificationAsRead(id);
+        /**FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Notifications").document(id)
                 .update("isRead", true)
@@ -126,10 +116,8 @@ public class Notification {
                     isRead = true;
                     Log.d("Notification", "Notification marked as read");
                 })
-                .addOnFailureListener(e -> Log.e("NotificationError", "Error marking notification as read", e));
+                .addOnFailureListener(e -> Log.e("NotificationError", "Error marking notification as read", e)); **/
     }
-
-
 
     public String getId() {
         return id;

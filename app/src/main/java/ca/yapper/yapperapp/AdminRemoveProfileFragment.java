@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class AdminRemoveProfileFragment extends Fragment {
@@ -41,7 +42,7 @@ public class AdminRemoveProfileFragment extends Fragment {
     }
 
     private void loadUserDetails() {
-        User.loadUserFromDatabase(userId, new User.OnUserLoadedListener() {
+        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
             public void onUserLoaded(User user) {
                 profileName.setText(user.getName());

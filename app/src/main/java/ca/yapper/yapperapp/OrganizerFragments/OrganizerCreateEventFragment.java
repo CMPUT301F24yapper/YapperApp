@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import java.util.Calendar;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
@@ -73,7 +74,7 @@ public class OrganizerCreateEventFragment extends Fragment {
      */
     private void initializeViews(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
-        eventFacilityEditText = view.findViewById(R.id.event_facility_input);
+        eventDescriptionEditText = view.findViewById(R.id.event_description);
         eventDateTimeEditText = view.findViewById(R.id.date_input);
         eventDeadlineEditText = view.findViewById(R.id.deadline_input);
         eventCapacityEditText = view.findViewById(R.id.attendees_input);
@@ -153,7 +154,7 @@ public class OrganizerCreateEventFragment extends Fragment {
 
         boolean geolocationEnabled = geolocationSwitch.isChecked();
 
-        Event.createEventInDatabase(
+        OrganizerDatabase.createEventInDatabase(
                 capacityInt,
                 dateTime,
                 "",  // Empty description

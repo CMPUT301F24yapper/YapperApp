@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,9 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class ProfileFragment extends Fragment {
 
@@ -54,8 +58,7 @@ public class ProfileFragment extends Fragment {
     private TextView changePicture;
     private TextView removePicture;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-
-
+    private String userDeviceId;
 
     @Nullable
     @Override
@@ -66,6 +69,7 @@ public class ProfileFragment extends Fragment {
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(requireActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
         userRef = db.collection("Users").document(deviceId);
 
+        userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         initializeViews(view);
         setVisibilityBasedOnActivity();
         loadUserData();
@@ -88,7 +92,6 @@ public class ProfileFragment extends Fragment {
                 }
         );
 
-
         notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateField("notificationsEnabled", isChecked);
         });
@@ -104,10 +107,7 @@ public class ProfileFragment extends Fragment {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         imagePickerLauncher.launch(intent);
-
-
     }
-
 
     private String encodeImageToBase64(Uri imageUri) throws IOException {
         // Load the image as a bitmap
@@ -124,7 +124,6 @@ public class ProfileFragment extends Fragment {
         return Base64.encodeToString(compressedBytes, Base64.DEFAULT);
     }
 
-
     private Bitmap decodeBase64ToBitmap(String base64Image) {
         try {
             byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
@@ -135,14 +134,11 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-
     private void removeProfilePicture() {
         updateField("profileImage", null); // Reset the Firestore field
         profileImage.setImageResource(R.drawable.ic_profile_placeholder); // Reset to placeholder
         Toast.makeText(getContext(), "Profile picture removed", Toast.LENGTH_SHORT).show();
     }
-
-
 
     private void initializeViews(View view) {
         nameEditText = view.findViewById(R.id.edit_name);
@@ -173,7 +169,34 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
-        userRef.get().addOnSuccessListener(documentSnapshot -> {
+        EntrantDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
+            @Override
+            public void onUserLoaded(User user) {
+                if (user != null) {
+                    nameEditText.setText(user.getName());
+                    emailEditText.setText(user.getEmail());
+                    Log.e("ProfileFragment", "On User loaded: " + user.getEmail());
+                    phoneEditText.setText(user.getPhoneNum());
+
+                    // If the facility section is visible, load facility-related data
+                    if (facilitySection.getVisibility() == View.VISIBLE) {
+                        loadFacilityData(user);
+                    }
+
+                    // Load notifications switch state
+                    notificationsSwitch.setChecked(user.isOptedOut());
+
+                    // Load the profile image
+                    loadProfileImage(user);
+                }
+            }
+
+            @Override
+            public void onUserLoadError(String error) {
+                Toast.makeText(getContext(), "Error loading profile data: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+        /**userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 nameEditText.setText(documentSnapshot.getString("entrantName"));
                 emailEditText.setText(documentSnapshot.getString("entrantEmail"));
@@ -203,10 +226,46 @@ public class ProfileFragment extends Fragment {
             }
         }).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Error loading profile data", Toast.LENGTH_SHORT).show();
+        }); **/
+    }
+
+    private void loadFacilityData(User user) {
+        OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
+            @Override
+            public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
+                facilityEditText.setText(facilityName);
+                addressEditText.setText(facilityAddress);
+            }
+
+            @Override
+            public void onError(String error) {
+                // Handle error if needed
+            }
         });
     }
 
+    private void loadProfileImage(User user) {
+        EntrantDatabase.loadProfileImage(userDeviceId, new EntrantDatabase.OnProfileImageLoadedListener() {
+            @Override
+            public void onProfileImageLoaded(String base64Image) {
+                if (base64Image != null) {
+                    Bitmap bitmap = decodeBase64ToBitmap(base64Image);
+                    if (bitmap != null) {
+                        profileImage.setImageBitmap(bitmap);
+                    } else {
+                        profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                } else {
+                    profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            }
 
+            @Override
+            public void onError(String error) {
+                // Handle error if needed
+            }
+        });
+    }
 
     private void setupTextChangeListeners() {
         nameEditText.addTextChangedListener(createTextWatcher("entrantName"));
@@ -229,14 +288,26 @@ public class ProfileFragment extends Fragment {
         };
     }
 
-
-
-    private void updateField(String field, Object value) {
+    /**private void updateField(String field, Object value) {
         Map<String, Object> updates = new HashMap<>();
         updates.put(field, value);
 
         userRef.update(updates).addOnFailureListener(e -> {
             Toast.makeText(getContext(), "Error updating " + field, Toast.LENGTH_SHORT).show();
+        });
+    }**/
+
+    private void updateField(String field, Object value) {
+        EntrantDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
+            @Override
+            public void onFieldUpdated(Object value) {
+                Toast.makeText(getContext(), field + " updated successfully", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Error updating " + field, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

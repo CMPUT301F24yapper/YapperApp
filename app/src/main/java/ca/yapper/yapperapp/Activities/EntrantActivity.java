@@ -69,6 +69,7 @@ public class EntrantActivity extends AppCompatActivity {
      * Sets up a long-click listener on the profile item for role-switch options.
      */
     private void setupBottomNavigation() {
+
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {

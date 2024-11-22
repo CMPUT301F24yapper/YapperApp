@@ -65,7 +65,6 @@ public class OrganizerActivity extends AppCompatActivity {
      * Sets up a long-click listener on the profile item for role-switch options.
      */
     private void setupBottomNavigation() {
-        //deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
