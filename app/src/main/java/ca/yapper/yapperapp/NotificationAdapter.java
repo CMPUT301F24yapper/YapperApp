@@ -47,20 +47,28 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.eventName.setText(notification.getTitle());
         holder.message.setText(notification.getMessage());
 
+        // Format and set date
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
         holder.date.setText(dateFormat.format(notification.getDateTimeStamp()));
 
+        // Handle Selection notifications
         if (notification.getNotificationType() != null &&
                 notification.getNotificationType().equals("Selection")) {
             holder.selectionButtons.setVisibility(View.VISIBLE);
 
             holder.acceptButton.setOnClickListener(v -> {
+                // Add accept logic here
+                Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
+                // Move to final list
                 notification.markAsRead();
                 notificationList.remove(position);
                 notifyItemRemoved(position);
             });
 
             holder.rejectButton.setOnClickListener(v -> {
+                // Add reject logic here
+                Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show();
+                // Move to cancelled list
                 notification.markAsRead();
                 notificationList.remove(position);
                 notifyItemRemoved(position);
@@ -69,15 +77,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.selectionButtons.setVisibility(View.GONE);
         }
 
+        // Dim if read
         holder.itemView.setAlpha(notification.isRead() ? 0.6f : 1.0f);
     }
 
-
-
     @Override
     public int getItemCount() {
-        return notificationList.size();
+        return notificationList == null ? 0 : notificationList.size();
     }
+
 
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView eventName, message, date;

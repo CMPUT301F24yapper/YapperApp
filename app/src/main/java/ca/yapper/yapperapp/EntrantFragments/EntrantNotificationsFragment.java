@@ -60,6 +60,4 @@ public class EntrantNotificationsFragment extends Fragment {
     }
 
 
-
-
 }

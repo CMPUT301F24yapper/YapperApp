@@ -15,7 +15,6 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
 
 public class NotificationsDatabase {
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private static final String COLLECTION_NOTIFICATIONS = "Notifications";
 
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);
@@ -48,15 +47,15 @@ public class NotificationsDatabase {
     }
 
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
-        db.collection(COLLECTION_NOTIFICATIONS)
+        db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)
-                .whereEqualTo("isRead", false)
+                .whereEqualTo("isRead", false)          // Load only unread notifications
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Notification> notifications = new ArrayList<>();
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         Notification notification = document.toObject(Notification.class);
-                        if (notification != null && document.getId() != null) {
+                        if (notification != null) {
                             notification.setId(document.getId());
                             notifications.add(notification);
                         }
@@ -66,9 +65,8 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading notifications: " + e.getMessage()));
     }
 
-    public static void markNotificationAsRead(String notificationId) {
-        db.collection(COLLECTION_NOTIFICATIONS)
-                .document(notificationId)
+    public static Task<Void> markNotificationAsRead(String notificationId) {
+        return db.collection("Notifications").document(notificationId)
                 .update("isRead", true);
     }
 }
