@@ -106,18 +106,14 @@ public class Notification {
     /**
      * Marks the notification as read in Firestore and updates the local read status.
      */
-    public void markAsRead() {
-        NotificationsDatabase.markNotificationAsRead(id);
-        /**FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Notifications").document(id)
-                .update("isRead", true)
-                .addOnSuccessListener(aVoid -> {
-                    isRead = true;
-                    Log.d("Notification", "Notification marked as read");
-                })
-                .addOnFailureListener(e -> Log.e("NotificationError", "Error marking notification as read", e)); **/
+    public void markAsRead() {
+        if (id != null && !isRead) {
+            NotificationsDatabase.markNotificationAsRead(id);
+            isRead = true;
+        }
     }
+
 
     public String getId() {
         return id;
