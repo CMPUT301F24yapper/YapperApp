@@ -15,6 +15,7 @@ import java.util.Map;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+//Test MERGE
 public class AdminDatabase {
     public static Task<Map<String, Long>> getAdminStats() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
