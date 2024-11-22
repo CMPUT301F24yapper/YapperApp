@@ -57,17 +57,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.selectionButtons.setVisibility(View.VISIBLE);
 
             holder.acceptButton.setOnClickListener(v -> {
-                // Add accept logic here
+                // Mark as read in Firebase
+                notification.markAsRead();
+
+                // Optionally perform additional logic for accepting
                 Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
-                // Move to final list
+
+                // Remove from list and notify adapter
                 notificationList.remove(position);
                 notifyItemRemoved(position);
             });
 
             holder.rejectButton.setOnClickListener(v -> {
-                // Add reject logic here
+                // Mark as read in Firebase
+                notification.markAsRead();
+
+                // Optionally perform additional logic for rejecting
                 Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show();
-                // Move to cancelled list
+
+                // Remove from list and notify adapter
                 notificationList.remove(position);
                 notifyItemRemoved(position);
             });
@@ -78,6 +86,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         // Dim if read
         holder.itemView.setAlpha(notification.isRead() ? 0.6f : 1.0f);
     }
+
 
     @Override
     public int getItemCount() {

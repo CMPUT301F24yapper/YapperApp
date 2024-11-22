@@ -53,32 +53,23 @@ public class EntrantNotificationsFragment extends Fragment {
 
     private void loadNotificationsFromFirestore() {
         db.collection("Notifications")
-                .whereEqualTo("userToId", userDeviceId)
+                .whereEqualTo("userToId", userDeviceId)  // Match the recipient
+                .whereEqualTo("isRead", false)          // Load only unread notifications
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    notificationList.clear();
+                    notificationList.clear(); // Clear the existing list
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         Notification notification = document.toObject(Notification.class);
                         if (notification != null && document.getId() != null) {
-                            notification.setId(document.getId());
-                            notificationList.add(notification);
+                            notification.setId(document.getId()); // Set the document ID
+                            notificationList.add(notification);  // Add to the list
                         }
                     }
-                    notificationAdapter.notifyDataSetChanged();
-                    markNotificationsAsRead(notificationList);
+                    notificationAdapter.notifyDataSetChanged(); // Notify adapter of changes
                 })
                 .addOnFailureListener(e -> Log.e("NotificationsError", "Error loading notifications", e));
     }
 
-    private void markNotificationsAsRead(List<Notification> notifications) {
-        for (Notification notification : notifications) {
-            String notificationId = notification.getId();
-            if (notificationId != null && !notificationId.isEmpty()) {
-                db.collection("Notifications").document(notificationId)
-                        .update("isRead", true)
-                        .addOnSuccessListener(aVoid -> Log.d("Notifications", "Notification marked as read"))
-                        .addOnFailureListener(e -> Log.e("NotificationsError", "Error marking notification as read", e));
-            }
-        }
-    }
+
+
 }

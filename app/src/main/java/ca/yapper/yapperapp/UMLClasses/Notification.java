@@ -76,6 +76,17 @@ public class Notification {
         this.isRead = false;
     }
 
+    public Notification(Date dateTimeStamp, boolean isRead, String message, String notificationType, String title, String userFromId, String userToId, String id) {
+        this.dateTimeStamp = dateTimeStamp;
+        this.isRead = isRead;
+        this.message = message;
+        this.notificationType = notificationType;
+        this.title = title;
+        this.userFromId = userFromId;
+        this.userToId = userToId;
+        this.id = id;
+    }
+
 
     /**
      * Saves the notification to Firestore under the "Notifications" collection.
