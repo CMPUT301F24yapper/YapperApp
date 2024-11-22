@@ -129,6 +129,12 @@ public class OrganizerCreateEventFragment extends Fragment {
             return;
         }
 
+        String description = eventDescriptionEditText.getText().toString();
+        if (description.isEmpty()) {
+            Toast.makeText(getActivity(), "Event description is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String regDeadline = eventDeadlineEditText.getText().toString();
         if (regDeadline.isEmpty()) {
             Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
@@ -157,7 +163,7 @@ public class OrganizerCreateEventFragment extends Fragment {
         OrganizerDatabase.createEventInDatabase(
                 capacityInt,
                 dateTime,
-                "",  // Empty description
+                description,  // Empty description
                 "Default Location",  // Default facility location
                 "Default Facility", // Default facility name
                 geolocationEnabled,
