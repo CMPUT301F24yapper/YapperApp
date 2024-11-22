@@ -1,5 +1,9 @@
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -33,15 +37,16 @@
     </LinearLayout>
 
     <!-- Poster Image -->
+
+    <!-- Choose Poster Text -->
     <ImageView
         android:id="@+id/poster_image"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:src="@drawable/event_poster"
+        android:layout_marginTop="16dp"
         android:scaleType="centerCrop"
-        android:layout_marginTop="16dp" />
+        android:src="@drawable/event_poster" />
 
-    <!-- Choose Poster Text -->
     <TextView
         android:id="@+id/choose_poster_text"
         android:layout_width="wrap_content"
@@ -261,6 +266,8 @@
         android:text="Save Event"
         android:backgroundTint="#9C27B0"
         android:textColor="#FFFFFF"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="20dp"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
+
+</ScrollView>

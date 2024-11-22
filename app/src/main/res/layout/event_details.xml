@@ -141,13 +141,13 @@
             android:textSize="16sp" />
 
         <!-- Available Slots -->
-        <TextView
-            android:id="@+id/available_slots"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Available Slots: 0/50"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+<!--        <TextView-->
+<!--            android:id="@+id/available_slots"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Available Slots: 0/50"-->
+<!--            android:textColor="@android:color/black"-->
+<!--            android:textSize="16sp" />-->
 
         <View
             android:layout_width="match_parent"

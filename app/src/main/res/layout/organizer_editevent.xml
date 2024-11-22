@@ -143,6 +143,8 @@
             android:layout_height="16dp" />
 
         <!-- Number of Attendees -->
+
+        <!-- Space between Attendees and Waitlist -->
         <TextView
             android:id="@+id/num_attendees"
             android:layout_width="wrap_content"
@@ -152,7 +154,6 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Space between Attendees and Waitlist -->
         <View
             android:layout_width="match_parent"
             android:layout_height="8dp" />

@@ -121,8 +121,8 @@ public class EventDetailsFragment extends Fragment {
                 regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
                 facilityNameTextView.setText("Facility: " + event.getFacilityName());
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
-                capacityTextView.setText(String.valueOf(event.getCapacity()));
+                waitListTextView.setText("Waiting List Capacity: " + event.getWaitListCapacity());
+                capacityTextView.setText("No. of attendees: " + event.getCapacity());
                 descriptionTextView.setText(event.getDescription());
 
                 geolocationEnabled = event.isGeolocationEnabled();
