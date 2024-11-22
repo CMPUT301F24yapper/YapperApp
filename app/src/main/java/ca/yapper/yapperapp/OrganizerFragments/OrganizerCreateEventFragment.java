@@ -74,7 +74,7 @@ public class OrganizerCreateEventFragment extends Fragment {
      */
     private void initializeViews(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
-        eventFacilityEditText = view.findViewById(R.id.event_facility_input);
+        eventDescriptionEditText = view.findViewById(R.id.event_description);
         eventDateTimeEditText = view.findViewById(R.id.date_input);
         eventDeadlineEditText = view.findViewById(R.id.deadline_input);
         eventCapacityEditText = view.findViewById(R.id.attendees_input);

@@ -123,6 +123,7 @@ public class EventDetailsFragment extends Fragment {
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
                 waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
                 capacityTextView.setText(String.valueOf(event.getCapacity()));
+                descriptionTextView.setText(event.getDescription());
 
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
@@ -130,6 +131,13 @@ public class EventDetailsFragment extends Fragment {
                     if (geoLocationRequired != null) {
                         geoLocationRequired.setVisibility(View.VISIBLE);
                     }
+                }
+
+                String description = event.getDescription();
+                if (description != null && !description.isEmpty()) {
+                    descriptionTextView.setText(description);
+                } else {
+                    descriptionTextView.setText("No description provided.");
                 }
 
                 setupButtonListeners();

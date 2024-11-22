@@ -33,7 +33,7 @@
                 android:id="@+id/event_date_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="mm/dd/yyyy hh:mm"
+                android:text="dd/mm/yyyy hh:mm"
                 android:textSize="16sp"
                 android:textColor="@android:color/black"
                 android:textStyle="bold" />
@@ -176,7 +176,7 @@
             android:id="@+id/registration_deadline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Registration Deadline: mm/dd/yyyy"
+            android:text="Registration Deadline: dd/mm/yyyy"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
