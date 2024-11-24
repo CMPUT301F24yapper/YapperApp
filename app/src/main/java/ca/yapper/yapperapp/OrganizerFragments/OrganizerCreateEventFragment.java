@@ -1,6 +1,8 @@
 package ca.yapper.yapperapp.OrganizerFragments;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -111,6 +113,25 @@ public class OrganizerCreateEventFragment extends Fragment {
         datePickerDialog.show();
     }
 
+    private void showTimePickerDialog(EditText timeEditText) {
+        final Calendar calendar = Calendar.getInstance();
+        int selectedHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int selectedMinute = calendar.get(Calendar.MINUTE);
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(getActivity(),
+                (view, hourOfDay, minute) -> {
+                    // Format the time as HH:mm
+                    String selectedTime = String.format("%02d:%02d", hourOfDay, minute);
+                    timeEditText.setText(selectedTime);
+                }, selectedHour, selectedMinute, true);  // true for 24-hour format, false for 12-hour format
+
+        timePickerDialog.show();
+    }
+
+    private void setButtonState(String text, int color) {
+        saveEventButton.setText(text);
+        saveEventButton.setBackgroundColor(color);
+    }
 
     /**
      * Validates the input fields and saves the event details to Firestore.
@@ -172,5 +193,8 @@ public class OrganizerCreateEventFragment extends Fragment {
                 waitListCapacityInt,
                 userDeviceId
         );
+        saveEventButton.setEnabled(false);
+        setButtonState("Event saved", Color.GRAY);
     }
+
 }

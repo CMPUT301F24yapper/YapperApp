@@ -1,6 +1,7 @@
 package ca.yapper.yapperapp.Databases;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
@@ -24,7 +25,6 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 public class OrganizerDatabase {
 
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    static int eventCapacity;
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
@@ -38,6 +38,11 @@ public class OrganizerDatabase {
 
     public interface OnOperationCompleteListener {
         void onComplete(boolean success);
+    }
+
+    public interface OnEventCapLoadedListener {
+        void onCapacityLoaded(int capacity);
+        void onError(String errorMessage);
     }
 
     /**
@@ -183,19 +188,36 @@ public class OrganizerDatabase {
                 });**/
     }
 
-    public static void loadEventCapacity(String eventId) {
+    public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
+                        try {
+                            Integer capacity = documentSnapshot.getLong("capacity") != null
+                                    ? documentSnapshot.getLong("capacity").intValue()
+                                    : null;
+                            if (capacity != null) {
+                                listener.onCapacityLoaded(capacity);
+                                Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
+                            } else {
+                                listener.onCapacityLoaded(0); // Default if capacity is null
+                            }
+                        } catch (Exception e) {
+                            Log.e("loadEventCapacity", "Error parsing capacity field in document: " + eventId, e);
+                            listener.onCapacityLoaded(0); // Default in case of an exception
+                        }
+                    } else {
+                        Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId);
+                        listener.onCapacityLoaded(0); // Default if document does not exist
                     }
-                    else {
-                        // implement error logic
-                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("loadEventCapacity", "Failed to fetch document for eventId: " + eventId, e);
+                    listener.onError(e.getMessage());
                 });
     }
-
 
     /**
      * Creates and saves a new event in Firestore with the provided details.
