@@ -123,7 +123,7 @@ public class EventDetailsFragment extends Fragment {
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
                 waitListTextView.setText("Waiting List Capacity: " + event.getWaitListCapacity());
                 capacityTextView.setText("No. of attendees: " + event.getCapacity());
-                descriptionTextView.setText(event.getDescription());
+                descriptionTextView.setText("Description: " + event.getDescription());
 
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
