@@ -1,8 +1,6 @@
 package ca.yapper.yapperapp.Databases;
 
-import android.graphics.Color;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -23,8 +21,7 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class EntrantDatabase {
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    static String base64Image;
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
