@@ -33,13 +33,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class ProfileFragment extends Fragment {
@@ -169,7 +168,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
-        EntrantDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
+        UserDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
             public void onUserLoaded(User user) {
                 if (user != null) {
@@ -298,7 +297,7 @@ public class ProfileFragment extends Fragment {
     }**/
 
     private void updateField(String field, Object value) {
-        EntrantDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
+        UserDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
             @Override
             public void onFieldUpdated(Object value) {
                 Toast.makeText(getContext(), field + " updated successfully", Toast.LENGTH_SHORT).show();

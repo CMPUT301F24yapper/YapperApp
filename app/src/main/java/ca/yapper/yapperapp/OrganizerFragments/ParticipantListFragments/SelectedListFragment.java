@@ -13,19 +13,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
@@ -109,7 +105,7 @@ public class SelectedListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
-                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                    UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;
@@ -200,7 +196,7 @@ public class SelectedListFragment extends Fragment {
                         String userId = waitingUserIds.get(index);
                         waitingUserIds.remove(index);
 
-                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 moveToSelectedList(user, () -> {
