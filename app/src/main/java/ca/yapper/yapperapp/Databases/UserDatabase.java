@@ -32,8 +32,8 @@ public class UserDatabase {
      * @param userDeviceId The unique device ID of the user to be loaded.
      * @param listener The listener to handle success or error when loading the user.
      */
-    public static void loadUserFromDatabase(String userDeviceId, EntrantDatabase.OnUserLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public static void loadUserFromDatabase(String userDeviceId,
+                                            EntrantDatabase.OnUserLoadedListener listener) {
         db.collection("Users").document(userDeviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -74,7 +74,7 @@ public class UserDatabase {
     public static User createUserInDatabase(String deviceId, String email, boolean isAdmin,
                                             boolean isEntrant, boolean isOrganizer, String name,
                                             String phoneNum, boolean isOptedOut) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         User user = new User(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum,
                 isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
@@ -106,7 +106,6 @@ public class UserDatabase {
     }
 
     public static void updateUserField(String deviceId, String field, Object fieldContents, EntrantDatabase.OnFieldUpdateListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         Map<String, Object> updateData = new HashMap<>();
         updateData.put(field, fieldContents); // Add the new image as Base64 string
 
