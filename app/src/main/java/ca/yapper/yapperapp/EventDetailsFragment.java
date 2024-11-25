@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
@@ -333,8 +334,17 @@ public class EventDetailsFragment extends Fragment {
      * Handles the "Edit Event" button click. (This feature is currently to be implemented.)
      */
     private void handleEditEventButtonClick() {
-        // **TO IMPLEMENT**
+        OrganizerCreateEditEventFragment editEventFragment = new OrganizerCreateEditEventFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId); // Pass eventId to the EditEventFragment
+        editEventFragment.setArguments(bundle);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, editEventFragment)
+                .addToBackStack(null) // Add to backstack to allow returning to EventDetailsFragment
+                .commit();
     }
+
 
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
