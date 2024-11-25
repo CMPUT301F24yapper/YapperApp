@@ -18,21 +18,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.zxing.WriterException;
+
 import java.util.Calendar;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Event;
 
 /**
- * OrganizerCreateEventFragment provides a form for organizers to create a new event.
+ * OrganizerCreateEditEventFragment provides a form for organizers to create a new event.
  * It allows organizers to specify event details, including name, facility, date, capacity,
  * and geolocation options, and saves the event to Firestore.
  */
-public class OrganizerCreateEventFragment extends Fragment {
+public class OrganizerCreateEditEventFragment extends Fragment {
 
     private EditText eventNameEditText;
-    //private EditText eventFacilityEditText;
-    //private EditText eventFacilityLocationEditText;
     private TextView facilityNameTextView;
     private TextView facilityAddressTextView;
     private EditText eventDateEditText;
@@ -44,6 +45,9 @@ public class OrganizerCreateEventFragment extends Fragment {
     private Switch geolocationSwitch;
     private Button saveEventButton;
     private String userDeviceId;
+    private String eventId;
+    private String facilityNameFinal;
+    private String facilityAddressFinal;
     private int selectedYear, selectedMonth, selectedDay;
     //private boolean exitCreation = false;
 
@@ -59,9 +63,25 @@ public class OrganizerCreateEventFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.organizer_createevent, container, false);
+        View view = inflater.inflate(R.layout.organizer_create_edit_event, container, false);
 
-        initializeViews(view);
+        initializeFields(view);
+
+        // Check if eventId is passed to edit an event
+        Bundle bundle = getArguments();
+        if (bundle != null && bundle.containsKey("eventId")) {
+            eventId = bundle.getString("eventId");
+            loadEventDetails(eventId); // Load event details if editing
+        }
+
+        saveEventButton.setOnClickListener(v -> {
+            try {
+                saveOrUpdateEvent();
+            } catch (WriterException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         setupClickListeners();
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -76,7 +96,7 @@ public class OrganizerCreateEventFragment extends Fragment {
      *
      * @param view The root view of the fragment layout.
      */
-    private void initializeViews(View view) {
+    private void initializeFields(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
         eventDescriptionEditText = view.findViewById(R.id.event_description);
         eventDateEditText = view.findViewById(R.id.date_input);
@@ -196,8 +216,6 @@ public class OrganizerCreateEventFragment extends Fragment {
                 boolean geolocationEnabled = geolocationSwitch.isChecked();
 
                 // Proceed with the rest of the event creation logic
-                facilityNameTextView.setText(eventName);
-                facilityAddressTextView.setText(facilityAddress);
 
                 OrganizerDatabase.createEventInDatabase(
                         capacityInt,
@@ -206,7 +224,7 @@ public class OrganizerCreateEventFragment extends Fragment {
                         facilityAddress,
                         facilityName,
                         geolocationEnabled,
-                        facilityName,
+                        eventName,
                         regDeadline,
                         waitListCapacityInt,
                         userDeviceId
@@ -228,4 +246,93 @@ public class OrganizerCreateEventFragment extends Fragment {
         });
     }
 
+    private void loadEventDetails(String eventId) {
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                eventNameEditText.setText(event.getName());
+                eventDateEditText.setText(event.getDate_Time());
+                eventDeadlineEditText.setText(event.getRegistrationDeadline());
+                eventCapacityEditText.setText(event.getCapacity());
+                if (event.getWaitListCapacity() != null) {
+                    eventWaitListCapacityEditText.setText(event.getWaitListCapacity());
+                }
+                geolocationSwitch.setChecked(event.isGeolocationEnabled());
+            }
+            @Override
+            public void onEventLoadError(String error) {
+                // error handling here!
+            }
+        });
+    }
+
+    private void saveOrUpdateEvent() throws WriterException {
+        // Load facility details from Firestore
+        OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
+            @Override
+            public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
+                facilityNameFinal = facilityName;
+                facilityAddressFinal = facilityAddress;
+                }
+            @Override
+            public void onError(String error) {
+                // implement error logic
+            }
+        });
+
+        String eventName = eventNameEditText.getText().toString();
+        if (eventName.isEmpty()) {
+            Toast.makeText(getActivity(), "Event name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String dateTime = eventDateEditText.getText().toString();
+        if (dateTime.isEmpty()) {
+            Toast.makeText(getActivity(), "Event date is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String description = eventDescriptionEditText.getText().toString();
+        if (description.isEmpty()) {
+            Toast.makeText(getActivity(), "Event description is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String regDeadline = eventDeadlineEditText.getText().toString();
+        if (regDeadline.isEmpty()) {
+            Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int capacityInt;
+        Integer waitListCapacityInt;
+        String capacityString = eventCapacityEditText.getText().toString();
+        if (capacityString.isEmpty()) {
+            Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
+            return;
+        } else {
+            capacityInt = Integer.parseInt(capacityString);
+        }
+
+        String waitListCapacityString = eventWaitListCapacityEditText.getText().toString();
+        if (waitListCapacityString.isEmpty()) {
+            waitListCapacityInt = null;
+        } else {
+            waitListCapacityInt = Integer.parseInt(waitListCapacityString);
+        }
+        boolean geolocationEnabled = geolocationSwitch.isChecked();
+
+        OrganizerDatabase.createEventInDatabase(
+                capacityInt,
+                dateTime,
+                description,
+                facilityAddressFinal,
+                facilityNameFinal,
+                geolocationEnabled,
+                eventName,
+                regDeadline,
+                waitListCapacityInt,
+                userDeviceId
+        );
+    }
 }

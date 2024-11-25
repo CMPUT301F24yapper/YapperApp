@@ -1,11 +1,7 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * The Event class represents an event created by an organizer.
@@ -24,7 +20,7 @@ public class Event {
     private String name;
     private qrCode QRCode;
     private String registrationDeadline;
-    private int waitListCapacity;
+    private Integer waitListCapacity;
     private ArrayList<String> cancelledList;
     private ArrayList<String> finalList;
     private ArrayList<String> selectedList;
@@ -50,7 +46,7 @@ public class Event {
      * @throws WriterException If there is an error generating the QR code.
      */
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
-                 boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
+                 boolean isGeolocationEnabled, String name, String registrationDeadline, Integer waitListCapacity,
                  ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
                  ArrayList<String> waitingList) throws WriterException {
         this.capacity = capacity;
@@ -249,11 +245,11 @@ public class Event {
 
     public void setRegistrationDeadline(String registrationDeadline) {this.registrationDeadline = registrationDeadline;}
 
-    public int getWaitListCapacity() {
+    public Integer getWaitListCapacity() {
         return waitListCapacity;
     }
 
-    public void setWaitListCapacity(int waitListCapacity) {this.waitListCapacity = waitListCapacity;}
+    public void setWaitListCapacity(Integer waitListCapacity) {this.waitListCapacity = waitListCapacity;}
 
     public ArrayList<String> getCancelledList() {
         return cancelledList;
