@@ -58,20 +58,7 @@ public class EntrantDatabase {
      * @return A Task that resolves to true if the user is an admin, false otherwise.
      */
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
-        TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
-
-        db.collection("Users").document(deviceId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        Boolean isAdmin = document.getBoolean("Admin");
-                        tcs.setResult(isAdmin != null && isAdmin);
-                    } else {
-                        tcs.setResult(false);
-                    }
-                })
-                .addOnFailureListener(tcs::setException);
-
-        return tcs.getTask();
+        return FirestoreUtils.checkDocumentField("Users", deviceId, "Admin");
     }
 
     public static void checkUserInEvent(String eventId, String userId, EntrantDatabase.OnUserCheckListener listener) {
