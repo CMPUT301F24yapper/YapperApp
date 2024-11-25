@@ -5,6 +5,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -153,16 +154,87 @@ public class AdminDatabase {
     }
 
     public static Task<Void> removeEvent(String eventId) {
-        return FirebaseFirestore.getInstance()
-                .collection("Events")
-                .document(eventId)
-                .delete();
+        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+
+        // Delete the event document itself
+        batch.delete(FirebaseFirestore.getInstance().collection("Events").document(eventId));
+
+        // First get all users to check their collections
+        return FirebaseFirestore.getInstance().collection("Users").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot userDoc : task.getResult()) {
+                            // Remove from createdEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("createdEvents")
+                                    .document(eventId));
+
+                            // Remove from joinedEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("joinedEvents")
+                                    .document(eventId));
+
+                            // Remove from registeredEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("registeredEvents")
+                                    .document(eventId));
+
+                            // Remove from missedOutEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("missedOutEvents")
+                                    .document(eventId));
+                        }
+                        return batch.commit();
+                    }
+                    throw new Exception("Failed to get users");
+                });
     }
 
     public static Task<Void> removeUser(String userId) {
-        return FirebaseFirestore.getInstance()
-                .collection("Users")
-                .document(userId)
-                .delete();
+        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+
+        // Delete the user document itself
+        batch.delete(FirebaseFirestore.getInstance().collection("Users").document(userId));
+
+        // Get all events to clean up participant lists
+        return FirebaseFirestore.getInstance().collection("Events").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            // Remove from waitingList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("waitingList")
+                                    .document(userId));
+
+                            // Remove from selectedList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("selectedList")
+                                    .document(userId));
+
+                            // Remove from finalList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("finalList")
+                                    .document(userId));
+
+                            // Remove from cancelledList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("cancelledList")
+                                    .document(userId));
+                        }
+                    }
+
+                    // Delete user's notifications
+                    return FirebaseFirestore.getInstance().collection("Notifications")
+                            .whereEqualTo("userToId", userId)
+                            .get();
+                })
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot notifDoc : task.getResult()) {
+                            batch.delete(notifDoc.getReference());
+                        }
+                    }
+                    return batch.commit();
+                });
     }
 }
