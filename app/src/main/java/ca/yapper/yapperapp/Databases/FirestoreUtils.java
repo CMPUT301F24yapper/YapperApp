@@ -2,7 +2,12 @@ package ca.yapper.yapperapp.Databases;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+
+import ca.yapper.yapperapp.UMLClasses.User;
 
 public class FirestoreUtils {
     private static FirebaseFirestore dbInstance;
@@ -57,5 +62,24 @@ public class FirestoreUtils {
         }
     }
 
+    public static User parseUserFromSnapshot(DocumentSnapshot doc) {
+        // Ensure all required fields are present
+        if (!doc.contains("deviceId") || !doc.contains("entrantEmail") || !doc.contains("Admin")) {
+            throw new IllegalArgumentException("Missing required fields in user document.");
+        }
+
+        // Parse and return a User object
+        return new User(
+                doc.getString("deviceId"),
+                doc.getString("entrantEmail"),
+                Boolean.TRUE.equals(doc.getBoolean("Admin")),
+                Boolean.TRUE.equals(doc.getBoolean("Entrant")),
+                Boolean.TRUE.equals(doc.getBoolean("Organizer")),
+                doc.getString("entrantName"),
+                doc.getString("entrantPhone"),
+                Boolean.TRUE.equals(doc.getBoolean("notificationsEnabled")),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+        );
+    }
 
 }
