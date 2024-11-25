@@ -62,8 +62,8 @@ public class EntrantDatabase {
     }
 
     public static void checkUserInEvent(String eventId, String userId, EntrantDatabase.OnUserCheckListener listener) {
-        db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
-                .addOnSuccessListener(document -> listener.onUserInList(document.exists()))
+        FirestoreUtils.checkDocumentField("Events/" + eventId + "/waitingList", userId, null)
+                .addOnSuccessListener(listener::onUserInList)
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
