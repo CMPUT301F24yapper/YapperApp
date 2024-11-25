@@ -39,10 +39,15 @@ public class AdminEventListFragment extends Fragment {
         adapter = new AdminEventAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
 
-        loadEvents();
         setupSearch();
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadEvents();
     }
 
     private void loadEvents() {

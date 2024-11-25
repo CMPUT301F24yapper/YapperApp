@@ -9,6 +9,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
+import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -56,10 +59,20 @@ public class AdminRemoveEventFragment extends Fragment {
     }
 
     private void setupButtons() {
-        removeEventButton.setOnClickListener(v -> {
-            AdminDatabase.removeEvent(eventId).addOnSuccessListener(aVoid -> {
-                getParentFragmentManager().popBackStack();
-            });
+        removeEventButton.setOnClickListener(v -> handleEventDeletion());
+    }
+
+    private void handleEventDeletion() {
+        AdminDatabase.removeEvent(eventId).addOnSuccessListener(aVoid -> {
+            // Pop back stack first
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+
+            // Reload the admin search fragment
+            Fragment searchFragment = new AdminSearchFragment();
+            fm.beginTransaction()
+                    .replace(R.id.fragment_container, searchFragment)
+                    .commit();
         });
     }
 }
