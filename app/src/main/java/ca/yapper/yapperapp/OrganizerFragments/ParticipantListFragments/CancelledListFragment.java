@@ -17,6 +17,7 @@ import java.util.List;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -84,7 +85,7 @@ public class CancelledListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
-                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                    UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;

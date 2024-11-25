@@ -14,16 +14,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
 
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
-import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.Databases.SignUpDatabase;
 /**
  * SignupActivity is responsible for user registration and Firebase Firestore setup.
@@ -130,7 +126,7 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        SignUpDatabase.createUser(deviceId, entrantName, entrantPhone, entrantEmail)
+        UserDatabase.createUserInDatabase(deviceId, entrantEmail, false, true, false, entrantName, entrantPhone, false)
                 .addOnSuccessListener(aVoid -> {
                     showSignupSuccessNotification(entrantName);
                     launchEntrantActivity();

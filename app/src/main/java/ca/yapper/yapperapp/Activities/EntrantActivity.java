@@ -5,7 +5,6 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -13,10 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
@@ -115,7 +112,7 @@ public class EntrantActivity extends AppCompatActivity {
         // Hide current role option
         popup.getMenu().findItem(R.id.switch_to_entrant).setVisible(false);
 
-        EntrantDatabase.checkIfUserIsAdmin(deviceId)
+        UserDatabase.checkIfUserIsAdmin(deviceId)
                 .addOnSuccessListener(isAdmin -> {
                     popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin);
                 })
