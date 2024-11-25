@@ -92,7 +92,39 @@ public class EntrantDatabase {
      */
     public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Users").document(userDeviceId).get()
+        DocumentReference userRef = db.collection("Users").document(userDeviceId);
+
+        // Add a snapshot listener to listen for real-time updates
+        userRef.addSnapshotListener((documentSnapshot, error) -> {
+            if (error != null) {
+                listener.onUserLoadError("Error listening to user data changes: " + error.getMessage());
+                return;
+            }
+
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                try {
+                    User user = new User(
+                            documentSnapshot.getString("deviceId"),
+                            documentSnapshot.getString("entrantEmail"),
+                            documentSnapshot.getBoolean("Admin"),
+                            documentSnapshot.getBoolean("Entrant"),
+                            documentSnapshot.getBoolean("Organizer"),
+                            documentSnapshot.getString("entrantName"),
+                            documentSnapshot.getString("entrantPhone"),
+                            documentSnapshot.getBoolean("notificationsEnabled"),
+                            new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+                    );
+
+                    // Notify the listener with the updated user object
+                    listener.onUserLoaded(user);
+                } catch (Exception e) {
+                    listener.onUserLoadError("Error creating user: " + e.getMessage());
+                }
+            } else {
+                listener.onUserLoadError("User document does not exist");
+            }
+        });
+        /**db.collection("Users").document(userDeviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
@@ -113,7 +145,7 @@ public class EntrantDatabase {
                             listener.onUserLoadError("Error creating user");
                         }
                     }
-                });
+                });**/
     }
 
     /**

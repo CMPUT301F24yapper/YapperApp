@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
-import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingListFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
@@ -33,7 +32,7 @@ public class EventDetailsFragment extends Fragment {
 
     //private FirebaseFirestore db;
     private String eventId;
-    private TextView nameTextView, dateTimeTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView;
+    private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, timeTextView;
     private TextView geolocEnabledTextView;
     boolean geolocationEnabled;
     private Button joinButton; // Entrant Button:
@@ -90,7 +89,7 @@ public class EventDetailsFragment extends Fragment {
      */
     private void initializeViews(View view) {
         nameTextView = view.findViewById(R.id.event_title);
-        dateTimeTextView = view.findViewById(R.id.event_date_time);
+        dateTextView = view.findViewById(R.id.event_date_time);
         regDeadlineTextView = view.findViewById(R.id.registration_deadline);
         facilityNameTextView = view.findViewById(R.id.facility_name);
         facilityLocationTextView = view.findViewById(R.id.facility_name);
@@ -117,7 +116,7 @@ public class EventDetailsFragment extends Fragment {
                 if (getContext() == null) return;
 
                 nameTextView.setText(event.getName());
-                dateTimeTextView.setText(event.getDate_Time());
+                dateTextView.setText(event.getDate_Time());
                 regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
                 facilityNameTextView.setText("Facility: " + event.getFacilityName());
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());

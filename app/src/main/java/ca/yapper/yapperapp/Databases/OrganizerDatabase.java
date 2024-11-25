@@ -373,7 +373,7 @@ public class OrganizerDatabase {
                     if (document.exists()) {
                         // Retrieve the facilityName and location fields
                         String facilityName = document.getString("facilityName");
-                        String location = document.getString("location");
+                        String location = document.getString("facilityAddress");
 
                         // Check if the data is available
                         if (facilityName != null && location != null) {
