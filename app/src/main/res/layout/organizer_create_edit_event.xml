@@ -62,8 +62,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
->
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
@@ -84,12 +83,26 @@
             android:inputType="textPersonName" />
     </LinearLayout>
 
-    <!-- Event Facility Field -->
+    <!-- Event Facility Field
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Description:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingEnd="8dp" /> -->
+    <!-- Event Description Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
@@ -110,14 +123,13 @@
             android:inputType="textPersonName" />
     </LinearLayout>
 
-    <!-- Date Field -->
+<!-- Date Field -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
->
+        android:layout_height="40dp"
+        android:orientation="horizontal">
 
-        <TextView
+        <!-- <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -132,15 +144,37 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:hint="dd/mm/yyyy"
-            android:inputType="date" />
+            android:inputType="date" /> -->
+
+        <Button
+            android:id="@+id/date_button"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:insetBottom="1dp"
+            android:text="Pick Date"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/date_textview"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="2"
+            android:gravity="end"
+            android:text="Not Set"
+            android:textAlignment="viewStart"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20dp" />
     </LinearLayout>
 
     <!-- Time Field -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:orientation="horizontal">
-
+        <!--
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -156,9 +190,59 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:hint="hh:mm"
-            android:inputType="time" />
+            android:inputType="time" /> -->
+
+        <Button
+            android:id="@+id/time_button"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pick Time"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/time_textview"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="2"
+            android:gravity="end"
+            android:text="Not Set"
+            android:textAlignment="viewStart"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20dp" />
     </LinearLayout>
 
+    <!-- Reg Deadline Field -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/reg_deadline_button"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pick Deadline"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/reg_deadline_textview"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="2"
+            android:gravity="end"
+            android:text="Not Set"
+            android:textAlignment="viewStart"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20dp" />
+
+    </LinearLayout>
 
     <!-- Number of Attendees Field -->
     <LinearLayout
@@ -195,10 +279,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:paddingEnd="8dp"
             android:text="Waiting List Cap:"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:paddingEnd="8dp" />
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/wl_capacity_input"
@@ -210,7 +294,7 @@
             android:inputType="number" />
     </LinearLayout>
 
-    <!-- Deadline Field -->
+    <!-- Deadline Field
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -233,7 +317,7 @@
             android:textSize="20dp"
             android:hint="dd/mm/yyyy"
             android:inputType="date" />
-    </LinearLayout>
+    </LinearLayout> -->
 
     <!-- Geo Location Toggle -->
     <LinearLayout
