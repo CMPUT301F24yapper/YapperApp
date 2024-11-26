@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.LinearLayout;
 
 import ca.yapper.yapperapp.AdminEventAdapter;
 import ca.yapper.yapperapp.R;
@@ -25,6 +26,7 @@ public class AdminEventListFragment extends Fragment {
     private AdminEventAdapter adapter;
     private List<Event> eventList;
     private EditText searchBar;
+    private LinearLayout emptyStateLayout;
 
     @Nullable
     @Override
@@ -33,6 +35,7 @@ public class AdminEventListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.events_recycler_view);
         searchBar = view.findViewById(R.id.search_bar);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventList = new ArrayList<>();
@@ -56,6 +59,7 @@ public class AdminEventListFragment extends Fragment {
                     eventList.clear();
                     eventList.addAll(events);
                     adapter.notifyDataSetChanged();
+                    updateEmptyState();
                 });
     }
 
@@ -84,5 +88,15 @@ public class AdminEventListFragment extends Fragment {
         }
         adapter = new AdminEventAdapter(filteredList, getContext());
         recyclerView.setAdapter(adapter);
+        updateEmptyState();
+    }
+    private void updateEmptyState() {
+        if (eventList.isEmpty()) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }

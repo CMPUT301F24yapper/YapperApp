@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.LinearLayout;
 
 import ca.yapper.yapperapp.AdminUserAdapter;
 import ca.yapper.yapperapp.R;
@@ -25,6 +26,7 @@ public class AdminProfileListFragment extends Fragment {
     private AdminUserAdapter adapter;
     private List<User> userList;
     private EditText searchBar;
+    private LinearLayout emptyStateLayout;
 
     @Nullable
     @Override
@@ -33,6 +35,7 @@ public class AdminProfileListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.profiles_recycler_view);
         searchBar = view.findViewById(R.id.search_bar);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         userList = new ArrayList<>();
@@ -51,6 +54,7 @@ public class AdminProfileListFragment extends Fragment {
                     userList.clear();
                     userList.addAll(users);
                     adapter.notifyDataSetChanged();
+                    updateEmptyState();
                 });
     }
 
@@ -79,5 +83,15 @@ public class AdminProfileListFragment extends Fragment {
         }
         adapter = new AdminUserAdapter(filteredList, getContext());
         recyclerView.setAdapter(adapter);
+        updateEmptyState();
+    }
+    private void updateEmptyState() {
+        if (userList.isEmpty()) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }

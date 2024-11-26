@@ -62,7 +62,11 @@ public class Event {
         this.cancelledList = cancelledList != null ? cancelledList : new ArrayList<>();
         this.finalList = finalList != null ? finalList : new ArrayList<>();
         this.selectedList = selectedList != null ? selectedList : new ArrayList<>();
-        this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
+        if (waitListCapacity == null || waitListCapacity <= 0) {
+            this.waitingList = null; // Disable waiting list
+        } else {
+            this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
+        }
     }
 
     /**

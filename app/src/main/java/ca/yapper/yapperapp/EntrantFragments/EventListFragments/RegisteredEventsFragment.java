@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +26,8 @@ public class RegisteredEventsFragment extends Fragment {
     private EventsAdapter adapter;
     private List<Event> eventList;
     private String userDeviceId;
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
 
     @Nullable
     @Override
@@ -32,6 +36,8 @@ public class RegisteredEventsFragment extends Fragment {
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         recyclerView = view.findViewById(R.id.recyclerView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
@@ -50,6 +56,16 @@ public class RegisteredEventsFragment extends Fragment {
                 eventList.clear();
                 eventList.addAll(events);
                 adapter.notifyDataSetChanged();
+
+                if (eventList.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyTextView.setVisibility(View.VISIBLE);
+                    emptyImageView.setVisibility(View.VISIBLE); // Show the ImageView
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyTextView.setVisibility(View.GONE);
+                    emptyImageView.setVisibility(View.GONE); // Hide the ImageView
+                }
             }
 
             @Override

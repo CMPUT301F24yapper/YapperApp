@@ -9,14 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="16dp"
-        android:layout_marginBottom="16dp">
+        android:paddingBottom="16dp">
 
         <!-- Event Title and Date -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
             <!-- Event Title -->
             <TextView
@@ -24,10 +24,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Event 1"
+                android:text="Event Title"
                 android:textColor="@android:color/black"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
             <!-- Event Date and Time -->
             <TextView
@@ -35,14 +37,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="mm/dd/yyyy hh:mm"
-                android:textColor="@color/black"
+                android:textColor="@android:color/darker_gray"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8dp" />
 
         <!-- Geo Location Requirement -->
         <TextView
@@ -50,122 +48,145 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Geo Location Required"
-            android:textColor="@android:color/black"
-            android:textSize="18sp" />
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp" />
-
-        <!-- Image Placeholder (Event Image or Facility Image) -->
+        <!-- Event Image -->
         <ImageView
             android:id="@+id/event_image"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerInside"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/event_image"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/darker_gray" />
+
+        <!-- Facility Section Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Facility Details"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
         <!-- Facility Name -->
         <TextView
             android:id="@+id/facility_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
+            android:layout_marginBottom="8dp"
             android:text="Facility Name: Facility Name"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/system_accent2_700"
+            android:textSize="16sp" />
 
         <!-- Facility Location -->
         <TextView
             android:id="@+id/facility_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
             android:text="Facility Location: Address"
+            android:textColor="@android:color/system_accent2_700"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Organizer Section Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Organizer Details"
             android:textColor="@android:color/black"
             android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <!-- Space between Facility and Organizer -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8dp" />
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
         <!-- Organizer Name -->
         <TextView
             android:id="@+id/organizer_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp"
             android:text="Organizer: Name"
-            android:textAlignment="viewStart"
+            android:textColor="@android:color/system_accent2_700"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Event Description Section Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Description"
             android:textColor="@android:color/black"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp" />
-
-        <!-- Event Description -->
+        <!-- Event Description in a Box -->
         <TextView
             android:id="@+id/event_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-            android:textColor="@color/material_dynamic_neutral40"
+            android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+            android:padding="12dp"
+            android:background="@drawable/description_background"
+            android:textColor="@android:color/system_accent2_700"
             android:textSize="16sp"
-            android:textStyle="bold|italic" />
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="16dp" />
 
-        <View
+        <!-- Participants Section -->
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="16dp" />
+            android:layout_height="wrap_content"
+            android:text="Participants"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
-        <!-- # of Participants -->
+        <!-- Number of Participants -->
         <TextView
             android:id="@+id/event_number_participants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="# of Participants: "
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:text="# of Participants: 59"
+            android:textColor="@android:color/system_accent2_700"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp" />
 
+        <!-- Waiting List Capacity -->
         <TextView
             android:id="@+id/event_wl_capacity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Waiting List Capacity:"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:text="Waiting List Capacity: 100"
+            android:textColor="@android:color/system_accent2_700"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
 
-        <!-- Available Slots -->
-<!--        <TextView-->
-<!--            android:id="@+id/available_slots"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Available Slots: 0/50"-->
-<!--            android:textColor="@android:color/black"-->
-<!--            android:textSize="16sp" />-->
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8dp" />
+        <!-- Available Slots (Commented Out) -->
+        <!-- Uncomment this section if needed -->
+        <!--
+        <TextView
+            android:id="@+id/available_slots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available Slots: 0/50"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+        -->
 
         <!-- Registration Deadline -->
         <TextView
             android:id="@+id/registration_deadline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:text="Registration Deadline: mm/dd/yyyy"
-            android:textSize="14sp"
-            android:textColor="@android:color/black" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="16dp" />
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
         <!-- Button Layout -->
         <FrameLayout
@@ -179,15 +200,17 @@
                 android:orientation="horizontal"
                 android:layout_gravity="center">
 
+                <!-- View Participants Button -->
                 <Button
                     android:id="@+id/button_view_participants"
-                    android:text="View Participants"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
+                    android:text="View Participants"
                     android:backgroundTint="@android:color/holo_blue_dark"
                     android:textColor="@android:color/white" />
 
+                <!-- View QR Code Button -->
                 <Button
                     android:id="@+id/button_view_QRCode"
                     android:layout_width="wrap_content"
@@ -196,15 +219,17 @@
                     android:layout_weight="1"
                     android:text="View QRCode" />
 
+                <!-- Edit Event Button -->
                 <Button
                     android:id="@+id/button_edit_event"
-                    android:text="Edit Event"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="Edit Event"
                     android:backgroundTint="@android:color/holo_green_dark"
                     android:textColor="@android:color/white" />
             </LinearLayout>
 
+            <!-- Join Button -->
             <Button
                 android:id="@+id/join_button"
                 android:layout_width="wrap_content"
@@ -215,8 +240,6 @@
                 android:text="Join Event"
                 android:textColor="@android:color/white"
                 android:textSize="16sp" />
-
         </FrameLayout>
     </LinearLayout>
-
 </ScrollView>

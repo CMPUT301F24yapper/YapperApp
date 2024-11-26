@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +44,11 @@ public class SelectedListFragment extends Fragment {
     private Button redrawButton;
     private int eventCapacity;
 
+    private LinearLayout emptyStateLayout;
+    private ImageView emptyImageView;
+    private TextView emptyTextView;
+
+
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
@@ -62,6 +70,11 @@ public class SelectedListFragment extends Fragment {
         adapter = new UsersAdapter(selectedList, getContext());
         recyclerView.setAdapter(adapter);
         redrawButton = view.findViewById(R.id.button_redraw);
+
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -103,6 +116,12 @@ public class SelectedListFragment extends Fragment {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "selectedList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                if (userIdsList.isEmpty()) {
+                    showEmptyState(true);
+                    return;
+                }
+
+                showEmptyState(false);
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
                     UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
@@ -132,6 +151,15 @@ public class SelectedListFragment extends Fragment {
                 }
             }
         });
+    }
+    private void showEmptyState(boolean isEmpty) {
+        if (isEmpty) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
 
