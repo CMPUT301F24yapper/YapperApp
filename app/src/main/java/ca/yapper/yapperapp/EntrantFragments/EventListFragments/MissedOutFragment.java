@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +39,9 @@ public class MissedOutFragment extends Fragment {
     private FirebaseFirestore db;
     private String userDeviceId;
 
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
+
 
     /**
      * Inflates the fragment layout and initializes Firestore, RecyclerView, and adapter components.
@@ -59,6 +64,9 @@ public class MissedOutFragment extends Fragment {
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
         db = FirebaseFirestore.getInstance();
+
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
 
         loadEventsFromFirebaseDebug();
 
@@ -125,10 +133,25 @@ public class MissedOutFragment extends Fragment {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        // Show empty state views
+                        recyclerView.setVisibility(View.GONE);
+                        emptyTextView.setVisibility(View.VISIBLE);
+                        emptyImageView.setVisibility(View.VISIBLE);
                         return;
                     }
 
+                    // Hide empty state views and show the RecyclerView
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyTextView.setVisibility(View.GONE);
+                    emptyImageView.setVisibility(View.GONE);
+
+
+                    // PREVIOUS CODE
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    //*********************************
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         String eventId = document.getId();
 

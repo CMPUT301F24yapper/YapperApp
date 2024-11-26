@@ -1,16 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- This contains the recyclerView for the waiting list and UserAdapter file to bind the recycler view with the waiting list. -->
-
+    <!-- RecyclerView for the waiting list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
 
+    <!-- Empty state container -->
+    <LinearLayout
+        android:id="@+id/emptyStateContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
 
+        <ImageView
+            android:id="@+id/emptyImageView"
+            android:layout_width="100sp"
+            android:layout_height="100sp"
+            android:src="@drawable/error" />
+
+        <TextView
+            android:id="@+id/emptyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No participants found"
+            android:textSize="20sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
 
 </FrameLayout>

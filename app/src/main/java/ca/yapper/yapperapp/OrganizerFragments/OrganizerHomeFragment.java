@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -39,6 +41,9 @@ public class OrganizerHomeFragment extends Fragment {
     //private FirebaseFirestore db;
     private String userDeviceId;
 
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
+
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
@@ -63,6 +68,9 @@ public class OrganizerHomeFragment extends Fragment {
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
 
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+
         //db = FirebaseFirestore.getInstance();
         loadEventsFromFirebase();
 
@@ -79,6 +87,16 @@ public class OrganizerHomeFragment extends Fragment {
             @Override
             public void onEventsLoaded(List<String> eventIds) {
                 eventList.clear();
+
+                if (eventIds.isEmpty()) {
+                    // Show empty state
+                    recyclerView.setVisibility(View.GONE);
+                    getView().findViewById(R.id.empty_state_layout).setVisibility(View.VISIBLE);
+                } else {
+                    // Show events list
+                    getView().findViewById(R.id.empty_state_layout).setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                }
                 for (String eventId : eventIds) {
                     OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
                         @Override

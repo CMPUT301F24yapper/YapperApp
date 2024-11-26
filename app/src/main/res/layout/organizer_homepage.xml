@@ -31,6 +31,33 @@
         android:layout_height="1dp"
         android:background="@android:color/darker_gray" />
 
+    <!-- Empty State Views -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:id="@+id/empty_state_layout">
+
+        <!-- Image for empty state -->
+        <ImageView
+            android:id="@+id/emptyImageView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/ic_no_events" />
+        <!-- Text for empty state -->
+        <TextView
+            android:id="@+id/emptyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Events Created"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="18dp"
+            android:gravity="center" />
+    </LinearLayout>
+
     <!-- RecyclerView for the Events list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/my_events_recycler_view"

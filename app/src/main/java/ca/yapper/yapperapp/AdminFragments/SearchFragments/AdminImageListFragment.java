@@ -18,3 +18,5 @@ public class AdminImageListFragment extends Fragment {
         return inflater.inflate(R.layout.admin_imagelist, container, false);
     }
 }
+
+// IMPLEMENT THE EMPTY RECYCLER VIEW TEXT!!

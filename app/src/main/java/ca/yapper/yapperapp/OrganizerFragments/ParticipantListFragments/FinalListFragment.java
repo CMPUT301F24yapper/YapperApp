@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +36,10 @@ public class FinalListFragment extends Fragment {
     //private FirebaseFirestore db;
     private String eventId;
 
+    private LinearLayout emptyStateLayout;
+    private ImageView emptyImageView;
+    private TextView emptyTextView;
+
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, and adapter components,
@@ -55,6 +62,11 @@ public class FinalListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         //db = FirebaseFirestore.getInstance();
+
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -81,6 +93,7 @@ public class FinalListFragment extends Fragment {
 
         finalList.clear();
         adapter.notifyDataSetChanged();
+        toggleEmptyState();
 
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "finalList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
@@ -95,6 +108,7 @@ public class FinalListFragment extends Fragment {
                             // Add the User to the cancelledList and notify the adapter
                             finalList.add(user);
                             adapter.notifyDataSetChanged();
+                            toggleEmptyState();
                         }
 
                         @Override
@@ -115,6 +129,15 @@ public class FinalListFragment extends Fragment {
             }
         });
     }
+        private void toggleEmptyState() {
+            if (finalList.isEmpty()) {
+                emptyStateLayout.setVisibility(View.VISIBLE);
+                recyclerView.setVisibility(View.GONE);
+            } else {
+                emptyStateLayout.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+        }
         /**
         db.collection("Events").document(eventId)
                 .collection("finalList")
