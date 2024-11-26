@@ -18,6 +18,9 @@ import ca.yapper.yapperapp.UMLClasses.User;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHolder> {
     private List<User> userList;
     private Context context;
+    private TextView nameTextView;
+
+
     /**
      * Constructs a new {@code UsersAdapter} with the specified list of users and context.
      *
@@ -53,6 +56,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     public void onBindViewHolder(@NonNull UsersAdapter.UsersViewHolder holder, int position) {
         User user = userList.get(position);
         holder.userNameTextView.setText(user.getName());
+
     }
 
     /**

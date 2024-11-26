@@ -64,7 +64,7 @@ public class User {
          //loadEventIdsFromSubcollection(db, userDeviceId, "missedOutEvents", user.missedOutEvents);
          //loadEventIdsFromSubcollection(db, userDeviceId, "createdEvents", user.createdEvents); } });
          //return user; }
-    
+
     /**
      * Converts the user's attributes to a Map, suitable for storage in Firestore.
      *
