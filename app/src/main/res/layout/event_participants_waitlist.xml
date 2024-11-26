@@ -5,22 +5,52 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Empty State View -->
+    <LinearLayout
+        android:id="@+id/emptyStateLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <!-- Error Icon -->
+        <ImageView
+            android:id="@+id/emptyImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/error"
+            android:contentDescription="No participants available"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Error Text -->
+        <TextView
+            android:id="@+id/emptyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No participants found"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="false" />
+        android:scrollbars="vertical" />
 
+    <!-- Draw Button -->
     <Button
         android:id="@+id/button_draw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="100dp"
-        android:text="Draw Applicant"
         android:backgroundTint="@color/black"
-        android:textColor="@android:color/white"
-        android:padding="12dp" />
-
+        android:padding="12dp"
+        android:text="Draw Applicant"
+        android:textColor="@android:color/white" />
 </LinearLayout>

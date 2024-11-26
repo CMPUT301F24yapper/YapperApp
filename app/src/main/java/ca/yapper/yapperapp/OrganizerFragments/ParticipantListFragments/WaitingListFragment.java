@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +44,10 @@ public class WaitingListFragment extends Fragment {
     private Button drawButton;
     private int eventCapacity;
 
+    private LinearLayout emptyStateLayout;
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
+
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
      * and loads the waiting list for the specified event. Sets up a draw button to move users to the selected list.
@@ -57,6 +64,10 @@ public class WaitingListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
 
         usersWaitingList = new ArrayList<>();
         adapter = new UsersAdapter(usersWaitingList, getContext());
@@ -102,6 +113,16 @@ public class WaitingListFragment extends Fragment {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                if (userIdsList.isEmpty()) {
+                    // Show empty state if the list is empty
+                    emptyStateLayout.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    // Hide empty state when the list is not empty
+                    emptyStateLayout.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                }
+
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
                     UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
