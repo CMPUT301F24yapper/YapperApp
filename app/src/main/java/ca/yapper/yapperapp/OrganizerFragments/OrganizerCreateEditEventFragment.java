@@ -1,8 +1,8 @@
 package ca.yapper.yapperapp.OrganizerFragments;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -17,16 +17,19 @@ import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.WriterException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Objects;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
@@ -37,16 +40,17 @@ import ca.yapper.yapperapp.UMLClasses.Event;
  */
 public class OrganizerCreateEditEventFragment extends Fragment {
 
-//------------------Constants----------------------------------------------------------------
+    //------------------Constants----------------------------------------------------------------
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "hh:mm a";
     private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm";
 //-------------------------------------------UI Components------------------------------------------------
-
+    private CreateEventViewModel viewModel;
     private TextView dateTextView, timeTextView, regDeadlineTextView;
     private EditText eventNameEditText, eventCapacityEditText, eventWaitListCapacityEditText, eventDescriptionEditText;
-    private String userDeviceId, eventId, selectedDate, selectedTime, regDeadline, facilityNameFinal, facilityAddressFinal;
+    private String userDeviceId, selectedDate, selectedTime, regDeadline, facilityNameFinal, facilityAddressFinal;
     private Button dateButton, timeButton, regDeadlineButton, saveEventButton;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch geolocationSwitch;
 
 
@@ -54,36 +58,48 @@ public class OrganizerCreateEditEventFragment extends Fragment {
      * Inflates the fragment layout, initializes form fields, and sets up date pickers
      * and save button click listeners. Retrieves the user's device ID for event creation.
      *
-     * @param inflater LayoutInflater used to inflate the fragment layout.
-     * @param container The parent view that this fragment's UI is attached to.
+     * @param inflater           LayoutInflater used to inflate the fragment layout.
+     * @param container          The parent view that this fragment's UI is attached to.
      * @param savedInstanceState Previous state data, if any.
      * @return The root view of the fragment.
      */
+    @SuppressLint("HardwareIds")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.organizer_create_edit_event, container, false);
+        viewModel = new ViewModelProvider(requireActivity()).get(CreateEventViewModel.class);
 
         initializeFields(view);
         setupClickListeners();
 
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey("eventId")) {
-            eventId = bundle.getString("eventId");
+            String eventId = bundle.getString("eventId");
             loadEventDetails(eventId);
         }
 
         saveEventButton.setOnClickListener(v -> {
-            try {
-                saveOrUpdateEvent();
-            } catch (WriterException e) {
-                throw new RuntimeException(e);
-            }
+            saveOrUpdateEvent();
         });
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         return view;
+    }
+
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        initializeFields(view);
+        restoreCachedData();
+        setupClickListeners();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        saveToCache();
     }
 
     /**
@@ -197,6 +213,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     timeTextView.setText(selectedTime);
                 }
             }
+
             @Override
             public void onEventLoadError(String error) {
                 // error handling here!
@@ -205,7 +222,39 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
-    private void saveOrUpdateEvent() throws WriterException {
+    private void saveOrUpdateEvent() {
+        saveEventButton.setEnabled(false);
+
+        OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
+            @Override
+            public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
+                if (TextUtils.isEmpty(facilityName) || TextUtils.isEmpty(facilityAddress)) {
+                    promptAddFacilityDetails();
+                    saveEventButton.setEnabled(true);
+                    return;
+                }
+                facilityNameFinal = facilityName;
+                facilityAddressFinal = facilityAddress;
+
+                try {
+                    processEventSave();
+                } catch (WriterException e) {
+                    // Handle WriterException gracefully
+                    showToast("An error occurred while saving the event. Please try again.");
+                }
+
+                saveEventButton.setEnabled(true);
+            }
+
+            @Override
+            public void onError(String error) {
+                showToast("Error loading facility details. Please try again.");
+                saveEventButton.setEnabled(true);
+            }
+        });
+    }
+
+    private void processEventSave() throws WriterException {
         // Validate all inputs
         if (!validateInputs()) {
             return;
@@ -228,7 +277,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
             return;
         } else if (waitListCapacityInt == null) {
-            waitListCapacityInt = 0;
+            waitListCapacityInt = 0; // Default to 0 if no value is provided
         }
 
         // Save event to database
@@ -246,6 +295,27 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         );
 
         showToast("Event saved successfully!");
+    }
+
+
+    private void promptAddFacilityDetails() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Missing Facility Details")
+                .setMessage("Your profile is missing facility details. Please update your profile before creating an event.")
+                .setPositiveButton("Update Facility", (dialog, which) -> {
+                    // Programmatically select the Profile Fragment in the BottomNavigationView
+                    BottomNavigationView bottomNavigationView = requireActivity().findViewById(R.id.bottom_navigation);
+                    bottomNavigationView.setSelectedItemId(R.id.nav_organizer_profile);
+
+                    // Switch to Profile Fragment
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new ProfileFragment())
+                            .commit();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
     }
 
     // Helper to validate input fields
@@ -309,5 +379,32 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     // Helper to show Toast messages
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+//----------------------------------------------------- Cache------------------------------------------
+
+    private void restoreCachedData() {
+        if (viewModel.eventName != null) eventNameEditText.setText(viewModel.eventName);
+        if (viewModel.eventDescription != null) eventDescriptionEditText.setText(viewModel.eventDescription);
+        if (viewModel.selectedDate != null) dateTextView.setText(viewModel.selectedDate);
+        if (viewModel.selectedTime != null) timeTextView.setText(viewModel.selectedTime);
+        if (viewModel.regDeadline != null) regDeadlineTextView.setText(viewModel.regDeadline);
+        if (viewModel.capacity != null) eventCapacityEditText.setText(String.valueOf(viewModel.capacity));
+        if (viewModel.waitListCapacity != null) {
+            eventWaitListCapacityEditText.setText(String.valueOf(viewModel.waitListCapacity));
+        }
+        geolocationSwitch.setChecked(viewModel.geolocationEnabled);
+    }
+
+    private void saveToCache() {
+        viewModel.eventName = eventNameEditText.getText().toString();
+        viewModel.eventDescription = eventDescriptionEditText.getText().toString();
+        viewModel.selectedDate = selectedDate;
+        viewModel.selectedTime = selectedTime;
+        viewModel.regDeadline = regDeadline;
+        viewModel.capacity = TextUtils.isEmpty(eventCapacityEditText.getText())
+                ? null : Integer.parseInt(eventCapacityEditText.getText().toString());
+        viewModel.waitListCapacity = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
+        viewModel.geolocationEnabled = geolocationSwitch.isChecked();
     }
 }

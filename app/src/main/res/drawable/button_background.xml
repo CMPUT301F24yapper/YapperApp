@@ -1,0 +1,18 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State when the button is pressed -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/yapper_purple_dark" /> <!-- Darker tint -->
+            <corners android:radius="8dp" /> <!-- Match the corner radius -->
+            <stroke android:width="2dp" android:color="@color/yapper_purple" /> <!-- Optional border -->
+        </shape>
+    </item>
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/yapper_purple" /> <!-- Original color -->
+            <corners android:radius="8dp" /> <!-- Match the corner radius -->
+            <stroke android:width="2dp" android:color="@color/yapper_purple_dark" /> <!-- Optional border -->
+        </shape>
+    </item>
+</selector>
