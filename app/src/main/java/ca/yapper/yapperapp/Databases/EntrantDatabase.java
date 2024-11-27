@@ -150,6 +150,7 @@ public class EntrantDatabase {
     }
 
     public static void loadEventsList(String userDeviceId, EventListType type, OnEventsLoadedListener listener) {
+        Log.e("loadeventslist from entrantsdb", "loading events list");
         String collectionName;
         if (type == EventListType.JOINED) {
             collectionName = "joinedEvents";
@@ -174,20 +175,22 @@ public class EntrantDatabase {
 
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         String eventId = document.getId();
+                        Log.e("entrantdb", "loading eventId:" + eventId);
 
                         db.collection("Events").document(eventId).get()
                                 .addOnSuccessListener(eventDoc -> {
                                     try {
                                         Event event = new Event(
-                                                eventDoc.getLong("capacity").intValue(),
+                                                eventDoc.getLong("capacity") != null ? eventDoc.getLong("capacity").intValue() : 0,
                                                 eventDoc.getString("date_Time"),
                                                 eventDoc.getString("description"),
                                                 eventDoc.getString("facilityLocation"),
                                                 eventDoc.getString("facilityName"),
                                                 eventDoc.getBoolean("isGeolocationEnabled"),
                                                 eventDoc.getString("name"),
+                                                eventDoc.getString("organizerId"),
                                                 eventDoc.getString("registrationDeadline"),
-                                                eventDoc.getLong("waitListCapacity").intValue(),
+                                                eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : 0,
                                                 new ArrayList<>(), new ArrayList<>(),
                                                 new ArrayList<>(), new ArrayList<>()
                                         );

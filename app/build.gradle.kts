@@ -35,6 +35,7 @@ android {
 dependencies {
     implementation(libs.glide)
     implementation(libs.espresso.core)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.ext.junit)
     androidTestImplementation(libs.ext.junit)
