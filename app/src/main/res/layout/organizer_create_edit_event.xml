@@ -119,6 +119,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/button_background_tint"
                     android:text="Pick Date" />
 
                 <TextView
@@ -151,6 +152,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/button_background_tint"
                     android:text="Pick Time" />
 
                 <TextView
@@ -183,6 +185,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:backgroundTint="@color/button_background_tint"
                     android:text="Pick Deadline" />
 
                 <TextView
@@ -259,7 +262,7 @@
                 android:layout_height="wrap_content"
                 android:text="Save Event"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#9C27B0"
+                android:backgroundTint="@color/button_background_tint"
                 android:layout_marginTop="24dp" />
         </LinearLayout>
     </ScrollView>
