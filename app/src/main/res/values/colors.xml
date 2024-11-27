@@ -3,6 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="yapper_purple">#712C95</color>
+    <color name="yapper_purple_dark">#5A2176</color>
     <color name="yapper_background">#FDE3FD</color>
 
 </resources>

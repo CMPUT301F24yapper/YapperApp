@@ -2,6 +2,7 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/yapper_background">
@@ -63,18 +64,21 @@
                     android:background="@android:color/transparent"
                     android:hint="@string/Name_Hint"
                     android:inputType="textPersonName"
+                    android:minHeight="48dp"
                     android:padding="12dp"
+                    android:textColorHint="#757575"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/phone_label"
-                    app:layout_constraintTop_toTopOf="@id/name_label" />
+                    app:layout_constraintTop_toTopOf="@id/name_label"
+                    tools:ignore="Autofill,VisualLintTextFieldSize" />
 
                 <!-- Email Field -->
                 <TextView
                     android:id="@+id/email_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Email:"
+                    android:text="@string/email"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:padding="12dp"
@@ -87,20 +91,23 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
-                    android:hint="example@domain.com"
+                    android:hint="@string/example_domain_com"
                     android:inputType="textEmailAddress"
+                    android:minHeight="48dp"
                     android:padding="12dp"
+                    android:textColorHint="#757575"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/phone_label"
-                    app:layout_constraintTop_toTopOf="@id/email_label" />
+                    app:layout_constraintTop_toTopOf="@id/email_label"
+                    tools:ignore="Autofill" />
 
                 <!-- Phone Number Field -->
                 <TextView
                     android:id="@+id/phone_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Phone Number:"
+                    android:text="@string/phone_number"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:padding="12dp"
@@ -113,13 +120,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
-                    android:hint="Optional"
+                    android:hint="@string/optional"
                     android:inputType="phone"
+                    android:minHeight="48dp"
                     android:padding="12dp"
+                    android:textColorHint="#757575"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/phone_label"
-                    app:layout_constraintTop_toTopOf="@id/phone_label" />
+                    app:layout_constraintTop_toTopOf="@id/phone_label"
+                    tools:ignore="Autofill" />
                 <!-- Small space between label and input -->
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -131,14 +141,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"
-            android:backgroundTint="@color/yapper_purple"
-            android:elevation="8dp"
+            android:backgroundTint="@color/button_background_tint"
             android:paddingHorizontal="32dp"
             android:paddingVertical="12dp"
-            android:text="Sign Up"
+            android:text="@string/sign_up"
             android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/form_card" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
