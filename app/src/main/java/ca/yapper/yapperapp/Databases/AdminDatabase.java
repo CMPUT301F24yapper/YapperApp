@@ -4,11 +4,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,8 +81,9 @@ public class AdminDatabase {
                             String dateTime = doc.getString("date_Time");
                             String description = doc.getString("description");
                             String facilityLocation = doc.getString("facilityLocation");
-                            String facilityName = doc.getString("facilityName");
                             boolean isGeolocationEnabled = doc.getBoolean("isGeolocationEnabled");
+                            String facilityName = doc.getString("facilityName");
+                            String organizerId = doc.getString("organizerId");
                             String registrationDeadline = doc.getString("registrationDeadline");
                             int capacity = doc.getLong("capacity").intValue();
                             int waitListCapacity = doc.getLong("waitListCapacity").intValue();
@@ -98,6 +97,7 @@ public class AdminDatabase {
                                         facilityName,
                                         isGeolocationEnabled,
                                         eventName,
+                                        organizerId,
                                         registrationDeadline,
                                         waitListCapacity,
                                         new ArrayList<>(),

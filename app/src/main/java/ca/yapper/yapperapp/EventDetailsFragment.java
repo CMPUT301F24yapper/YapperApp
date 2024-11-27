@@ -1,6 +1,9 @@
 package ca.yapper.yapperapp;
 
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -14,11 +17,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -45,6 +54,7 @@ public class EventDetailsFragment extends Fragment {
     private boolean isInOrganizerActivity = false;
     private Bundle QRCodeData;
     private View view;
+    private boolean geolocationPermitted = false;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -149,39 +159,6 @@ public class EventDetailsFragment extends Fragment {
                 Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
             }
         });
-
-        /** Event.loadEventFromDatabase(eventId, new Event.OnEventLoadedListener() {
-            @Override
-            public void onEventLoaded(Event event) {
-                if (getContext() == null) return;
-
-                nameTextView.setText(event.getName());
-                dateTimeTextView.setText(event.getDate_Time());
-                regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
-                facilityNameTextView.setText("Facility: " + event.getFacilityName());
-                facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                waitListTextView.setText(String.valueOf(event.getWaitListCapacity()));
-                capacityTextView.setText(String.valueOf(event.getCapacity()));
-
-                geolocationEnabled = event.isGeolocationEnabled();
-                if (geolocationEnabled) {
-                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                    if (geoLocationRequired != null) {
-                        geoLocationRequired.setVisibility(View.VISIBLE);
-                    }
-                }
-                Log.d("EventLoadSuccess", "Loaded event with ID: " + eventId);
-                setupButtonListeners();
-            }
-
-            @Override
-            public void onEventLoadError(String error) {
-                if (getContext() == null) return;
-
-                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
-                Log.e("EventDetails", "Error loading event: " + error);
-            }
-        }); **/
     }
 
     /**
@@ -224,39 +201,6 @@ public class EventDetailsFragment extends Fragment {
                 Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
             }
         });
-        // if (userDeviceId == null) return;
-        /** Log.d("checkuserinlist", "checking if user in list (waiting or selected)");
-        db.collection("Events").document(eventId)
-                .collection("waitingList")
-                .document(userDeviceId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Log.d("checkuserinlist", "user in wait list, setting button to unjoin");
-                        setButtonState("Unjoin", Color.GRAY); // User is in the waiting list
-                    } else {
-                        // Check selected list if not in waiting list
-                        db.collection("Events").document(eventId)
-                                .collection("selectedList")
-                                .document(userDeviceId)
-                                .get()
-                                .addOnSuccessListener(selectedSnapshot -> {
-                                    if (selectedSnapshot.exists()) {
-                                        Log.d("checkuserinlist", "user in selected list, setting button to unjoin");
-                                        setButtonState("Unjoin", Color.GRAY); // User is in the selected list
-                                    } else {
-                                        setButtonState("Join", Color.BLUE); // User not found in either list
-                                    }
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("EventDetails", "Error checking selected list: " + e.getMessage());
-                                });
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("EventDetails", "Error checking waiting list: " + e.getMessage());
-                });
-        Log.d("checkuserinlist", "user not in any list"); **/
     }
 
     /**
@@ -278,30 +222,6 @@ public class EventDetailsFragment extends Fragment {
             Log.d("EventDetailsFragment", "Unjoining event");
             unjoinEvent();
         }
-        /**
-        if (joinButton.getText().equals("Join")) {
-            if (geolocationEnabled) {
-                showGeolocationWarningDialog();
-            } else {
-                OrganizerDatabase.joinEvent(eventId, userDeviceId, success -> {
-                    if (success) {
-                        setButtonState("Unjoin", Color.GRAY);
-                        Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Error joining the event.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        } else {
-            OrganizerDatabase.unjoinEvent(eventId, userDeviceId, success -> {
-                if (success) {
-                    setButtonState("Join", Color.BLUE);
-                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Error unjoining the event.", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } **/
     }
 
     /**
@@ -365,7 +285,7 @@ public class EventDetailsFragment extends Fragment {
     private void showGeolocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
-                .setPositiveButton("Continue", (dialog, id) -> joinEvent())
+                .setPositiveButton("Continue", (dialog, id) -> requestLocationPermission()) // confirm this still works
                 .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss())
                 .create()
                 .show();
@@ -380,7 +300,22 @@ public class EventDetailsFragment extends Fragment {
                 Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
                 return;
             }
-
+            if (geolocationEnabled && !geolocationPermitted) {
+                showGeolocationWarningDialog();
+                return;
+            }
+            /**
+                fusedLocationClient.getLastLocation()
+                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                // Got last known location. In some rare situations this can be null.
+                                if (location != null) {
+                                    // Logic to handle location object
+                                }
+                            }
+                        });
+            }**/
             EntrantDatabase.joinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
                 @Override
                 public void onComplete(boolean success) {
@@ -421,35 +356,59 @@ public class EventDetailsFragment extends Fragment {
                 }
             }
         });
+    }
 
-        /**
-        // Start a batch write
-        WriteBatch batch = db.batch();
+    @SuppressLint("MissingPermission")
+    private void getUserLocation() {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // Remove from event's waiting list
-        DocumentReference eventWaitingListRef = db.collection("Events")
-                .document(eventId)
-                .collection("waitingList")
-                .document(userDeviceId);
-        batch.delete(eventWaitingListRef);
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        // Call UserDatabase to save the location
+                        UserDatabase.saveLocationToFirestore(eventId, userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
+                                joinEvent(); // Proceed to join the event
+                            }
 
-        // Remove from user's joined events
-        DocumentReference userJoinedEventsRef = db.collection("Users")
-                .document(userDeviceId)
-                .collection("joinedEvents")
-                .document(eventId);
-        batch.delete(userJoinedEventsRef);
-
-        // Commit the batch
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    joinButton.setText("Join");
-                    joinButton.setBackgroundColor(Color.BLUE);
-                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getContext(), "Unable to fetch location. Try again.", Toast.LENGTH_SHORT).show();
+                    }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                });**/
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+        } else {
+            geolocationPermitted = true;
+            getUserLocation();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1001) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getUserLocation(); // Retry getting location
+            } else {
+                Toast.makeText(getContext(), "Permission denied. Cannot join geolocation-enabled events.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     /**
