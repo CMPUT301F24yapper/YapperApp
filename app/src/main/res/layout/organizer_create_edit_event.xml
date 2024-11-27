@@ -18,8 +18,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
             <!-- Back Button and Title -->
             <LinearLayout
@@ -39,74 +38,64 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Event"
-                    android:textSize="20sp"
-                    android:layout_marginStart="10dp"
+                    android:textSize="22sp"
+                    android:layout_marginStart="16dp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Poster Image -->
+            <!-- Poster Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Poster"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp" />
             <ImageView
                 android:id="@+id/poster_image"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/event_poster" />
-
-            <TextView
-                android:id="@+id/choose_poster_text"
-                android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/choose_poster_button"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Choose Poster"
-                android:textColor="#9C27B0"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_gravity="center_horizontal"
-                android:padding="8dp" />
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/button_background_tint"
+                android:textColor="@android:color/white" />
 
-            <!-- Event Name Field -->
+            <!-- Event Details Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Name"
+                android:text="Event Details"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:layout_marginTop="24dp" />
+
             <EditText
                 android:id="@+id/event_name_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Event Name"
-                android:textSize="16sp"
-                android:inputType="textPersonName"
-                android:layout_marginTop="4dp" />
-
-            <!-- Event Description Field -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Description"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:hint="Event Name"
+                android:layout_marginTop="8dp"
+                android:textSize="16sp" />
             <EditText
                 android:id="@+id/event_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Event Description"
-                android:textSize="16sp"
+                android:hint="Event Description"
                 android:inputType="textMultiLine"
                 android:minHeight="100dp"
                 android:gravity="top"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="8dp"
+                android:textSize="16sp" />
 
-            <!-- Date Field -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Date"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+            <!-- Date and Time Section -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -116,29 +105,26 @@
 
                 <Button
                     android:id="@+id/date_button"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Pick Date" />
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:backgroundTint="@color/button_background_tint"
+                    android:text="Pick Date"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/date_textview"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
                     android:text="Not Set"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:layout_marginStart="8dp" />
+                    android:gravity="center_vertical"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray" />
             </LinearLayout>
 
-            <!-- Time Field -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Time"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -148,29 +134,27 @@
 
                 <Button
                     android:id="@+id/time_button"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Pick Time" />
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:backgroundTint="@color/button_background_tint"
+                    android:text="Pick Time"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/time_textview"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
                     android:text="Not Set"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:layout_marginStart="8dp" />
+                    android:gravity="center_vertical"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray" />
             </LinearLayout>
 
             <!-- Registration Deadline -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Registration Deadline"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -180,56 +164,52 @@
 
                 <Button
                     android:id="@+id/reg_deadline_button"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Pick Deadline" />
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:backgroundTint="@color/button_background_tint"
+                    android:text="Pick Deadline"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/reg_deadline_textview"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
                     android:text="Not Set"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:layout_marginStart="8dp" />
+                    android:gravity="center_vertical"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray" />
             </LinearLayout>
 
-            <!-- Number of Attendees -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Number of Attendees"
+                android:text="Other Details"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="24dp" />
+
             <EditText
                 android:id="@+id/attendees_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Number of Attendees"
-                android:textSize="16sp"
+                android:hint="Number of Attendees"
+                android:layout_marginTop="8dp"
                 android:inputType="number"
-                android:layout_marginTop="4dp" />
+                android:textSize="16sp" />
 
-            <!-- Waiting List Capacity -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Waiting List Capacity (Optional)"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
             <EditText
                 android:id="@+id/wl_capacity_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Capacity"
-                android:textSize="16sp"
+                android:hint="Waiting List Capacity (Optional)"
+                android:layout_marginTop="8dp"
                 android:inputType="number"
-                android:layout_marginTop="4dp" />
+                android:textSize="16sp" />
 
-            <!-- Geo Location Toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -238,14 +218,11 @@
                 android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/geo_location_text"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Geo Location:"
-                    android:textSize="16sp"
-                    android:paddingEnd="8dp" />
-
+                    android:text="Enable Geo Location?"
+                    android:textSize="16sp" />
                 <Switch
                     android:id="@+id/geo_location_toggle"
                     android:layout_width="wrap_content"
@@ -259,8 +236,9 @@
                 android:layout_height="wrap_content"
                 android:text="Save Event"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#9C27B0"
-                android:layout_marginTop="24dp" />
+                android:backgroundTint="@color/button_background_tint"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"/>
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
