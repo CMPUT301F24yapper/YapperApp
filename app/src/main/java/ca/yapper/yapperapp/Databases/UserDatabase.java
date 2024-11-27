@@ -4,11 +4,17 @@ import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
@@ -67,9 +73,43 @@ public class UserDatabase {
         User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut); // Step 2: Create User Object
 
         Map<String, Object> userData = prepareUserData(user); // Step 3: Prepare Firestore Data
+        // TO CHANGE LATER: MISSED OUT EVENTS BEING EVERY EVENT IN DATABASE (SETUP):
+        TaskCompletionSource<User> tcs = new TaskCompletionSource<>();
+        FirestoreUtils.getFirestoreInstance().collection("Users")
+                .document(deviceId)
+                .set(userData)
+                .addOnSuccessListener(aVoid -> {
+                    addMissedOutEventsSubcollection(deviceId)
+                            .addOnSuccessListener(subVoid -> tcs.setResult(user))
+                            .addOnFailureListener(tcs::setException);
+                })
+                .addOnFailureListener(tcs::setException);
 
-        return saveUserToFirestore(deviceId, user, userData); // Step 4: Save to Firestore
+        return tcs.getTask();
+        // return saveUserToFirestore(deviceId, user, userData); // Step 4: Save to Firestore
     }
+
+    private static Task<Void> addMissedOutEventsSubcollection(String userDeviceId) {
+        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+        CollectionReference eventsRef = db.collection("Events");
+        CollectionReference missedOutEventsRef = db.collection("Users").document(userDeviceId).collection("missedOutEvents");
+
+        return eventsRef.get().continueWithTask(task -> {
+            if (task.isSuccessful()) {
+                List<Task<Void>> tasks = new ArrayList<>();
+                for (DocumentSnapshot eventDoc : task.getResult().getDocuments()) {
+                    String eventId = eventDoc.getId();
+                    Map<String, Object> eventData = new HashMap<>();
+                    eventData.put("eventId", eventId);
+                    tasks.add(missedOutEventsRef.document(eventId).set(eventData));
+                }
+                return Tasks.whenAll(tasks);
+            } else {
+                throw task.getException();
+            }
+        });
+    }
+
 
     private static void validateUserInputs(String deviceId, String email, String name) {
         if (deviceId == null || deviceId.isEmpty()) {
@@ -194,5 +234,31 @@ public class UserDatabase {
      */
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
         return FirestoreUtils.checkDocumentField("Users", deviceId, "Admin");
+    }
+
+    public interface OnLocationSavedListener {
+        void onSuccess();
+        void onError(String error);
+    }
+
+    public static void saveLocationToFirestore(String eventId, String userDeviceId, double latitude, double longitude, OnLocationSavedListener listener) {
+        if (eventId == null || eventId.isEmpty() || userDeviceId == null || userDeviceId.isEmpty()) {
+            listener.onError("Invalid event ID or device ID.");
+            return;
+        }
+
+        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+        Map<String, Object> locationData = new HashMap<>();
+        locationData.put("latitude", latitude);
+        Log.d("UserDB", "Saving latitude: " + latitude);
+
+        locationData.put("longitude", longitude);
+        Log.d("UserDB", "Saving longitude: " + longitude);
+
+        db.collection("Events").document(eventId)
+                .collection("waitingList").document(userDeviceId)
+                .set(locationData)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(e -> listener.onError("Failed to save location: " + e.getMessage()));
     }
 }

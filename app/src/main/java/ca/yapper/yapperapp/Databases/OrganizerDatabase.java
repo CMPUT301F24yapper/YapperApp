@@ -1,18 +1,16 @@
 package ca.yapper.yapperapp.Databases;
 
-import android.graphics.Color;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.WriteBatch;
-import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,15 +87,16 @@ public class OrganizerDatabase {
                     if (documentSnapshot.exists()) {
                         try {
                             Event event = new Event(
-                                    documentSnapshot.getLong("capacity").intValue(),
+                                    documentSnapshot.getLong("capacity") != null ? documentSnapshot.getLong("capacity").intValue() : 0,
                                     documentSnapshot.getString("date_Time"),
                                     documentSnapshot.getString("description"),
                                     documentSnapshot.getString("facilityLocation"),
                                     documentSnapshot.getString("facilityName"),
                                     documentSnapshot.getBoolean("isGeolocationEnabled"),
                                     documentSnapshot.getString("name"),
+                                    documentSnapshot.getString("organizerId"),
                                     documentSnapshot.getString("registrationDeadline"),
-                                    documentSnapshot.getLong("waitListCapacity").intValue(),
+                                    documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : 0,
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
 
@@ -246,18 +245,21 @@ public class OrganizerDatabase {
 
     public static void createEventInDatabase(int capacity, String dateTime, String description,
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,
-                                             String name, String registrationDeadline, int waitListCapacity,
+                                             String name, String registrationDeadline, Integer waitListCapacity,
                                              String organizerId, String posterBase64, OnOperationCompleteListener listener) {
         try {
             // Create the Event object
             Event event = new Event(
                     capacity, dateTime, description, facilityLocation, facilityName,
-                    isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
+                    isGeolocationEnabled, name, organizerId, registrationDeadline, waitListCapacity,
                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
             );
 
             // Generate the eventId using the QR code hash
             String eventId = Integer.toString(event.getQRCode().getHashData());
+
+            // can delete / update later (add event to user's missed out events list)
+            addEventToAllUsersMissedOut(eventId);
 
             // Build the event data map
             Map<String, Object> eventData = new HashMap<>();
@@ -267,11 +269,11 @@ public class OrganizerDatabase {
             eventData.put("facilityLocation", facilityLocation);
             eventData.put("facilityName", facilityName);
             eventData.put("isGeolocationEnabled", isGeolocationEnabled);
+            eventData.put("organizerId", organizerId);
             eventData.put("name", name);
             eventData.put("qrCode_hashData", event.getQRCode().getHashData());
             eventData.put("registrationDeadline", registrationDeadline);
             eventData.put("waitListCapacity", waitListCapacity);
-            eventData.put("organizerId", organizerId);
 
             if (posterBase64 != null) {
                 eventData.put("posterBase64", posterBase64); // Add poster image if present
@@ -292,6 +294,26 @@ public class OrganizerDatabase {
         } catch (Exception e) {
             listener.onComplete(false);
         }
+    }
+
+    private static Task<Void> addEventToAllUsersMissedOut(String eventId) {
+        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+        CollectionReference usersRef = db.collection("Users");
+
+        return usersRef.get().continueWithTask(task -> {
+            if (task.isSuccessful()) {
+                List<Task<Void>> tasks = new ArrayList<>();
+                for (DocumentSnapshot userDoc : task.getResult().getDocuments()) {
+                    String userId = userDoc.getId();
+                    Map<String, Object> eventData = new HashMap<>();
+                    eventData.put("eventId", eventId);
+                    tasks.add(usersRef.document(userId).collection("missedOutEvents").document(eventId).set(eventData));
+                }
+                return Tasks.whenAll(tasks);
+            } else {
+                throw task.getException();
+            }
+        });
     }
 
 
