@@ -24,6 +24,7 @@ import com.google.zxing.WriterException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
@@ -36,22 +37,17 @@ import ca.yapper.yapperapp.UMLClasses.Event;
  */
 public class OrganizerCreateEditEventFragment extends Fragment {
 
+//------------------Constants----------------------------------------------------------------
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String TIME_FORMAT = "hh:mm a";
+    private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm";
 //-------------------------------------------UI Components------------------------------------------------
 
     private TextView dateTextView, timeTextView, regDeadlineTextView;
-    private EditText eventNameEditText;
-    private EditText eventCapacityEditText;
-    private EditText eventWaitListCapacityEditText;
-    private EditText eventDescriptionEditText;
-    private String userDeviceId;
-    private String eventId;
-    private String facilityNameFinal;
-    private String facilityAddressFinal;
-    private String selectedDate, selectedTime, regDeadline;
-    private Button dateButton, timeButton, regDeadlineButton;
+    private EditText eventNameEditText, eventCapacityEditText, eventWaitListCapacityEditText, eventDescriptionEditText;
+    private String userDeviceId, eventId, selectedDate, selectedTime, regDeadline, facilityNameFinal, facilityAddressFinal;
+    private Button dateButton, timeButton, regDeadlineButton, saveEventButton;
     private Switch geolocationSwitch;
-    private Button saveEventButton;
-    private int selectedYear, selectedMonth, selectedDay;
 
 
     /**
@@ -118,62 +114,57 @@ public class OrganizerCreateEditEventFragment extends Fragment {
      * when clicked, and configures the save button to trigger event creation.
      */
     private void setupClickListeners() {
-
         dateButton.setOnClickListener(v -> openDatePicker());
         timeButton.setOnClickListener(v -> openTimePicker());
         regDeadlineButton.setOnClickListener(v -> openRegDeadlinePicker());
-
     }
 
     //------------------------------------Time Picker----------------------------------------------------------
     private void openDatePicker() {
         Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year, month, dayOfMonth) -> {
-                    // Store the selected date
                     calendar.set(year, month, dayOfMonth);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                    selectedDate = dateFormat.format(calendar.getTime());
-                    // Update the TextView with the selected date
-                    dateTextView.setText(selectedDate);                },
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                    selectedDate = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(calendar.getTime());
+                    dateTextView.setText(selectedDate);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis()); // Disable past dates
         datePickerDialog.show();
+
     }
 
     private void openTimePicker() {
         Calendar calendar = Calendar.getInstance();
-        TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
-                android.R.style.Theme_Holo_Light_Dialog_NoActionBar, // Use a spinner-style time picker
+        new TimePickerDialog(getContext(),
                 (view, hourOfDay, minute) -> {
-                    // Format and save selected time
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                     calendar.set(Calendar.MINUTE, minute);
-                    SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-                    selectedTime = timeFormat.format(calendar.getTime());
-
-                    // Update the TextView with the selected time
+                    selectedTime = new SimpleDateFormat(TIME_FORMAT, Locale.getDefault()).format(calendar.getTime());
                     timeTextView.setText(selectedTime);
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
                 false
-        );
-        timePickerDialog.show();
+        ).show();
     }
 
     private void openRegDeadlinePicker() {
         Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year, month, dayOfMonth) -> {
-                    // Store the registration deadline
                     calendar.set(year, month, dayOfMonth);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                    regDeadline = dateFormat.format(calendar.getTime());
-                    // Update the TextView with the selected registration deadline
-                    regDeadlineTextView.setText(regDeadline);                },
-                calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis()); // Disable past dates
+                    regDeadline = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(calendar.getTime());
+                    regDeadlineTextView.setText(regDeadline);
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         datePickerDialog.show();
     }
 
@@ -215,124 +206,108 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     private void saveOrUpdateEvent() throws WriterException {
-        // Load facility details from Firestore
-        OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
-            @Override
-            public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
-                facilityNameFinal = facilityName;
-                facilityAddressFinal = facilityAddress;
-                }
-            @Override
-            public void onError(String error) {
-                // implement /edit error logic
-                Toast.makeText(getContext(), "Error loading facility data: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        String eventName = eventNameEditText.getText().toString();
-        if (eventName.isEmpty()) {
-            Toast.makeText(getActivity(), "Event name is required", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        /*** String dateTime = eventDateEditText.getText().toString();
-        if (dateTime.isEmpty()) {
-            Toast.makeText(getActivity(), "Event date is required", Toast.LENGTH_SHORT).show();
-            return;
-        } **/
-
-        if (TextUtils.isEmpty(selectedDate) || TextUtils.isEmpty(selectedTime)) {
-            Toast.makeText(getContext(), "Please select both date and time for the event", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (TextUtils.isEmpty(regDeadline)) {
-            Toast.makeText(getContext(), "Please select a registration deadline", Toast.LENGTH_SHORT).show();
+        // Validate all inputs
+        if (!validateInputs()) {
             return;
         }
 
         // Concatenate Date and Time for the Event
         String dateTime = selectedDate + " " + selectedTime;
 
-        // Parse Dates
-        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-        Calendar currentCalendar = Calendar.getInstance();
-        Calendar eventCalendar = Calendar.getInstance();
-        Calendar regDeadlineCalendar = Calendar.getInstance();
-
-        try {
-            eventCalendar.setTime(dateTimeFormat.parse(dateTime));
-            regDeadlineCalendar.setTime(dateFormat.parse(regDeadline));
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "Invalid date or time format", Toast.LENGTH_SHORT).show();
+        // Check Dates
+        if (!validateDates(dateTime, regDeadline)) {
             return;
         }
 
-        // Check Registration Deadline Validity
-        if (!regDeadlineCalendar.after(currentCalendar)) {
-            Toast.makeText(getContext(), "Registration deadline must be in the future", Toast.LENGTH_SHORT).show();
+        // Parse numeric fields
+        int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
+        Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
+
+        // Validate waitlist capacity
+        if (waitListCapacityInt != null && waitListCapacityInt < capacityInt) {
+            showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
             return;
+        } else if (waitListCapacityInt == null) {
+            waitListCapacityInt = 0;
         }
 
-        if (!regDeadlineCalendar.before(eventCalendar)) {
-            Toast.makeText(getContext(), "Registration deadline must be before the event date", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Check Event Date and Time Validity
-        if (!eventCalendar.after(currentCalendar)) {
-            Toast.makeText(getContext(), "Event date and time must be in the future", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String description = eventDescriptionEditText.getText().toString();
-        if (description.isEmpty()) {
-            Toast.makeText(getActivity(), "Event description is required", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        /**String regDeadline = eventDeadlineEditText.getText().toString();
-        if (regDeadline.isEmpty()) {
-            Toast.makeText(getActivity(), "Registration deadline is required", Toast.LENGTH_SHORT).show();
-            return;
-        }**/
-
-        int capacityInt;
-        Integer waitListCapacityInt;
-        String capacityString = eventCapacityEditText.getText().toString();
-        if (capacityString.isEmpty()) {
-            Toast.makeText(getActivity(), "Number of attendees is required", Toast.LENGTH_SHORT).show();
-            return;
-        } else {
-            capacityInt = Integer.parseInt(capacityString);
-        }
-
-        String waitListCapacityString = eventWaitListCapacityEditText.getText().toString();
-        if (waitListCapacityString.isEmpty()) {
-            waitListCapacityInt = null;
-        } else {
-            waitListCapacityInt = Integer.parseInt(waitListCapacityString);
-            if (waitListCapacityInt < capacityInt) {
-                Toast.makeText(getActivity(), "Waiting list capacity must be greater than or equal to the number of attendees.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-
-        boolean geolocationEnabled = geolocationSwitch.isChecked();
-
+        // Save event to database
         OrganizerDatabase.createEventInDatabase(
                 capacityInt,
                 dateTime,
-                description,
+                eventDescriptionEditText.getText().toString(),
                 facilityAddressFinal,
                 facilityNameFinal,
-                geolocationEnabled,
-                eventName,
+                geolocationSwitch.isChecked(),
+                eventNameEditText.getText().toString(),
                 regDeadline,
                 waitListCapacityInt,
                 userDeviceId
         );
+
+        showToast("Event saved successfully!");
+    }
+
+    // Helper to validate input fields
+    private boolean validateInputs() {
+        if (TextUtils.isEmpty(eventNameEditText.getText())) {
+            showToast("Event name is required.");
+            return false;
+        }
+        if (TextUtils.isEmpty(selectedDate) || TextUtils.isEmpty(selectedTime)) {
+            showToast("Please select both date and time for the event.");
+            return false;
+        }
+        if (TextUtils.isEmpty(regDeadline)) {
+            showToast("Please select a registration deadline.");
+            return false;
+        }
+        if (TextUtils.isEmpty(eventCapacityEditText.getText())) {
+            showToast("Number of attendees is required.");
+            return false;
+        }
+        return true;
+    }
+
+    // Helper to validate dates
+    private boolean validateDates(String dateTime, String regDeadline) {
+        try {
+            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            Calendar currentCalendar = Calendar.getInstance();
+            Calendar eventCalendar = Calendar.getInstance();
+            Calendar regDeadlineCalendar = Calendar.getInstance();
+
+            eventCalendar.setTime(dateTimeFormat.parse(dateTime));
+            regDeadlineCalendar.setTime(dateFormat.parse(regDeadline));
+
+            if (!regDeadlineCalendar.after(currentCalendar)) {
+                showToast("Registration deadline must be in the future.");
+                return false;
+            }
+            if (!regDeadlineCalendar.before(eventCalendar)) {
+                showToast("Registration deadline must be before the event date.");
+                return false;
+            }
+            if (!eventCalendar.after(currentCalendar)) {
+                showToast("Event date and time must be in the future.");
+                return false;
+            }
+        } catch (Exception e) {
+            showToast("Invalid date or time format.");
+            return false;
+        }
+        return true;
+    }
+
+    // Helper to parse optional integers
+    private Integer parseOptionalInt(String input) {
+        return TextUtils.isEmpty(input) ? null : Integer.parseInt(input);
+    }
+
+    // Helper to show Toast messages
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 }
