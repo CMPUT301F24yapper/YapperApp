@@ -25,6 +25,7 @@ public class Event {
     private ArrayList<String> finalList;
     private ArrayList<String> selectedList;
     private ArrayList<String> waitingList;
+    private String posterBase64;
 
 
     /**
@@ -277,5 +278,13 @@ public class Event {
 
     public void setWaitingList(ArrayList<String> waitingList) {
         this.waitingList = waitingList;
+    }
+
+    public void setPosterBase64(String posterBase64) {
+        this.posterBase64 = posterBase64;
+    }
+
+    public String getPosterBase64() {
+        return posterBase64;
     }
 }

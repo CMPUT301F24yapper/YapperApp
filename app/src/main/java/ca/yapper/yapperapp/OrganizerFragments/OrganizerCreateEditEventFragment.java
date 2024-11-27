@@ -285,11 +285,19 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     dateTextView.setText(selectedDate);
                     timeTextView.setText(selectedTime);
                 }
+
+                // Load the poster image
+                String posterBase64 = event.getPosterBase64();
+                if (posterBase64 != null) {
+                    byte[] decodedString = Base64.decode(posterBase64, Base64.DEFAULT);
+                    Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    ImageView posterImageView = requireView().findViewById(R.id.poster_image);
+                    posterImageView.setImageBitmap(decodedBitmap); // Set the bitmap
+                }
             }
 
             @Override
             public void onEventLoadError(String error) {
-                // error handling here!
                 Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
             }
         });
@@ -309,12 +317,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 facilityNameFinal = facilityName;
                 facilityAddressFinal = facilityAddress;
 
-                try {
-                    processEventSave();
-                } catch (WriterException e) {
-                    // Handle WriterException gracefully
-                    showToast("An error occurred while saving the event. Please try again.");
-                }
+                processEventSave();
 
                 saveEventButton.setEnabled(true);
             }
@@ -327,7 +330,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
-    private void processEventSave() throws WriterException {
+    private void processEventSave() {
         if (!validateInputs()) {
             return;
         }
@@ -346,38 +349,40 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             return;
         }
 
-        String eventId = viewModel.eventId != null ? viewModel.eventId : generateEventId();
+        // Gather all event data
+        String eventName = eventNameEditText.getText().toString();
+        String eventDescription = eventDescriptionEditText.getText().toString();
+        boolean isGeolocationEnabled = geolocationSwitch.isChecked();
 
-        // Upload poster image first, then save event data
+        // Upload poster first
         uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
             if (!success) {
                 saveEventButton.setEnabled(true);
                 return;
             }
 
-            Map<String, Object> eventData = new HashMap<>();
-            eventData.put("capacity", capacityInt);
-            eventData.put("date_Time", dateTime);
-            eventData.put("description", eventDescriptionEditText.getText().toString());
-            eventData.put("facilityLocation", facilityAddressFinal);
-            eventData.put("facilityName", facilityNameFinal);
-            eventData.put("isGeolocationEnabled", geolocationSwitch.isChecked());
-            eventData.put("name", eventNameEditText.getText().toString());
-            eventData.put("registrationDeadline", regDeadline);
-            eventData.put("waitListCapacity", waitListCapacityInt != null ? waitListCapacityInt : 0);
-
-            if (viewModel.posterImageBase64 != null) {
-                eventData.put("posterBase64", viewModel.posterImageBase64); // Add Base64 image
-            }
-
-            OrganizerDatabase.saveEventData(eventId, eventData, success1 -> {
-                if (success1) {
-                    showToast("Event saved successfully!");
-                } else {
-                    showToast("Failed to save event. Please try again.");
-                }
-                saveEventButton.setEnabled(true);
-            });
+            // Use OrganizerDatabase to create the event and generate eventId
+            OrganizerDatabase.createEventInDatabase(
+                    capacityInt,
+                    dateTime,
+                    eventDescription,
+                    facilityAddressFinal,
+                    facilityNameFinal,
+                    isGeolocationEnabled,
+                    eventName,
+                    regDeadline,
+                    waitListCapacityInt != null ? waitListCapacityInt : 0,
+                    userDeviceId,
+                    viewModel.posterImageBase64,
+                    success1 -> {
+                        if (success1) {
+                            showToast("Event saved successfully!");
+                        } else {
+                            showToast("Failed to save event. Please try again.");
+                        }
+                        saveEventButton.setEnabled(true);
+                    }
+            );
         });
     }
 

@@ -83,9 +83,8 @@ public class OrganizerDatabase {
         return tcs.getTask();
     }
 
-    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Events").document(hashData).get()
+    public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
+        db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
@@ -101,12 +100,22 @@ public class OrganizerDatabase {
                                     documentSnapshot.getLong("waitListCapacity").intValue(),
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
+
+                            // Check if posterBase64 exists
+                            String posterBase64 = documentSnapshot.getString("posterBase64");
+                            if (posterBase64 != null) {
+                                event.setPosterBase64(posterBase64);
+                            }
+
                             listener.onEventLoaded(event);
-                        } catch (WriterException e) {
-                            listener.onEventLoadError("Error creating event");
+                        } catch (Exception e) {
+                            listener.onEventLoadError("Error creating event: " + e.getMessage());
                         }
+                    } else {
+                        listener.onEventLoadError("Event not found.");
                     }
-                });
+                })
+                .addOnFailureListener(e -> listener.onEventLoadError("Error loading event: " + e.getMessage()));
     }
 
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
@@ -234,43 +243,57 @@ public class OrganizerDatabase {
      * @param organizerId The ID of the organizer creating the event.
      * @return The created Event instance.
      */
-    public static Event createEventInDatabase(int capacity, String dateTime, String description,
-                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
-                                              String registrationDeadline, int waitListCapacity, String organizerId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        try {
-            Event event = new Event(capacity, dateTime, description, facilityLocation,
-                    facilityName, isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
+    public static void createEventInDatabase(int capacity, String dateTime, String description,
+                                             String facilityLocation, String facilityName, boolean isGeolocationEnabled,
+                                             String name, String registrationDeadline, int waitListCapacity,
+                                             String organizerId, String posterBase64, OnOperationCompleteListener listener) {
+        try {
+            // Create the Event object
+            Event event = new Event(
+                    capacity, dateTime, description, facilityLocation, facilityName,
+                    isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+            );
+
+            // Generate the eventId using the QR code hash
             String eventId = Integer.toString(event.getQRCode().getHashData());
+
+            // Build the event data map
             Map<String, Object> eventData = new HashMap<>();
-            eventData.put("capacity", event.getCapacity());
-            eventData.put("date_Time", event.getDate_Time());
-            eventData.put("description", event.getDescription());
-            eventData.put("facilityLocation", event.getFacilityLocation());
-            eventData.put("facilityName", event.getFacilityName());
-            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
-            eventData.put("name", event.getName());
+            eventData.put("capacity", capacity);
+            eventData.put("date_Time", dateTime);
+            eventData.put("description", description);
+            eventData.put("facilityLocation", facilityLocation);
+            eventData.put("facilityName", facilityName);
+            eventData.put("isGeolocationEnabled", isGeolocationEnabled);
+            eventData.put("name", name);
             eventData.put("qrCode_hashData", event.getQRCode().getHashData());
-            eventData.put("registrationDeadline", event.getRegistrationDeadline());
-            eventData.put("waitListCapacity", event.getWaitListCapacity());
+            eventData.put("registrationDeadline", registrationDeadline);
+            eventData.put("waitListCapacity", waitListCapacity);
             eventData.put("organizerId", organizerId);
 
-            // Initialize the subcollections with placeholder data
-            initializeSubcollections(db, eventId);
+            if (posterBase64 != null) {
+                eventData.put("posterBase64", posterBase64); // Add poster image if present
+            }
 
-            db.collection("Events").document(eventId).set(eventData);
-
-            Map<String, Object> eventRef = new HashMap<>();
-            eventRef.put("timestamp", com.google.firebase.Timestamp.now());
-            db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
-
-            return event;
-        } catch (WriterException e) {
-            return null;
+            // Save the event to Firestore
+            db.collection("Events").document(eventId).set(eventData)
+                    .addOnSuccessListener(unused -> {
+                        // Add a reference to the organizer's created events
+                        Map<String, Object> eventRef = new HashMap<>();
+                        eventRef.put("timestamp", FieldValue.serverTimestamp());
+                        db.collection("Users").document(organizerId).collection("createdEvents")
+                                .document(eventId).set(eventRef)
+                                .addOnSuccessListener(unused1 -> listener.onComplete(true))
+                                .addOnFailureListener(e -> listener.onComplete(false));
+                    })
+                    .addOnFailureListener(e -> listener.onComplete(false));
+        } catch (Exception e) {
+            listener.onComplete(false);
         }
     }
+
 
     /**
      * Initializes Firestore subcollections for the event with placeholder data.
