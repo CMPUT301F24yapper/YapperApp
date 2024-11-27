@@ -237,4 +237,34 @@ public class AdminDatabase {
                     return batch.commit();
                 });
     }
+
+    public static Task<List<String>> getAllImages() {
+        TaskCompletionSource<List<String>> tcs = new TaskCompletionSource<>();
+        List<String> allImages = new ArrayList<>();
+
+        FirebaseFirestore.getInstance().collection("Events").get()
+                .addOnSuccessListener(eventsSnapshot -> {
+                    for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
+                        String posterBase64 = doc.getString("posterBase64");
+                        if (posterBase64 != null && !posterBase64.isEmpty()) {
+                            allImages.add(posterBase64);
+                        }
+                    }
+
+                    FirebaseFirestore.getInstance().collection("Users").get()
+                            .addOnSuccessListener(usersSnapshot -> {
+                                for (DocumentSnapshot doc : usersSnapshot.getDocuments()) {
+                                    String profileImage = doc.getString("profileImage");
+                                    if (profileImage != null && !profileImage.isEmpty()) {
+                                        allImages.add(profileImage);
+                                    }
+                                }
+                                tcs.setResult(allImages);
+                            })
+                            .addOnFailureListener(tcs::setException);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
 }
