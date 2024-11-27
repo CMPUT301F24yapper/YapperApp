@@ -394,4 +394,11 @@ public class OrganizerDatabase {
         void onError(String error);                                        // When there's an error
     }
 
+    public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
+        db.collection("Events").document(eventId).set(eventData)
+                .addOnSuccessListener(unused -> listener.onComplete(true))
+                .addOnFailureListener(e -> listener.onComplete(false));
+    }
+
+
 }

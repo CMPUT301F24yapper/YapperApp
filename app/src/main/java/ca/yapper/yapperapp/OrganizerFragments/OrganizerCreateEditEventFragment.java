@@ -1,20 +1,31 @@
 package ca.yapper.yapperapp.OrganizerFragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.provider.Settings;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase.OnOperationCompleteListener;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -22,11 +33,17 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.zxing.WriterException;
 
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -44,7 +61,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "hh:mm a";
     private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm";
-//-------------------------------------------UI Components------------------------------------------------
+    private ActivityResultLauncher<Intent> pickImageLauncher;
+
+    //-------------------------------------------UI Components------------------------------------------------
     private CreateEventViewModel viewModel;
     private TextView dateTextView, timeTextView, regDeadlineTextView;
     private EditText eventNameEditText, eventCapacityEditText, eventWaitListCapacityEditText, eventDescriptionEditText;
@@ -85,6 +104,22 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
         userDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        if (selectedImageUri != null) {
+                            ImageView posterImageView = getView().findViewById(R.id.poster_image);
+                            posterImageView.setImageURI(selectedImageUri); // Set the image URI
+                            posterImageView.setTag(selectedImageUri); // Store the URI in the tag
+                            viewModel.posterImageUri = selectedImageUri; // Cache the URI
+                        }
+                    }
+                }
+        );
+
+        setupChoosePosterButton(view);
         return view;
     }
 
@@ -134,6 +169,44 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         timeButton.setOnClickListener(v -> openTimePicker());
         regDeadlineButton.setOnClickListener(v -> openRegDeadlinePicker());
     }
+//--------------------------------------IMage-----------------------------------------------------------
+
+    private void setupChoosePosterButton(View view) {
+        Button choosePosterButton = view.findViewById(R.id.choose_poster_button);
+        choosePosterButton.setOnClickListener(v -> {
+            // Create an intent to pick an image
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
+        });
+    }
+
+    private void uploadPosterImageAsBase64(Uri posterUri, OnOperationCompleteListener listener) {
+        if (posterUri == null) {
+            listener.onComplete(true); // No image to upload, continue saving other data
+            return;
+        }
+
+        try {
+            // Convert the image to Bitmap
+            Bitmap bitmap = BitmapFactory.decodeStream(requireContext().getContentResolver().openInputStream(posterUri));
+
+            // Compress the Bitmap
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream); // Compress to 50% quality
+            byte[] byteArray = outputStream.toByteArray();
+
+            // Convert to Base64
+            String base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            viewModel.posterImageBase64 = base64Image; // Save Base64 in ViewModel
+
+            listener.onComplete(true);
+        } catch (Exception e) {
+            showToast("Failed to process poster image. Please try again.");
+            listener.onComplete(false);
+        }
+    }
+
 
     //------------------------------------Time Picker----------------------------------------------------------
     private void openDatePicker() {
@@ -255,46 +328,57 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     private void processEventSave() throws WriterException {
-        // Validate all inputs
         if (!validateInputs()) {
             return;
         }
 
-        // Concatenate Date and Time for the Event
         String dateTime = selectedDate + " " + selectedTime;
 
-        // Check Dates
         if (!validateDates(dateTime, regDeadline)) {
             return;
         }
 
-        // Parse numeric fields
         int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
         Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
 
-        // Validate waitlist capacity
         if (waitListCapacityInt != null && waitListCapacityInt < capacityInt) {
             showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
             return;
-        } else if (waitListCapacityInt == null) {
-            waitListCapacityInt = 0; // Default to 0 if no value is provided
         }
 
-        // Save event to database
-        OrganizerDatabase.createEventInDatabase(
-                capacityInt,
-                dateTime,
-                eventDescriptionEditText.getText().toString(),
-                facilityAddressFinal,
-                facilityNameFinal,
-                geolocationSwitch.isChecked(),
-                eventNameEditText.getText().toString(),
-                regDeadline,
-                waitListCapacityInt,
-                userDeviceId
-        );
+        String eventId = viewModel.eventId != null ? viewModel.eventId : generateEventId();
 
-        showToast("Event saved successfully!");
+        // Upload poster image first, then save event data
+        uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
+            if (!success) {
+                saveEventButton.setEnabled(true);
+                return;
+            }
+
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("capacity", capacityInt);
+            eventData.put("date_Time", dateTime);
+            eventData.put("description", eventDescriptionEditText.getText().toString());
+            eventData.put("facilityLocation", facilityAddressFinal);
+            eventData.put("facilityName", facilityNameFinal);
+            eventData.put("isGeolocationEnabled", geolocationSwitch.isChecked());
+            eventData.put("name", eventNameEditText.getText().toString());
+            eventData.put("registrationDeadline", regDeadline);
+            eventData.put("waitListCapacity", waitListCapacityInt != null ? waitListCapacityInt : 0);
+
+            if (viewModel.posterImageBase64 != null) {
+                eventData.put("posterBase64", viewModel.posterImageBase64); // Add Base64 image
+            }
+
+            OrganizerDatabase.saveEventData(eventId, eventData, success1 -> {
+                if (success1) {
+                    showToast("Event saved successfully!");
+                } else {
+                    showToast("Failed to save event. Please try again.");
+                }
+                saveEventButton.setEnabled(true);
+            });
+        });
     }
 
 
@@ -381,6 +465,31 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    private void uploadPosterImage(Uri posterUri, String eventId, OnOperationCompleteListener listener) {
+        if (posterUri == null) {
+            listener.onComplete(true); // No image to upload, continue saving other data
+            return;
+        }
+
+        String storagePath = "posters/" + eventId + ".jpg"; // Use eventId as the file name
+        FirebaseStorage.getInstance().getReference(storagePath)
+                .putFile(posterUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                        viewModel.posterImageUrl = downloadUri.toString(); // Save URL in ViewModel
+                        listener.onComplete(true);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    showToast("Failed to upload poster image. Please try again.");
+                    listener.onComplete(false);
+                });
+    }
+
+    private String generateEventId() {
+        return FirebaseFirestore.getInstance().collection("Events").document().getId();
+    }
+
 //----------------------------------------------------- Cache------------------------------------------
 
     private void restoreCachedData() {
@@ -394,6 +503,13 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             eventWaitListCapacityEditText.setText(String.valueOf(viewModel.waitListCapacity));
         }
         geolocationSwitch.setChecked(viewModel.geolocationEnabled);
+
+        if (viewModel.posterImageUri != null) {
+            ImageView posterImageView = getView().findViewById(R.id.poster_image);
+            posterImageView.setImageURI(viewModel.posterImageUri); // Set the image URI
+            posterImageView.setTag(viewModel.posterImageUri); // Set the tag
+        }
+
     }
 
     private void saveToCache() {
@@ -406,5 +522,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 ? null : Integer.parseInt(eventCapacityEditText.getText().toString());
         viewModel.waitListCapacity = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
         viewModel.geolocationEnabled = geolocationSwitch.isChecked();
+        ImageView posterImageView = requireView().findViewById(R.id.poster_image);
+        viewModel.posterImageUri = (Uri) posterImageView.getTag(); // Save the tag holding the URI
     }
 }
