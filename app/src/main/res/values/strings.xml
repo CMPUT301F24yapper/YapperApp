@@ -4,4 +4,9 @@
     <string name="logo">Logo</string>
     <string name="name">Name:</string>
     <string name="Name_Hint">John Doe</string>
+    <string name="email">Email:</string>
+    <string name="example_domain_com">example@domain.com</string>
+    <string name="phone_number">Phone Number:</string>
+    <string name="optional">Optional</string>
+    <string name="sign_up">Sign Up</string>
 </resources>
