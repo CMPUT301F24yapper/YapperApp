@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 /**
@@ -56,22 +57,40 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 notification.getNotificationType().equals("Selection")) {
             holder.selectionButtons.setVisibility(View.VISIBLE);
 
+            // Accept Button Logic
             holder.acceptButton.setOnClickListener(v -> {
-                // Add accept logic here
-                Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
-                // Move to final list
-                notification.markAsRead();
-                notificationList.remove(position);
-                notifyItemRemoved(position);
+                String eventId = notification.getEventId(); // Ensure Notification has eventId
+                String userId = notification.getUserToId(); // Ensure Notification has userToId
+
+                OrganizerDatabase.addUserToFinalList(eventId, userId, success -> {
+                    if (success) {
+                        // Remove the notification after successful addition
+                        notification.markAsRead();
+                        notificationList.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Accepted and added to Final List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error adding to Final List", Toast.LENGTH_SHORT).show();
+                    }
+                });
             });
 
+            // Reject Button Logic
             holder.rejectButton.setOnClickListener(v -> {
-                // Add reject logic here
-                Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show();
-                // Move to cancelled list
-                notification.markAsRead();
-                notificationList.remove(position);
-                notifyItemRemoved(position);
+                String eventId = notification.getEventId(); // Ensure Notification has eventId
+                String userId = notification.getUserToId(); // Ensure Notification has userToId
+
+                OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
+                    if (success) {
+                        // Remove the notification after successful rejection
+                        notification.markAsRead();
+                        notificationList.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error adding to Cancelled List", Toast.LENGTH_SHORT).show();
+                    }
+                });
             });
         } else {
             holder.selectionButtons.setVisibility(View.GONE);
@@ -80,6 +99,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         // Dim if read
         holder.itemView.setAlpha(notification.isRead() ? 0.6f : 1.0f);
     }
+
 
     @Override
     public int getItemCount() {

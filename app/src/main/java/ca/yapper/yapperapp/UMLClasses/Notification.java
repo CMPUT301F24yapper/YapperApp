@@ -32,9 +32,16 @@ public class Notification {
     private String message;
     private String notificationType;    // Type such as "Invitation", "Rejection", etc.
     private boolean isRead;
-    private static final String channel_Id = "event_notifications";
-    private static final String channel_Name = "event_notifications";
-    private static final String channel_desc = "event_notifications";
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    private String eventId;
 
 
     /**
@@ -85,22 +92,22 @@ public class Notification {
         NotificationsDatabase.saveToDatabase(dateTimeStamp, userToId, userFromId, title, message, notificationType, isRead);
 
         /**FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> notificationData = new HashMap<>();
-        notificationData.put("dateTimeStamp", dateTimeStamp);
-        notificationData.put("userToId", userToId);
-        notificationData.put("userFromId", userFromId);
-        notificationData.put("title", title);
-        notificationData.put("message", message);
-        notificationData.put("notificationType", notificationType);
-        notificationData.put("isRead", isRead);
+         Map<String, Object> notificationData = new HashMap<>();
+         notificationData.put("dateTimeStamp", dateTimeStamp);
+         notificationData.put("userToId", userToId);
+         notificationData.put("userFromId", userFromId);
+         notificationData.put("title", title);
+         notificationData.put("message", message);
+         notificationData.put("notificationType", notificationType);
+         notificationData.put("isRead", isRead);
 
-        db.collection("Notifications")
-                .add(notificationData)
-                .addOnSuccessListener(documentReference -> {
-                    setId(documentReference.getId()); // Set the document ID
-                    Log.d("Notification", "Notification added with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e)); **/
+         db.collection("Notifications")
+         .add(notificationData)
+         .addOnSuccessListener(documentReference -> {
+         setId(documentReference.getId()); // Set the document ID
+         Log.d("Notification", "Notification added with ID: " + documentReference.getId());
+         })
+         .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e)); **/
     }
 
     /**
