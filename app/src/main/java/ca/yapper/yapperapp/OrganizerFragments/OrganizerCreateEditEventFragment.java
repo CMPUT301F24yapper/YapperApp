@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -263,6 +264,13 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
+                regDeadline = event.getRegistrationDeadline();
+                if (!TextUtils.isEmpty(regDeadline)) {
+                    regDeadlineTextView.setText(regDeadline);
+                } else {
+                    regDeadlineTextView.setText(""); // Clear the field if no deadline
+                }
+
                 eventNameEditText.setText(event.getName());
                 regDeadlineTextView.setText(event.getRegistrationDeadline());
                 eventCapacityEditText.setText(String.valueOf(event.getCapacity()));
@@ -274,16 +282,31 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 eventDescriptionEditText.setText(event.getDescription());
                 geolocationSwitch.setChecked(event.isGeolocationEnabled());
 
+
+
                 // Parse the concatenated dateTime string
                 String dateTime = event.getDate_Time();
                 if (dateTime != null && dateTime.contains(" ")) {
-                    String[] dateTimeParts = dateTime.split(" ");
-                    selectedDate = dateTimeParts[0]; // Extract date
-                    selectedTime = dateTimeParts[1]; // Extract time
+                    try {
+                        String[] dateTimeParts = dateTime.split(" ");
+                        selectedDate = dateTimeParts[0]; // Extract date
+                        selectedTime = dateTimeParts[1]; // Extract time
 
-                    // Update the UI with the parsed values
-                    dateTextView.setText(selectedDate);
-                    timeTextView.setText(selectedTime);
+                        dateTextView.setText(selectedDate); // Populate UI
+                        timeTextView.setText(selectedTime); // Populate UI
+                    } catch (Exception e) {
+                        selectedDate = null;
+                        selectedTime = null;
+                        dateTextView.setText(""); // Clear field
+                        timeTextView.setText(""); // Clear field
+                        Log.e("EventDetailsFragment", "Failed to parse date and time: " + e.getMessage());
+                    }
+                } else {
+                    Log.w("EventDetailsFragment", "dateTime is null or not formatted correctly.");
+                    selectedDate = null;
+                    selectedTime = null;
+                    dateTextView.setText(""); // Clear field
+                    timeTextView.setText(""); // Clear field
                 }
 
                 // Load the poster image
