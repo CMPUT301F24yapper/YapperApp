@@ -5,19 +5,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -32,6 +35,10 @@ public class FinalListFragment extends Fragment {
     private List<User> finalList;
     //private FirebaseFirestore db;
     private String eventId;
+
+    private LinearLayout emptyStateLayout;
+    private ImageView emptyImageView;
+    private TextView emptyTextView;
 
 
     /**
@@ -55,6 +62,11 @@ public class FinalListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         //db = FirebaseFirestore.getInstance();
+
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -81,13 +93,14 @@ public class FinalListFragment extends Fragment {
 
         finalList.clear();
         adapter.notifyDataSetChanged();
+        toggleEmptyState();
 
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "finalList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
-                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                    UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;
@@ -95,6 +108,7 @@ public class FinalListFragment extends Fragment {
                             // Add the User to the cancelledList and notify the adapter
                             finalList.add(user);
                             adapter.notifyDataSetChanged();
+                            toggleEmptyState();
                         }
 
                         @Override
@@ -115,6 +129,15 @@ public class FinalListFragment extends Fragment {
             }
         });
     }
+        private void toggleEmptyState() {
+            if (finalList.isEmpty()) {
+                emptyStateLayout.setVisibility(View.VISIBLE);
+                recyclerView.setVisibility(View.GONE);
+            } else {
+                emptyStateLayout.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+        }
         /**
         db.collection("Events").document(eventId)
                 .collection("finalList")

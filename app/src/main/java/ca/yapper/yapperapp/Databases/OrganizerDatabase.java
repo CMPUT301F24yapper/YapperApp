@@ -1,17 +1,16 @@
 package ca.yapper.yapperapp.Databases;
 
-import android.graphics.Color;
-import android.widget.Toast;
+import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.WriteBatch;
-import com.google.zxing.WriterException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +22,7 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerDatabase {
 
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    static int eventCapacity;
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
@@ -36,8 +34,18 @@ public class OrganizerDatabase {
         void onError(Exception e);
     }
 
+    public interface OnWaitListCountLoadedListener {
+        void onCountLoaded(int waitListCount);
+        void onError(String errorMessage);
+    }
+
     public interface OnOperationCompleteListener {
         void onComplete(boolean success);
+    }
+
+    public interface OnEventCapLoadedListener {
+        void onCapacityLoaded(int capacity);
+        void onError(String errorMessage);
     }
 
     /**
@@ -61,7 +69,19 @@ public class OrganizerDatabase {
         void onError(String error);
     }
 
+    public interface OnEventsLoadedListener {
+        void onEventsLoaded(List<String> eventIds);
+        void onEventsLoadError(String error);
+    }
+
+    public interface OnFacilityDataLoadedListener {
+        void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
+        void onError(String error);                                        // When there's an error
+    }
+
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
         db.collection("Users").document(deviceId).get()
@@ -78,9 +98,10 @@ public class OrganizerDatabase {
         return tcs.getTask();
     }
 
-    public static void loadEventFromDatabase(String hashData, OnEventLoadedListener listener) {
+    public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Events").document(hashData).get()
+
+        db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
@@ -92,19 +113,32 @@ public class OrganizerDatabase {
                                     documentSnapshot.getString("facilityName"),
                                     documentSnapshot.getBoolean("isGeolocationEnabled"),
                                     documentSnapshot.getString("name"),
+                                    documentSnapshot.getString("organizerId"),
                                     documentSnapshot.getString("registrationDeadline"),
-                                    documentSnapshot.getLong("waitListCapacity").intValue(),
+                                    documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : null,
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
+
+                            // Check if posterBase64 exists
+                            String posterBase64 = documentSnapshot.getString("posterBase64");
+                            if (posterBase64 != null) {
+                                event.setPosterBase64(posterBase64);
+                            }
+
                             listener.onEventLoaded(event);
-                        } catch (WriterException e) {
-                            listener.onEventLoadError("Error creating event");
+                        } catch (Exception e) {
+                            listener.onEventLoadError("Error creating event: " + e.getMessage());
                         }
+                    } else {
+                        listener.onEventLoadError("Event not found.");
                     }
-                });
+                })
+                .addOnFailureListener(e -> listener.onEventLoadError("Error loading event: " + e.getMessage()));
     }
 
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
@@ -123,6 +157,8 @@ public class OrganizerDatabase {
     }
 
     public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         ArrayList<String> userIdsList = new ArrayList<>();
 
         db.collection("Events").document(eventId).collection(subcollectionName)
@@ -183,19 +219,22 @@ public class OrganizerDatabase {
                 });**/
     }
 
-    public static void loadEventCapacity(String eventId) {
+    public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
-                    }
+                        int capacity = documentSnapshot.getLong("capacity").intValue();
+                        Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
+                        listener.onCapacityLoaded(capacity);
+                            }
                     else {
-                        // implement error logic
+                        Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId);
+                        listener.onCapacityLoaded(0); // Default if document does not exist
                     }
                 });
     }
-
 
     /**
      * Creates and saves a new event in Firestore with the provided details.
@@ -212,42 +251,80 @@ public class OrganizerDatabase {
      * @param organizerId The ID of the organizer creating the event.
      * @return The created Event instance.
      */
-    public static Event createEventInDatabase(int capacity, String dateTime, String description,
-                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled, String name,
-                                              String registrationDeadline, int waitListCapacity, String organizerId) {
+
+    public static void createEventInDatabase(int capacity, String dateTime, String description,
+                                             String facilityLocation, String facilityName, boolean isGeolocationEnabled,
+                                             String name, String registrationDeadline, Integer waitListCapacity,
+                                             String organizerId, String posterBase64, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         try {
-            Event event = new Event(capacity, dateTime, description, facilityLocation,
-                    facilityName, isGeolocationEnabled, name, registrationDeadline, waitListCapacity,
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            // Create the Event object
+            Event event = new Event(
+                    capacity, dateTime, description, facilityLocation, facilityName,
+                    isGeolocationEnabled, name, organizerId, registrationDeadline, waitListCapacity,
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+            );
 
+            // Generate the eventId using the QR code hash
             String eventId = Integer.toString(event.getQRCode().getHashData());
+
+            // can delete / update later (add event to user's missed out events list)
+            addEventToAllUsersMissedOut(eventId);
+
+            // Build the event data map
             Map<String, Object> eventData = new HashMap<>();
-            eventData.put("capacity", event.getCapacity());
-            eventData.put("date_Time", event.getDate_Time());
-            eventData.put("description", event.getDescription());
-            eventData.put("facilityLocation", event.getFacilityLocation());
-            eventData.put("facilityName", event.getFacilityName());
-            eventData.put("isGeolocationEnabled", event.isGeolocationEnabled());
-            eventData.put("name", event.getName());
-            eventData.put("qrCode_hashData", event.getQRCode().getHashData());
-            eventData.put("registrationDeadline", event.getRegistrationDeadline());
-            eventData.put("waitListCapacity", event.getWaitListCapacity());
+            eventData.put("capacity", capacity);
+            eventData.put("date_Time", dateTime);
+            eventData.put("description", description);
+            eventData.put("facilityLocation", facilityLocation);
+            eventData.put("facilityName", facilityName);
+            eventData.put("isGeolocationEnabled", isGeolocationEnabled);
             eventData.put("organizerId", organizerId);
+            eventData.put("name", name);
+            eventData.put("qrCode_hashData", event.getQRCode().getHashData());
+            eventData.put("registrationDeadline", registrationDeadline);
+            eventData.put("waitListCapacity", waitListCapacity);
 
-            // Initialize the subcollections with placeholder data
-            initializeSubcollections(db, eventId);
+            if (posterBase64 != null) {
+                eventData.put("posterBase64", posterBase64); // Add poster image if present
+            }
 
-            db.collection("Events").document(eventId).set(eventData);
-
-            Map<String, Object> eventRef = new HashMap<>();
-            eventRef.put("timestamp", com.google.firebase.Timestamp.now());
-            db.collection("Users").document(organizerId).collection("createdEvents").document(eventId).set(eventRef);
-
-            return event;
-        } catch (WriterException e) {
-            return null;
+            // Save the event to Firestore
+            db.collection("Events").document(eventId).set(eventData)
+                    .addOnSuccessListener(unused -> {
+                        // Add a reference to the organizer's created events
+                        Map<String, Object> eventRef = new HashMap<>();
+                        eventRef.put("timestamp", FieldValue.serverTimestamp());
+                        db.collection("Users").document(organizerId).collection("createdEvents")
+                                .document(eventId).set(eventRef)
+                                .addOnSuccessListener(unused1 -> listener.onComplete(true))
+                                .addOnFailureListener(e -> listener.onComplete(false));
+                    })
+                    .addOnFailureListener(e -> listener.onComplete(false));
+        } catch (Exception e) {
+            listener.onComplete(false);
         }
+    }
+
+    private static Task<Void> addEventToAllUsersMissedOut(String eventId) {
+        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+        CollectionReference usersRef = db.collection("Users");
+
+        return usersRef.get().continueWithTask(task -> {
+            if (task.isSuccessful()) {
+                List<Task<Void>> tasks = new ArrayList<>();
+                for (DocumentSnapshot userDoc : task.getResult().getDocuments()) {
+                    String userId = userDoc.getId();
+                    Map<String, Object> eventData = new HashMap<>();
+                    eventData.put("eventId", eventId);
+                    tasks.add(usersRef.document(userId).collection("missedOutEvents").document(eventId).set(eventData));
+                }
+                return Tasks.whenAll(tasks);
+            } else {
+                throw task.getException();
+            }
+        });
     }
 
     /**
@@ -267,7 +344,6 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
-
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -315,6 +391,15 @@ public class OrganizerDatabase {
                 .addOnFailureListener(listener::onError);
     }
 
+    public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Events").document(eventId)
+                .collection("waitingList").get()
+                .addOnSuccessListener(snapshot -> {
+                    listener.onCountLoaded(snapshot.size());
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving wait list count data: " + e.getMessage()));    }
+
     public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -339,19 +424,15 @@ public class OrganizerDatabase {
                 });
     }
 
-    // Define an interface for callback
-    public interface OnEventsLoadedListener {
-        void onEventsLoaded(List<String> eventIds);
-        void onEventsLoadError(String error);
-    }
-
     public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         // Retrieve the facilityName and location fields
                         String facilityName = document.getString("facilityName");
-                        String location = document.getString("location");
+                        String location = document.getString("facilityAddress");
 
                         // Check if the data is available
                         if (facilityName != null && location != null) {
@@ -366,10 +447,11 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
     }
 
-    // Define an interface to handle the result when the facility data is loaded
-    public interface OnFacilityDataLoadedListener {
-        void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
-        void onError(String error);                                        // When there's an error
-    }
+    public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+        db.collection("Events").document(eventId).set(eventData)
+                .addOnSuccessListener(unused -> listener.onComplete(true))
+                .addOnFailureListener(e -> listener.onComplete(false));
+    }
 }

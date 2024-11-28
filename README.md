@@ -1,7 +1,7 @@
 # Yapper App
 # Project Documentation
 ## 1. Addressing Feedback:
-Our TA feedback was to add more details to our User Stroies & break them down into more actionable tasks in the Backlog, which we completed (see Backlog)...
+Our TA feedback was to add more details to our User Stories & break them down into more actionable tasks in the Backlog, which we completed (see Backlog)...
 
 ## 2. Code Base of Prototype:
 Look to source code in Repo.

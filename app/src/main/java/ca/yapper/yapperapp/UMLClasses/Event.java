@@ -1,11 +1,7 @@
 package ca.yapper.yapperapp.UMLClasses;
 
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.WriterException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * The Event class represents an event created by an organizer.
@@ -22,35 +18,38 @@ public class Event {
     private String facilityName;
     private boolean isGeolocationEnabled;
     private String name;
+    private String organizerId;
     private qrCode QRCode;
     private String registrationDeadline;
-    private int waitListCapacity;
+    private Integer waitListCapacity;
     private ArrayList<String> cancelledList;
     private ArrayList<String> finalList;
     private ArrayList<String> selectedList;
     private ArrayList<String> waitingList;
+    private String posterBase64;
 
 
     /**
      * Constructs a new Event with the specified parameters.
      *
-     * @param capacity Maximum number of attendees.
-     * @param date_Time The date and time of the event.
-     * @param description Event description.
-     * @param facilityLocation The location of the event.
-     * @param facilityName The name of the facility.
+     * @param capacity             Maximum number of attendees.
+     * @param date_Time            The date and time of the event.
+     * @param description          Event description.
+     * @param facilityLocation     The location of the event.
+     * @param facilityName         The name of the facility.
      * @param isGeolocationEnabled True if geolocation is enabled for the event.
-     * @param name The name of the event.
+     * @param name                 The name of the event.
      * @param registrationDeadline Registration deadline for the event.
-     * @param waitListCapacity Capacity of the waiting list.
-     * @param cancelledList List of users who cancelled participation.
-     * @param finalList Final list of participants.
-     * @param selectedList List of selected participants.
-     * @param waitingList Waiting list of potential participants.
+     * @param waitListCapacity     Capacity of the waiting list.
+     * @param cancelledList        List of users who cancelled participation.
+     * @param finalList            Final list of participants.
+     * @param selectedList         List of selected participants.
+     * @param waitingList          Waiting list of potential participants.
+     * @param organizerId
      * @throws WriterException If there is an error generating the QR code.
      */
     public Event(int capacity, String date_Time, String description, String facilityLocation, String facilityName,
-                 boolean isGeolocationEnabled, String name, String registrationDeadline, int waitListCapacity,
+                 boolean isGeolocationEnabled, String name, String organizerId, String registrationDeadline, Integer waitListCapacity,
                  ArrayList<String> cancelledList, ArrayList<String> finalList, ArrayList<String> selectedList,
                  ArrayList<String> waitingList) throws WriterException {
         this.capacity = capacity;
@@ -60,6 +59,7 @@ public class Event {
         this.facilityName = facilityName;
         this.isGeolocationEnabled = isGeolocationEnabled;
         this.name = name;
+        this.organizerId = organizerId;
         this.QRCode = new qrCode(this.name);
         this.registrationDeadline = registrationDeadline;
         this.waitListCapacity = waitListCapacity;
@@ -227,6 +227,14 @@ public class Event {
 
     public void setGeolocationEnabled(boolean geolocationEnabled) {isGeolocationEnabled = geolocationEnabled;}
 
+    public String getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
+    }
+
     public qrCode getQRCode() {
         return QRCode;
     }
@@ -249,11 +257,11 @@ public class Event {
 
     public void setRegistrationDeadline(String registrationDeadline) {this.registrationDeadline = registrationDeadline;}
 
-    public int getWaitListCapacity() {
+    public Integer getWaitListCapacity() {
         return waitListCapacity;
     }
 
-    public void setWaitListCapacity(int waitListCapacity) {this.waitListCapacity = waitListCapacity;}
+    public void setWaitListCapacity(Integer waitListCapacity) {this.waitListCapacity = waitListCapacity;}
 
     public ArrayList<String> getCancelledList() {
         return cancelledList;
@@ -281,5 +289,13 @@ public class Event {
 
     public void setWaitingList(ArrayList<String> waitingList) {
         this.waitingList = waitingList;
+    }
+
+    public void setPosterBase64(String posterBase64) {
+        this.posterBase64 = posterBase64;
+    }
+
+    public String getPosterBase64() {
+        return posterBase64;
     }
 }

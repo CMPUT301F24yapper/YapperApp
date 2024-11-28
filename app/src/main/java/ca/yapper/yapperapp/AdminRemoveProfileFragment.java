@@ -9,8 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
+import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class AdminRemoveProfileFragment extends Fragment {
@@ -42,7 +46,7 @@ public class AdminRemoveProfileFragment extends Fragment {
     }
 
     private void loadUserDetails() {
-        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+        UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
             public void onUserLoaded(User user) {
                 profileName.setText(user.getName());
@@ -54,10 +58,20 @@ public class AdminRemoveProfileFragment extends Fragment {
     }
 
     private void setupButtons() {
-        removeProfileButton.setOnClickListener(v -> {
-            AdminDatabase.removeUser(userId).addOnSuccessListener(aVoid -> {
-                getParentFragmentManager().popBackStack();
-            });
+        removeProfileButton.setOnClickListener(v -> handleUserDeletion());
+    }
+
+    private void handleUserDeletion() {
+        AdminDatabase.removeUser(userId).addOnSuccessListener(aVoid -> {
+            // Pop back stack first
+            FragmentManager fm = getParentFragmentManager();
+            fm.popBackStack();
+
+            // Reload the admin search fragment
+            Fragment searchFragment = new AdminSearchFragment();
+            fm.beginTransaction()
+                    .replace(R.id.fragment_container, searchFragment)
+                    .commit();
         });
     }
 }

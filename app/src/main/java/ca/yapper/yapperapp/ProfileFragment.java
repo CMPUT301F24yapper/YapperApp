@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,6 +43,7 @@ import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class ProfileFragment extends Fragment {
@@ -60,6 +63,9 @@ public class ProfileFragment extends Fragment {
     private TextView removePicture;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private String userDeviceId;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Map<String, Runnable> pendingUpdates = new HashMap<>();
+    private boolean isUpdatingField = false;
     private Bitmap generatedProfilePicture;
 
     @Nullable
@@ -176,10 +182,11 @@ public class ProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
-        EntrantDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
+        UserDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
             public void onUserLoaded(User user) {
                 if (user != null) {
+                    isUpdatingField = true;
                     nameEditText.setText(user.getName());
                     emailEditText.setText(user.getEmail());
                     Log.e("ProfileFragment", "On User loaded: " + user.getEmail());
@@ -195,6 +202,8 @@ public class ProfileFragment extends Fragment {
 
                     // Load the profile image
                     loadProfileImage(user);
+
+                    isUpdatingField = false;
                 }
             }
 
@@ -240,13 +249,15 @@ public class ProfileFragment extends Fragment {
         OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
             @Override
             public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
-                facilityEditText.setText(facilityName);
-                addressEditText.setText(facilityAddress);
+                facilityEditText.setText(facilityName != null ? facilityName : "Optional");
+                addressEditText.setText(facilityAddress != null ? facilityAddress : "Optional");
+                Log.d("ProfileFragment", "Facility data loaded: " + facilityName + ", " + facilityAddress);
             }
 
             @Override
             public void onError(String error) {
                 // Handle error if needed
+                Log.e("ProfileFragment", "Error loading facility data: " + error);
             }
         });
     }
@@ -323,10 +334,26 @@ public class ProfileFragment extends Fragment {
 
     private TextWatcher createTextWatcher(final String field) {
         return new TextWatcher() {
+            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
             public void afterTextChanged(Editable s) {
-                updateField(field, s.toString());
+                // updateField(field, s.toString());
+                if (isUpdatingField) return;  // Prevent feedback loops during updates
+
+                String newValue = s.toString();
+
+                // Remove any pending update for this field
+                if (pendingUpdates.containsKey(field)) {
+                    handler.removeCallbacks(pendingUpdates.get(field));
+                }
+
+                // Add a new update with a delay (e.g., 500ms)
+                Runnable updateTask = () -> updateField(field, newValue);
+                pendingUpdates.put(field, updateTask);
+                handler.postDelayed(updateTask, 500); // Delay of 500ms
             }
         };
     }
@@ -341,15 +368,16 @@ public class ProfileFragment extends Fragment {
     }**/
 
     private void updateField(String field, Object value) {
-        EntrantDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
+        UserDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
             @Override
             public void onFieldUpdated(Object value) {
-                Toast.makeText(getContext(), field + " updated successfully", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(getContext(), field + " updated successfully", Toast.LENGTH_SHORT).show();
+                Log.d("ProfileFragment", "Field updated successfully.");
             }
 
             @Override
             public void onError(String error) {
-                Toast.makeText(getContext(), "Error updating " + field, Toast.LENGTH_SHORT).show();
+                Log.d("ProfileFragment", "Field updated successfully.");
             }
         });
     }

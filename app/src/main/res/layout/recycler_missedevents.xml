@@ -3,14 +3,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- This contains the recyclerView for the registered events list and EventAdapter file to bind the recycler view with the event list. -->
-
+    <!-- RecyclerView for the registered events list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
 
+    <!-- Wrapper to center empty state views -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
 
+        <!-- ImageView to show an illustration when the RecyclerView is empty -->
+        <ImageView
+            android:id="@+id/emptyImageView"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_no_events"
+            android:contentDescription="No events illustration" />
 
+        <!-- TextView to show a message when the RecyclerView is empty -->
+        <TextView
+            android:id="@+id/emptyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="You have not missed an event"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
 </FrameLayout>

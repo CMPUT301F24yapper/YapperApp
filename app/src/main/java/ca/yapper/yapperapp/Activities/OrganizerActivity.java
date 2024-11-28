@@ -3,24 +3,18 @@ package ca.yapper.yapperapp.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEventFragment;
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
@@ -45,7 +39,8 @@ public class OrganizerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         setContentView(R.layout.organizer_activity_layout);
 
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -57,6 +52,7 @@ public class OrganizerActivity extends AppCompatActivity {
                     .replace(R.id.fragment_container, new OrganizerHomeFragment())
                     .commit();
         }
+
     }
 
     /**
@@ -74,7 +70,7 @@ public class OrganizerActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_organizer_home) {
                 selectedFragment = new OrganizerHomeFragment();
             } else if (item.getItemId() == R.id.nav_organizer_createevent) {
-                selectedFragment = new OrganizerCreateEventFragment();
+                selectedFragment = new OrganizerCreateEditEventFragment();
             } else if (item.getItemId() == R.id.nav_organizer_profile) {
                 selectedFragment = new ProfileFragment();
             }

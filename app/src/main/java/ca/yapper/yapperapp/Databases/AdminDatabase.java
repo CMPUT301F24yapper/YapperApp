@@ -4,16 +4,16 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
+import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
     public static Task<Map<String, Long>> getAdminStats() {
@@ -82,8 +82,9 @@ public class AdminDatabase {
                             String dateTime = doc.getString("date_Time");
                             String description = doc.getString("description");
                             String facilityLocation = doc.getString("facilityLocation");
-                            String facilityName = doc.getString("facilityName");
                             boolean isGeolocationEnabled = doc.getBoolean("isGeolocationEnabled");
+                            String facilityName = doc.getString("facilityName");
+                            String organizerId = doc.getString("organizerId");
                             String registrationDeadline = doc.getString("registrationDeadline");
                             int capacity = doc.getLong("capacity").intValue();
                             int waitListCapacity = doc.getLong("waitListCapacity").intValue();
@@ -97,6 +98,7 @@ public class AdminDatabase {
                                         facilityName,
                                         isGeolocationEnabled,
                                         eventName,
+                                        organizerId,
                                         registrationDeadline,
                                         waitListCapacity,
                                         new ArrayList<>(),
@@ -153,16 +155,127 @@ public class AdminDatabase {
     }
 
     public static Task<Void> removeEvent(String eventId) {
-        return FirebaseFirestore.getInstance()
-                .collection("Events")
-                .document(eventId)
-                .delete();
+        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+
+        // Delete the event document itself
+        batch.delete(FirebaseFirestore.getInstance().collection("Events").document(eventId));
+
+        // First get all users to check their collections
+        return FirebaseFirestore.getInstance().collection("Users").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot userDoc : task.getResult()) {
+                            // Remove from createdEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("createdEvents")
+                                    .document(eventId));
+
+                            // Remove from joinedEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("joinedEvents")
+                                    .document(eventId));
+
+                            // Remove from registeredEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("registeredEvents")
+                                    .document(eventId));
+
+                            // Remove from missedOutEvents
+                            batch.delete(userDoc.getReference()
+                                    .collection("missedOutEvents")
+                                    .document(eventId));
+                        }
+                        return batch.commit();
+                    }
+                    throw new Exception("Failed to get users");
+                });
     }
 
     public static Task<Void> removeUser(String userId) {
+        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+
+        // Delete the user document itself
+        batch.delete(FirebaseFirestore.getInstance().collection("Users").document(userId));
+
+        // Get all events to clean up participant lists
+        return FirebaseFirestore.getInstance().collection("Events").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            // Remove from waitingList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("waitingList")
+                                    .document(userId));
+
+                            // Remove from selectedList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("selectedList")
+                                    .document(userId));
+
+                            // Remove from finalList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("finalList")
+                                    .document(userId));
+
+                            // Remove from cancelledList
+                            batch.delete(eventDoc.getReference()
+                                    .collection("cancelledList")
+                                    .document(userId));
+                        }
+                    }
+
+                    // Delete user's notifications
+                    return FirebaseFirestore.getInstance().collection("Notifications")
+                            .whereEqualTo("userToId", userId)
+                            .get();
+                })
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot notifDoc : task.getResult()) {
+                            batch.delete(notifDoc.getReference());
+                        }
+                    }
+                    return batch.commit();
+                });
+    }
+
+    public static Task<List<ImageData>> getAllImages() {
+        TaskCompletionSource<List<ImageData>> tcs = new TaskCompletionSource<>();
+        List<ImageData> allImages = new ArrayList<>();
+
+        FirebaseFirestore.getInstance().collection("Events").get()
+                .addOnSuccessListener(eventsSnapshot -> {
+                    for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
+                        String posterBase64 = doc.getString("posterBase64");
+                        if (posterBase64 != null && !posterBase64.isEmpty()) {
+                            allImages.add(new ImageData(posterBase64, doc.getId(), "event", "posterBase64"));
+                        }
+                    }
+
+                    FirebaseFirestore.getInstance().collection("Users").get()
+                            .addOnSuccessListener(usersSnapshot -> {
+                                for (DocumentSnapshot doc : usersSnapshot.getDocuments()) {
+                                    String profileImage = doc.getString("profileImage");
+                                    if (profileImage != null && !profileImage.isEmpty()) {
+                                        allImages.add(new ImageData(profileImage, doc.getId(), "user", "profileImage"));
+                                    }
+                                }
+                                tcs.setResult(allImages);
+                            })
+                            .addOnFailureListener(tcs::setException);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
+
+    public static Task<Void> deleteImage(String documentId, String documentType, String fieldName) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(fieldName, null);
+
         return FirebaseFirestore.getInstance()
-                .collection("Users")
-                .document(userId)
-                .delete();
+                .collection(documentType.equals("event") ? "Events" : "Users")
+                .document(documentId)
+                .update(updates);
     }
 }

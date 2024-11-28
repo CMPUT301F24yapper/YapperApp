@@ -60,6 +60,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 // Add accept logic here
                 Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
                 // Move to final list
+                notification.markAsRead();
                 notificationList.remove(position);
                 notifyItemRemoved(position);
             });
@@ -68,6 +69,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 // Add reject logic here
                 Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show();
                 // Move to cancelled list
+                notification.markAsRead();
                 notificationList.remove(position);
                 notifyItemRemoved(position);
             });
@@ -81,8 +83,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     @Override
     public int getItemCount() {
-        return notificationList.size();
+        return notificationList == null ? 0 : notificationList.size();
     }
+
 
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView eventName, message, date;

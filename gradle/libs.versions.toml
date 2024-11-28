@@ -23,6 +23,7 @@ playServicesBase = "18.5.0"
 xjunitJupiterEngine = "5.0.1"
 zxingAndroidEmbedded = "4.3.0"
 junitJupiter = "5.8.1"
+playServicesLocation = "21.3.0"
 
 [libraries]
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
@@ -34,6 +35,7 @@ espresso-core-v351 = { module = "androidx.test.espresso:espresso-core", version.
 espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoCoreVersion" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 google-firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -61,7 +63,7 @@ test-core = { module = "androidx.test:core", version.ref = "coreVersion" }
 xjunit-jupiter-engine = { module = "org junit jupiter: junit-jupiter-engine", version.ref = "xjunitJupiterEngine" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

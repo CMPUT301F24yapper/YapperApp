@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.EventsAdapter;
 import ca.yapper.yapperapp.R;
@@ -36,6 +39,9 @@ public class MissedOutFragment extends Fragment {
     private List<Event> eventList;
     private FirebaseFirestore db;
     private String userDeviceId;
+
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
 
 
     /**
@@ -58,7 +64,10 @@ public class MissedOutFragment extends Fragment {
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
-        db = FirebaseFirestore.getInstance();
+        // db = FirebaseFirestore.getInstance();
+
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
 
         loadEventsFromFirebaseDebug();
 
@@ -70,7 +79,7 @@ public class MissedOutFragment extends Fragment {
      * Loads the user's missed events from the "missedOutEvents" subcollection in Firestore.
      * Updates the RecyclerView adapter with the retrieved events.
      */
-    private void loadEventsFromFirebase() {
+    /** private void loadEventsFromFirebase() {
         if (userDeviceId == null) {
             Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
             return;
@@ -114,21 +123,60 @@ public class MissedOutFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
+    }**/
 
 
     private void loadEventsFromFirebaseDebug() {
-        db.collection("Events")
+        EntrantDatabase.loadEventsList(userDeviceId, EntrantDatabase.EventListType.MISSED, new EntrantDatabase.OnEventsLoadedListener() {
+                    @Override
+                    public void onEventsLoaded(List<Event> events) {
+                        if (getContext() == null) return;
+                        eventList.clear();
+                        eventList.addAll(events);
+                        adapter.notifyDataSetChanged();
+                        // Hide empty state views and show the RecyclerView
+                        if (eventList.isEmpty()) {
+                            recyclerView.setVisibility(View.GONE);
+                            emptyTextView.setVisibility(View.VISIBLE);
+                            emptyImageView.setVisibility(View.VISIBLE);
+                        } else {
+                            recyclerView.setVisibility(View.VISIBLE);
+                            emptyTextView.setVisibility(View.GONE);
+                            emptyImageView.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        if (getContext() == null) return;
+                        Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            /**db.collection("Events")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     eventList.clear();
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        // Show empty state views
+                        recyclerView.setVisibility(View.GONE);
+                        emptyTextView.setVisibility(View.VISIBLE);
+                        emptyImageView.setVisibility(View.VISIBLE);
                         return;
                     }
 
+                    // Hide empty state views and show the RecyclerView
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyTextView.setVisibility(View.GONE);
+                    emptyImageView.setVisibility(View.GONE);
+
+
+                    // PREVIOUS CODE
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    //*********************************
                     for (DocumentSnapshot document : queryDocumentSnapshots) {
                         String eventId = document.getId();
 
@@ -155,5 +203,6 @@ public class MissedOutFragment extends Fragment {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }**/
     }
 }

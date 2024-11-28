@@ -243,8 +243,7 @@
                     android:layout_weight="2"
                     android:hint="Optional"
                     android:layout_marginStart="10dp"
-
-                    android:inputType="phone"
+                    android:inputType="textPersonName"
                     android:background="@android:color/transparent" />
             </LinearLayout>
 
@@ -272,8 +271,7 @@
                     android:layout_weight="2"
                     android:hint="Optional"
                     android:layout_marginStart="10dp"
-
-                    android:inputType="phone"
+                    android:inputType="textPersonName"
                     android:background="@android:color/transparent" />
             </LinearLayout>
 

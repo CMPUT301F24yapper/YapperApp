@@ -35,6 +35,7 @@ android {
 dependencies {
     implementation(libs.glide)
     implementation(libs.espresso.core)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.ext.junit)
     androidTestImplementation(libs.ext.junit)
@@ -55,6 +56,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+
+    implementation(libs.firebase.storage)
 
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)

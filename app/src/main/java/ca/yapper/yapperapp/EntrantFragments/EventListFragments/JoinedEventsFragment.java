@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +27,9 @@ public class JoinedEventsFragment extends Fragment {
     private List<Event> eventList;
     private String userDeviceId;
 
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -36,6 +41,10 @@ public class JoinedEventsFragment extends Fragment {
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
+
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+
 
         loadEvents();
 
@@ -50,6 +59,16 @@ public class JoinedEventsFragment extends Fragment {
                 eventList.clear();
                 eventList.addAll(events);
                 adapter.notifyDataSetChanged();
+
+                if (eventList.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyTextView.setVisibility(View.VISIBLE);
+                    emptyImageView.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyTextView.setVisibility(View.GONE);
+                    emptyImageView.setVisibility(View.GONE);
+                }
             }
 
             @Override

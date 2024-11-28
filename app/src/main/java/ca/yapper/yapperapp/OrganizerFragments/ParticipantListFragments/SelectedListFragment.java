@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,19 +16,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
@@ -41,10 +40,14 @@ public class SelectedListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> selectedList;
-    //private FirebaseFirestore db;
     private String eventId;
     private Button redrawButton;
     private int eventCapacity;
+
+    private LinearLayout emptyStateLayout;
+    private ImageView emptyImageView;
+    private TextView emptyTextView;
+
 
 
     /**
@@ -68,7 +71,10 @@ public class SelectedListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         redrawButton = view.findViewById(R.id.button_redraw);
 
-        //db = FirebaseFirestore.getInstance();
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -85,13 +91,16 @@ public class SelectedListFragment extends Fragment {
      * Loads the capacity of the event from Firestore, setting the maximum number of selected participants.
      */
     private void loadEventCapacity() {
-        OrganizerDatabase.loadEventCapacity(eventId);
-        /**db.collection("Events").document(eventId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
-                    }
-                }); **/
+        OrganizerDatabase.loadEventCapacity(eventId, new OrganizerDatabase.OnEventCapLoadedListener() {
+            @Override
+            public void onCapacityLoaded(int capacity) {
+                eventCapacity = capacity;
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), "Error loading capacity: " + errorMessage, Toast.LENGTH_SHORT).show();    }
+        });
     }
 
 
@@ -107,9 +116,15 @@ public class SelectedListFragment extends Fragment {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "selectedList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                if (userIdsList.isEmpty()) {
+                    showEmptyState(true);
+                    return;
+                }
+
+                showEmptyState(false);
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
-                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                    UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;
@@ -136,27 +151,15 @@ public class SelectedListFragment extends Fragment {
                 }
             }
         });
-
-        /** db.collection("Events").document(eventId)
-                .collection("selectedList")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-                        String userId = document.getId();
-                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
-                            @Override
-                            public void onUserLoaded(User user) {
-                                if (getContext() == null) return;
-                                selectedList.add(user);
-                                adapter.notifyDataSetChanged();
-                            }
-                            @Override
-                            public void onUserLoadError(String error) {
-                                Log.e("SelectedList", "Error loading user: " + error);
-                            }
-                        });
-                    }
-                }); **/
+    }
+    private void showEmptyState(boolean isEmpty) {
+        if (isEmpty) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
 
@@ -173,6 +176,7 @@ public class SelectedListFragment extends Fragment {
      * based on the event's capacity. Updates the UI with newly selected participants.
      */
     private void redrawApplicant() {
+        loadEventCapacity();  // update eventCapacity
         if (selectedList.isEmpty()) {
             Toast.makeText(getContext(), "No users in selected list", Toast.LENGTH_SHORT).show();
             return;
@@ -181,6 +185,9 @@ public class SelectedListFragment extends Fragment {
         if (selectedList.size() < eventCapacity) {
             drawFromWaitingList();
             return;
+        }
+        else {
+            Toast.makeText(getContext(), "You have already drawn the maximum number of attendees for your event.", Toast.LENGTH_SHORT).show();
         }
 
         Random random = new Random();
@@ -217,7 +224,7 @@ public class SelectedListFragment extends Fragment {
                         String userId = waitingUserIds.get(index);
                         waitingUserIds.remove(index);
 
-                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
                                 moveToSelectedList(user, () -> {

@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,19 +16,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
@@ -41,11 +40,13 @@ public class WaitingListFragment extends Fragment {
     private RecyclerView recyclerView;
     private UsersAdapter adapter;
     private List<User> usersWaitingList;
-    //private FirebaseFirestore db;
     private String eventId;
     private Button drawButton;
     private int eventCapacity;
 
+    private LinearLayout emptyStateLayout;
+    private TextView emptyTextView;
+    private ImageView emptyImageView;
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
@@ -64,12 +65,15 @@ public class WaitingListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+        emptyImageView = view.findViewById(R.id.emptyImageView);
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+
         usersWaitingList = new ArrayList<>();
         adapter = new UsersAdapter(usersWaitingList, getContext());
         recyclerView.setAdapter(adapter);
 
         drawButton = view.findViewById(R.id.button_draw);
-        //db = FirebaseFirestore.getInstance();
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -81,18 +85,20 @@ public class WaitingListFragment extends Fragment {
         return view;
     }
 
-
     /**
      * Loads the capacity of the event from Firestore, setting the maximum number of participants allowed.
      */
     private void loadEventCapacity() {
-        OrganizerDatabase.loadEventCapacity(eventId);
-        /**db.collection("Events").document(eventId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        eventCapacity = documentSnapshot.getLong("capacity").intValue();
-                    }
-                });**/
+        OrganizerDatabase.loadEventCapacity(eventId, new OrganizerDatabase.OnEventCapLoadedListener() {
+            @Override
+            public void onCapacityLoaded(int capacity) {
+                eventCapacity = capacity;
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), "Error loading capacity: " + errorMessage, Toast.LENGTH_SHORT).show();    }
+    });
     }
 
     /**
@@ -107,9 +113,19 @@ public class WaitingListFragment extends Fragment {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
+                if (userIdsList.isEmpty()) {
+                    // Show empty state if the list is empty
+                    emptyStateLayout.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    // Hide empty state when the list is not empty
+                    emptyStateLayout.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                }
+
                 for (String userId : userIdsList) {
                     // For each userId, fetch the corresponding User object
-                    EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                    UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;
@@ -136,28 +152,7 @@ public class WaitingListFragment extends Fragment {
                 }
             }
         });
-        /**db.collection("Events").document(eventId)
-                .collection("waitingList")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-                        String userId = document.getId();
-                        EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
-                            @Override
-                            public void onUserLoaded(User user) {
-                                if (getContext() == null) return;
-                                usersWaitingList.add(user);
-                                adapter.notifyDataSetChanged();
-                            }
-                            @Override
-                            public void onUserLoadError(String error) {
-                                Log.e("WaitingList", "Error loading user: " + error);
-                            }
-                        });
-                    }
-                });**/
     }
-
 
     /**
      * Loads the waiting list from the "waitingList" subcollection of the event document in Firestore.
@@ -172,17 +167,21 @@ public class WaitingListFragment extends Fragment {
      * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
      */
     private void drawMultipleApplicants() {
+        // make sure eventCapacity updated
+        loadEventCapacity(); // should update int eventCapacity (confirm)
+        Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
         OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnDataFetchListener<Integer>() {
             @Override
             public void onFetch(Integer currentSelectedCount) {
                 int remainingSlots = eventCapacity - currentSelectedCount;
+                Log.e("draw multiple applicants", "Remaining slots: " + remainingSlots);
+
 
                 if (remainingSlots <= 0) {
                     Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                int drawCount = Math.min(remainingSlots, usersWaitingList.size());
+                int drawCount = Math.min(remainingSlots, usersWaitingList.size());  // returns the smaller of the two
                 final int[] completedMoves = {0};
 
                 for (int i = 0; i < drawCount; i++) {
@@ -301,7 +300,6 @@ public class WaitingListFragment extends Fragment {
             onComplete.run();
         });**/
     }
-
 
     /**
      * Refreshes all fragments displaying participant lists for the event,
