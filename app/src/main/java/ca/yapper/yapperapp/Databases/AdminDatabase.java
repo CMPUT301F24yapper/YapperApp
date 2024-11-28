@@ -324,4 +324,30 @@ public class AdminDatabase {
 
         return tcs.getTask();
     }
+
+    public static Task<Void> removeFacility(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityName", "");
+        userUpdates.put("facilityAddress", "");
+
+        Map<String, Object> eventUpdates = new HashMap<>();
+        eventUpdates.put("facilityName", "[Facility removed]");
+        eventUpdates.put("facilityLocation", "[Facility removed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), eventUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
 }
