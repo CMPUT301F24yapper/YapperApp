@@ -145,6 +145,9 @@ public class UserDatabase {
         userData.put("entrantName", user.getName());
         userData.put("entrantPhone", user.getPhoneNum());
         userData.put("notificationsEnabled", !user.isOptedOut());
+        userData.put("facilityName", "");
+        userData.put("facilityAddress", "");
+
         return userData;
     }
 
