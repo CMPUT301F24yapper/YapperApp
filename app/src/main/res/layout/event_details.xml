@@ -78,8 +78,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Facility Name: Facility Name"
-            android:textColor="@android:color/system_accent2_700"
+            android:text="Facility Name:"
+            android:textColor="@android:color/black"
             android:textSize="16sp" />
 
         <!-- Facility Location -->
@@ -87,9 +87,9 @@
             android:id="@+id/facility_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Facility Location: Address"
-            android:textColor="@android:color/system_accent2_700"
+            android:text="Facility Location:"
             android:textSize="16sp"
+            android:textColor="@android:color/black"
             android:layout_marginBottom="16dp" />
 
         <!-- Organizer Section Header -->
@@ -107,8 +107,8 @@
             android:id="@+id/organizer_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Organizer: Name"
-            android:textColor="@android:color/system_accent2_700"
+            android:text="Organizer:"
+            android:textColor="@android:color/black"
             android:textSize="16sp"
             android:layout_marginBottom="16dp" />
 
@@ -130,41 +130,64 @@
             android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             android:padding="12dp"
             android:background="@drawable/description_background"
-            android:textColor="@android:color/system_accent2_700"
+            android:textColor="@android:color/black"
             android:textSize="16sp"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="16dp" />
 
         <!-- Participants Section -->
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Participants"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-        <!-- Number of Participants -->
-        <TextView
-            android:id="@+id/event_number_participants"
-            android:layout_width="wrap_content"
+            <!-- Event Capacity Text -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Capacity:"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Number of Participants -->
+            <TextView
+                android:id="@+id/event_number_participants"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Waiting List Capacity Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="# of Participants: 59"
-            android:textColor="@android:color/system_accent2_700"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-        <!-- Waiting List Capacity -->
-        <TextView
-            android:id="@+id/event_wl_capacity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Waiting List Capacity: 100"
-            android:textColor="@android:color/system_accent2_700"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
+            <!-- Wait List Capacity Text -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wait List Capacity: "
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" /> <!-- Smaller margin to reduce space between text and number -->
 
+            <!-- Wait List Capacity Number -->
+            <TextView
+                android:id="@+id/event_wl_capacity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
         <!-- Available Slots (Commented Out) -->
         <!-- Uncomment this section if needed -->
         <!--
@@ -186,7 +209,8 @@
             android:layout_marginBottom="16dp"
             android:text="Registration Deadline: mm/dd/yyyy"
             android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:textStyle="bold"
+            android:textSize="18sp" />
 
         <!-- Button Layout -->
         <FrameLayout

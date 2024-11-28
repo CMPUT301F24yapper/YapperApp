@@ -24,6 +24,11 @@ import androidx.fragment.app.Fragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
@@ -40,10 +45,8 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
  */
 public class EventDetailsFragment extends Fragment {
 
-    //private FirebaseFirestore db;
     private String eventId;
-    private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, timeTextView;
-    private TextView geolocEnabledTextView;
+    private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, organizerTextView;
     boolean geolocationEnabled;
     private Button joinButton; // Entrant Button:
     private Button viewParticipantsButton; // Organizer Buttons:
@@ -55,6 +58,7 @@ public class EventDetailsFragment extends Fragment {
     private Bundle QRCodeData;
     private View view;
     private boolean geolocationPermitted = false;
+    private int wlSpotsLeft = -1;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -70,7 +74,6 @@ public class EventDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.event_details, container, false);
 
-        //db = FirebaseFirestore.getInstance();
         Bundle args = getArguments();
         if (args == null || !args.containsKey("0")) {
             Toast.makeText(getContext(), "Error: Event not found", Toast.LENGTH_SHORT).show();
@@ -101,14 +104,14 @@ public class EventDetailsFragment extends Fragment {
     private void initializeViews(View view) {
         nameTextView = view.findViewById(R.id.event_title);
         dateTextView = view.findViewById(R.id.event_date_time);
+        organizerTextView = view.findViewById(R.id.organizer_name);
         regDeadlineTextView = view.findViewById(R.id.registration_deadline);
         facilityNameTextView = view.findViewById(R.id.facility_name);
-        facilityLocationTextView = view.findViewById(R.id.facility_name);
+        facilityLocationTextView = view.findViewById(R.id.facility_location);
         descriptionTextView = view.findViewById(R.id.event_description);
         capacityTextView = view.findViewById(R.id.event_number_participants);
         waitListTextView = view.findViewById(R.id.event_wl_capacity);
         // *to add: available slots text view (waitlist capacity - number of users in waitlist)*
-
         joinButton = view.findViewById(R.id.join_button); // only visible to Entrant:
         viewParticipantsButton = view.findViewById(R.id.button_view_participants); // only visible to Organizer:
         editEventButton = view.findViewById(R.id.button_edit_event);
@@ -131,9 +134,16 @@ public class EventDetailsFragment extends Fragment {
                 regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
                 facilityNameTextView.setText("Facility: " + event.getFacilityName());
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                waitListTextView.setText("Waiting List Capacity: " + event.getWaitListCapacity());
-                capacityTextView.setText("No. of attendees: " + event.getCapacity());
-                descriptionTextView.setText("Description: " + event.getDescription());
+                // TO-DO: IMPLEMENT ORGANIZER GET NAME (TEXTVIEW), organizerTextView.setText("Organizer: "...)
+
+                if (event.getWaitListCapacity() == null) {
+                    waitListTextView.setText("Not set");
+                }
+                else {
+                    waitListTextView.setText(String.valueOf(event.getWaitListCapacity())); }
+
+                capacityTextView.setText(String.valueOf(event.getCapacity()));
+                descriptionTextView.setText(event.getDescription());
 
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
@@ -143,20 +153,74 @@ public class EventDetailsFragment extends Fragment {
                     }
                 }
 
-                String description = event.getDescription();
-                if (description != null && !description.isEmpty()) {
-                    descriptionTextView.setText(description);
-                } else {
-                    descriptionTextView.setText("No description provided.");
-                }
+                // setupButtonListeners();
+                checkUserInList(event);  // Check user is in waiting list first
 
-                setupButtonListeners();
+            }
+            @Override
+            public void onEventLoadError(String error) {
+                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
+     */
+    private void checkUserInList(Event event) {
+        OrganizerDatabase.checkUserInEvent(eventId, userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+            @Override
+            public void onUserInList(boolean inList) {
+                if (inList) {
+                    setButtonState("Unjoin Event", Color.GRAY, false);
+                }
+                else {
+                    checkEventDates(event);  // then check event dates
+                }
             }
 
             @Override
-            public void onEventLoadError(String error) {
-                if (getContext() == null) return;
-                Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void checkEventDates(Event event) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a", Locale.getDefault());
+        try {
+            Date currentDate = new Date();
+            Date regDeadlineDate = dateFormat.parse(regDeadlineTextView.getText().toString().replace("Registration Deadline: ", ""));
+            Date eventDate = dateTimeFormat.parse(dateTextView.getText().toString());
+
+            if ((regDeadlineDate != null && regDeadlineDate.before(currentDate)) ||
+                    (eventDate != null && eventDate.before(currentDate))) {
+                setButtonState("Event Passed", Color.GRAY, false);
+            }
+            else {
+                checkWaitListCapacity(event);  // Check if waitlist capacity is full
+            }
+        } catch (ParseException e) {
+            Log.e("EventDetailsFragment", "Date parsing error: " + e.getMessage());
+        }
+    }
+
+    private void checkWaitListCapacity(Event event) {
+        // check if full
+        OrganizerDatabase.getWaitingListCount(eventId, new OrganizerDatabase.OnWaitListCountLoadedListener() {
+            @Override
+            public void onCountLoaded(int waitListCount) {
+                if (event.getWaitListCapacity() != null && (event.getWaitListCapacity() - waitListCount) <= 0) {
+                    setButtonState("Wait List Full", Color.GRAY, false);
+                } else {
+                    setButtonState("Join", Color.BLUE, true);
+                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
+                }
+            }
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), "Error checking waitlist count: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -172,35 +236,14 @@ public class EventDetailsFragment extends Fragment {
 
         if (isInEntrantActivity) {
             Log.d("Activity", "User is in Entrant Activity");
-            checkUserInList();
-            joinButton.setEnabled(true);
-            joinButton.setOnClickListener(v -> handleJoinButtonClick());
+            // joinButton.setOnClickListener(v -> handleJoinButtonClick());
+
         } else if (isInOrganizerActivity) {
+            Log.d("Activity", "User is in Organizer Activity");
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
             editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
         }
-    }
-
-    /**
-     * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
-     */
-    private void checkUserInList() {
-        OrganizerDatabase.checkUserInEvent(eventId, userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
-            @Override
-            public void onUserInList(boolean inList) {
-                if (inList) {
-                    setButtonState("Unjoin", Color.GRAY);
-                } else {
-                    setButtonState("Join", Color.BLUE);
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     /**
@@ -230,9 +273,10 @@ public class EventDetailsFragment extends Fragment {
      * @param text The text to be displayed on the button.
      * @param color The background color of the button.
      */
-    private void setButtonState(String text, int color) {
+    private void setButtonState(String text, int color, boolean enabled) {
         joinButton.setText(text);
         joinButton.setBackgroundColor(color);
+        joinButton.setEnabled(enabled);
     }
 
     /**
@@ -264,7 +308,6 @@ public class EventDetailsFragment extends Fragment {
                 .addToBackStack(null) // Add to backstack to allow returning to EventDetailsFragment
                 .commit();
     }
-
 
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
@@ -304,18 +347,6 @@ public class EventDetailsFragment extends Fragment {
                 showGeolocationWarningDialog();
                 return;
             }
-            /**
-                fusedLocationClient.getLastLocation()
-                        .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                            @Override
-                            public void onSuccess(Location location) {
-                                // Got last known location. In some rare situations this can be null.
-                                if (location != null) {
-                                    // Logic to handle location object
-                                }
-                            }
-                        });
-            }**/
             EntrantDatabase.joinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
                 @Override
                 public void onComplete(boolean success) {
@@ -425,7 +456,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
-            setupButtonListeners();
+            // setupButtonListeners();
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
