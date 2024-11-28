@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="You have not joined any event"
+            android:text="You have not joined any events yet"
             android:visibility="gone"
             android:textSize="18sp"
             android:gravity="center"
