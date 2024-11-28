@@ -51,7 +51,7 @@
             android:id="@+id/emptyTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Events Created"
+            android:text="You have not created any events yet"
             android:textSize="18sp"
             android:textColor="@android:color/black"
             android:layout_marginBottom="18dp"
