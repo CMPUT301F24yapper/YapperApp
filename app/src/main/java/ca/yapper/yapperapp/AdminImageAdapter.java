@@ -12,12 +12,28 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
+import ca.yapper.yapperapp.Databases.AdminDatabase;
+
 public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.ImageViewHolder> {
-    private List<String> base64Images;
+    private List<ImageData> images;
     private Context context;
 
-    public AdminImageAdapter(List<String> base64Images, Context context) {
-        this.base64Images = base64Images;
+    public static class ImageData {
+        String base64Image;
+        String documentId;
+        String documentType; // "event" or "user"
+        String fieldName;    // "posterBase64" or "profileImage"
+
+        public ImageData(String base64Image, String documentId, String documentType, String fieldName) {
+            this.base64Image = base64Image;
+            this.documentId = documentId;
+            this.documentType = documentType;
+            this.fieldName = fieldName;
+        }
+    }
+
+    public AdminImageAdapter(List<ImageData> images, Context context) {
+        this.images = images;
         this.context = context;
     }
 
@@ -31,30 +47,39 @@ public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.Im
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        String base64Image = base64Images.get(position);
-        if (base64Image != null) {
-            byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+        ImageData imageData = images.get(position);
+        if (imageData.base64Image != null) {
+            byte[] decodedString = Base64.decode(imageData.base64Image, Base64.DEFAULT);
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
             holder.imagePlaceholder.setImageBitmap(decodedByte);
         }
+
+        holder.deleteIcon.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                ImageData currentImage = images.get(adapterPosition);
+                AdminDatabase.deleteImage(currentImage.documentId, currentImage.documentType, currentImage.fieldName)
+                        .addOnSuccessListener(aVoid -> {
+                            images.remove(adapterPosition);
+                            notifyItemRemoved(adapterPosition);
+                        });
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return base64Images.size();
-    }
-
-    public void updateData(List<String> newImages) {
-        this.base64Images = newImages;
-        notifyDataSetChanged();
+        return images.size();
     }
 
     static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imagePlaceholder;
+        ImageView deleteIcon;
 
         ImageViewHolder(View itemView) {
             super(itemView);
             imagePlaceholder = itemView.findViewById(R.id.image_placeholder);
+            deleteIcon = itemView.findViewById(R.id.delete_icon);
         }
     }
 }

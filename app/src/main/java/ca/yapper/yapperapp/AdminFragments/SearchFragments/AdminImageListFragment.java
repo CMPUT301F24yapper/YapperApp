@@ -19,7 +19,7 @@ import ca.yapper.yapperapp.R;
 public class AdminImageListFragment extends Fragment {
     private RecyclerView recyclerView;
     private AdminImageAdapter adapter;
-    private List<String> imageList;
+    private List<AdminImageAdapter.ImageData> imageList;
     private LinearLayout emptyStateLayout;
 
     @Nullable

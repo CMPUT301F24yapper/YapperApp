@@ -13,6 +13,7 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
+import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
     public static Task<Map<String, Long>> getAdminStats() {
@@ -238,16 +239,16 @@ public class AdminDatabase {
                 });
     }
 
-    public static Task<List<String>> getAllImages() {
-        TaskCompletionSource<List<String>> tcs = new TaskCompletionSource<>();
-        List<String> allImages = new ArrayList<>();
+    public static Task<List<ImageData>> getAllImages() {
+        TaskCompletionSource<List<ImageData>> tcs = new TaskCompletionSource<>();
+        List<ImageData> allImages = new ArrayList<>();
 
         FirebaseFirestore.getInstance().collection("Events").get()
                 .addOnSuccessListener(eventsSnapshot -> {
                     for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
                         String posterBase64 = doc.getString("posterBase64");
                         if (posterBase64 != null && !posterBase64.isEmpty()) {
-                            allImages.add(posterBase64);
+                            allImages.add(new ImageData(posterBase64, doc.getId(), "event", "posterBase64"));
                         }
                     }
 
@@ -256,7 +257,7 @@ public class AdminDatabase {
                                 for (DocumentSnapshot doc : usersSnapshot.getDocuments()) {
                                     String profileImage = doc.getString("profileImage");
                                     if (profileImage != null && !profileImage.isEmpty()) {
-                                        allImages.add(profileImage);
+                                        allImages.add(new ImageData(profileImage, doc.getId(), "user", "profileImage"));
                                     }
                                 }
                                 tcs.setResult(allImages);
@@ -266,5 +267,15 @@ public class AdminDatabase {
                 .addOnFailureListener(tcs::setException);
 
         return tcs.getTask();
+    }
+
+    public static Task<Void> deleteImage(String documentId, String documentType, String fieldName) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(fieldName, null);
+
+        return FirebaseFirestore.getInstance()
+                .collection(documentType.equals("event") ? "Events" : "Users")
+                .document(documentId)
+                .update(updates);
     }
 }
