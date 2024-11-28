@@ -36,15 +36,11 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -61,7 +57,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     //------------------Constants----------------------------------------------------------------
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "hh:mm a";
-    private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm";
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
     //-------------------------------------------UI Components------------------------------------------------
@@ -198,8 +193,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             byte[] byteArray = outputStream.toByteArray();
 
             // Convert to Base64
-            String base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            viewModel.posterImageBase64 = base64Image; // Save Base64 in ViewModel
+            viewModel.posterImageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT); // Save Base64 in ViewModel
 
             listener.onComplete(true);
         } catch (Exception e) {
