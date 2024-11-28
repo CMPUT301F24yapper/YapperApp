@@ -2,15 +2,19 @@ package ca.yapper.yapperapp;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +62,8 @@ public class EventDetailsFragment extends Fragment {
     private Bundle QRCodeData;
     private View view;
     private boolean geolocationPermitted = false;
-    private int wlSpotsLeft = -1;
+    private final int wlSpotsLeft = -1;
+    private ImageView posterImageView;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -116,6 +121,7 @@ public class EventDetailsFragment extends Fragment {
         viewParticipantsButton = view.findViewById(R.id.button_view_participants); // only visible to Organizer:
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
+        posterImageView = view.findViewById(R.id.event_image);
     }
 
     /**
@@ -150,6 +156,18 @@ public class EventDetailsFragment extends Fragment {
                     TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
                     if (geoLocationRequired != null) {
                         geoLocationRequired.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                String posterBase64 = event.getPosterBase64();
+                if (posterBase64 != null && !posterBase64.isEmpty()) {
+                    try {
+                        byte[] decodedBytes = Base64.decode(posterBase64, Base64.DEFAULT);
+                        Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                        posterImageView.setImageBitmap(decodedBitmap); // Display the decoded image
+                    } catch (IllegalArgumentException e) {
+                        Log.e("EventDetailsFragment", "Error decoding Base64 image: " + e.getMessage());
+                        posterImageView.setBackgroundResource(R.drawable.event_image); // Placeholder image
                     }
                 }
 
