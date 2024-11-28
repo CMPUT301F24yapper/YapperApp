@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,15 +36,11 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.zxing.WriterException;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -60,7 +57,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     //------------------Constants----------------------------------------------------------------
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "hh:mm a";
-    private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm";
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
     //-------------------------------------------UI Components------------------------------------------------
@@ -197,8 +193,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             byte[] byteArray = outputStream.toByteArray();
 
             // Convert to Base64
-            String base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            viewModel.posterImageBase64 = base64Image; // Save Base64 in ViewModel
+            viewModel.posterImageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT); // Save Base64 in ViewModel
 
             listener.onComplete(true);
         } catch (Exception e) {
@@ -263,6 +258,13 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
+                regDeadline = event.getRegistrationDeadline();
+                if (!TextUtils.isEmpty(regDeadline)) {
+                    regDeadlineTextView.setText(regDeadline);
+                } else {
+                    regDeadlineTextView.setText(""); // Clear the field if no deadline
+                }
+
                 eventNameEditText.setText(event.getName());
                 regDeadlineTextView.setText(event.getRegistrationDeadline());
                 eventCapacityEditText.setText(String.valueOf(event.getCapacity()));
@@ -274,16 +276,31 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 eventDescriptionEditText.setText(event.getDescription());
                 geolocationSwitch.setChecked(event.isGeolocationEnabled());
 
+
+
                 // Parse the concatenated dateTime string
                 String dateTime = event.getDate_Time();
                 if (dateTime != null && dateTime.contains(" ")) {
-                    String[] dateTimeParts = dateTime.split(" ");
-                    selectedDate = dateTimeParts[0]; // Extract date
-                    selectedTime = dateTimeParts[1]; // Extract time
+                    try {
+                        String[] dateTimeParts = dateTime.split(" ");
+                        selectedDate = dateTimeParts[0]; // Extract date
+                        selectedTime = dateTimeParts[1]; // Extract time
 
-                    // Update the UI with the parsed values
-                    dateTextView.setText(selectedDate);
-                    timeTextView.setText(selectedTime);
+                        dateTextView.setText(selectedDate); // Populate UI
+                        timeTextView.setText(selectedTime); // Populate UI
+                    } catch (Exception e) {
+                        selectedDate = null;
+                        selectedTime = null;
+                        dateTextView.setText(""); // Clear field
+                        timeTextView.setText(""); // Clear field
+                        Log.e("EventDetailsFragment", "Failed to parse date and time: " + e.getMessage());
+                    }
+                } else {
+                    Log.w("EventDetailsFragment", "dateTime is null or not formatted correctly.");
+                    selectedDate = null;
+                    selectedTime = null;
+                    dateTextView.setText(""); // Clear field
+                    timeTextView.setText(""); // Clear field
                 }
 
                 // Load the poster image
@@ -377,6 +394,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     success1 -> {
                         if (success1) {
                             showToast("Event saved successfully!");
+                            getParentFragmentManager().beginTransaction()
+                                    .replace(R.id.fragment_container, new OrganizerHomeFragment())
+                                    .commit();
                         } else {
                             showToast("Failed to save event. Please try again.");
                         }
@@ -500,33 +520,56 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private void restoreCachedData() {
         if (viewModel.eventName != null) eventNameEditText.setText(viewModel.eventName);
         if (viewModel.eventDescription != null) eventDescriptionEditText.setText(viewModel.eventDescription);
-        if (viewModel.selectedDate != null) dateTextView.setText(viewModel.selectedDate);
-        if (viewModel.selectedTime != null) timeTextView.setText(viewModel.selectedTime);
-        if (viewModel.regDeadline != null) regDeadlineTextView.setText(viewModel.regDeadline);
+
+        if (viewModel.selectedDate != null) {
+            dateTextView.setText(viewModel.selectedDate);
+            selectedDate = viewModel.selectedDate; // Restore the variable
+        }
+
+        if (viewModel.selectedTime != null) {
+            timeTextView.setText(viewModel.selectedTime);
+            selectedTime = viewModel.selectedTime; // Restore the variable
+        }
+
+        if (viewModel.regDeadline != null) {
+            regDeadlineTextView.setText(viewModel.regDeadline);
+            regDeadline = viewModel.regDeadline; // Restore the variable
+        }
+
         if (viewModel.capacity != null) eventCapacityEditText.setText(String.valueOf(viewModel.capacity));
+
         if (viewModel.waitListCapacity != null) {
             eventWaitListCapacityEditText.setText(String.valueOf(viewModel.waitListCapacity));
         }
+
         geolocationSwitch.setChecked(viewModel.geolocationEnabled);
 
         if (viewModel.posterImageUri != null) {
-            ImageView posterImageView = getView().findViewById(R.id.poster_image);
+            ImageView posterImageView = requireView().findViewById(R.id.poster_image);
             posterImageView.setImageURI(viewModel.posterImageUri); // Set the image URI
             posterImageView.setTag(viewModel.posterImageUri); // Set the tag
         }
-
     }
 
     private void saveToCache() {
         viewModel.eventName = eventNameEditText.getText().toString();
         viewModel.eventDescription = eventDescriptionEditText.getText().toString();
-        viewModel.selectedDate = selectedDate;
-        viewModel.selectedTime = selectedTime;
-        viewModel.regDeadline = regDeadline;
+
+        viewModel.selectedDate = dateTextView.getText().toString(); // Save the date from the TextView
+        selectedDate = viewModel.selectedDate; // Update the variable
+
+        viewModel.selectedTime = timeTextView.getText().toString(); // Save the time from the TextView
+        selectedTime = viewModel.selectedTime; // Update the variable
+
+        viewModel.regDeadline = regDeadlineTextView.getText().toString(); // Save the deadline
+        regDeadline = viewModel.regDeadline; // Update the variable
+
         viewModel.capacity = TextUtils.isEmpty(eventCapacityEditText.getText())
                 ? null : Integer.parseInt(eventCapacityEditText.getText().toString());
+
         viewModel.waitListCapacity = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
         viewModel.geolocationEnabled = geolocationSwitch.isChecked();
+
         ImageView posterImageView = requireView().findViewById(R.id.poster_image);
         viewModel.posterImageUri = (Uri) posterImageView.getTag(); // Save the tag holding the URI
     }
