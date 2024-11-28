@@ -38,6 +38,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
@@ -293,33 +295,37 @@ public class ProfileFragment extends Fragment {
     private void generateProfileImage(Bitmap bitmap){
         Canvas imageName = new Canvas(bitmap);
         Paint textStyle = new Paint();
-        String profileName = nameEditText.getText().toString();
-        float textSizeOnScreen = textStyle.measureText(profileName);
+        Paint circleStyle = new Paint();
+        circleStyle.setColor(Color.parseColor("#80712C95"));
 
-        textStyle.setColor(Color.BLACK);
-        textStyle.setTextSize(40);
-        textStyle.setTextAlign(Paint.Align.CENTER);
-
-        while (textSizeOnScreen >= imageName.getWidth()){
-            textStyle.setTextSize(textStyle.getTextSize() - 2);
-            textSizeOnScreen = textStyle.measureText(profileName);
+        textStyle.setTextSize(500);
+        //String[] profileName = nameEditText.getText().toString().split("[ .;:]");
+        String[] profileName = nameEditText.getText().toString().split(" ");
+        String initials = "";
+        for (String word : profileName){
+            initials += word.charAt(0);
         }
 
-        imageName.drawColor(Color.GREEN); // replace with hash value
-        imageName.drawText(profileName,imageName.getWidth() / 2, imageName.getHeight() / 2, textStyle);
-    }
+        float textWidthOnScreen = textStyle.measureText(initials);
+        Paint.FontMetrics fontMetrics = textStyle.getFontMetrics();
+        float textHeightOnScreen = fontMetrics.descent - fontMetrics.ascent;
 
-//    private String stringToRGB(String string){
-//        int value = string.charAt(0);
-//        int rgb = 0x000000;
-//        rgb = (value | rgb) << 2;
-//        value = string.charAt(1);
-//        rgb = (value | rgb) << 2;
-//        value = string.charAt(2);
-//        rgb = (value | rgb) << 2;
-//
-//        return Integer.toString(rgb);
-//    }
+        textStyle.setColor(Color.BLACK);
+        textStyle.setTextAlign(Paint.Align.CENTER);
+
+        while ((textHeightOnScreen >= imageName.getHeight() * 0.5) || (textWidthOnScreen >= imageName.getWidth() * 0.5)){
+            textStyle.setTextSize(textStyle.getTextSize() - 1);
+
+            textWidthOnScreen = textStyle.measureText(initials);
+            fontMetrics = textStyle.getFontMetrics();
+            textHeightOnScreen = fontMetrics.descent - fontMetrics.ascent;
+            // NOTE: descent is distance from _ bar beneath char to bottom of lowest char,
+            //       ascent is distance from _ to the top of highest char(-'ve)
+        }
+
+        imageName.drawCircle(imageName.getWidth() / 2, imageName.getHeight() / 2, imageName.getWidth() / 2, circleStyle);
+        imageName.drawText(initials,imageName.getWidth() / 2, (imageName.getHeight() / 2) - ((fontMetrics.ascent + fontMetrics.descent) / 2), textStyle);
+    }
 
     private void setupTextChangeListeners() {
         nameEditText.addTextChangedListener(createTextWatcher("entrantName"));
