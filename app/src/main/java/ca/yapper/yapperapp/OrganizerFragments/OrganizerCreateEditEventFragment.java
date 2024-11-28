@@ -400,6 +400,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     success1 -> {
                         if (success1) {
                             showToast("Event saved successfully!");
+                            getParentFragmentManager().beginTransaction()
+                                    .replace(R.id.fragment_container, new OrganizerHomeFragment())
+                                    .commit();
                         } else {
                             showToast("Failed to save event. Please try again.");
                         }
