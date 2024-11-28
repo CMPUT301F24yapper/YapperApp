@@ -304,4 +304,24 @@ public class AdminDatabase {
                 .document(documentId)
                 .update(updates);
     }
+
+    public static Task<String> getProfileImage(String userId) {
+        TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
+
+        FirebaseFirestore.getInstance()
+                .collection("Users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String profileImage = document.getString("profileImage");
+                        tcs.setResult(profileImage);
+                    } else {
+                        tcs.setResult(null);
+                    }
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
 }

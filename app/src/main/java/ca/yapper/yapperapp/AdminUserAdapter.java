@@ -1,7 +1,10 @@
 package ca.yapper.yapperapp;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+
+import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.UserViewHolder> {
@@ -40,6 +45,20 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.User
             }
         }
         holder.profileName.setText(displayName);
+
+        AdminDatabase.getProfileImage(user.getDeviceId())
+                .addOnSuccessListener(base64Image -> {
+                    if (base64Image != null && !base64Image.isEmpty()) {
+                        try {
+                            byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            holder.profileImage.setImageBitmap(bitmap);
+                        } catch (Exception e) {
+                            holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder));
 
         holder.itemView.setOnClickListener(v -> {
             AdminRemoveProfileFragment fragment = new AdminRemoveProfileFragment();
