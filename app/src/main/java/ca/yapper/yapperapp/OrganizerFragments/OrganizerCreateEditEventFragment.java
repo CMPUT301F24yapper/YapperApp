@@ -523,33 +523,56 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private void restoreCachedData() {
         if (viewModel.eventName != null) eventNameEditText.setText(viewModel.eventName);
         if (viewModel.eventDescription != null) eventDescriptionEditText.setText(viewModel.eventDescription);
-        if (viewModel.selectedDate != null) dateTextView.setText(viewModel.selectedDate);
-        if (viewModel.selectedTime != null) timeTextView.setText(viewModel.selectedTime);
-        if (viewModel.regDeadline != null) regDeadlineTextView.setText(viewModel.regDeadline);
+
+        if (viewModel.selectedDate != null) {
+            dateTextView.setText(viewModel.selectedDate);
+            selectedDate = viewModel.selectedDate; // Restore the variable
+        }
+
+        if (viewModel.selectedTime != null) {
+            timeTextView.setText(viewModel.selectedTime);
+            selectedTime = viewModel.selectedTime; // Restore the variable
+        }
+
+        if (viewModel.regDeadline != null) {
+            regDeadlineTextView.setText(viewModel.regDeadline);
+            regDeadline = viewModel.regDeadline; // Restore the variable
+        }
+
         if (viewModel.capacity != null) eventCapacityEditText.setText(String.valueOf(viewModel.capacity));
+
         if (viewModel.waitListCapacity != null) {
             eventWaitListCapacityEditText.setText(String.valueOf(viewModel.waitListCapacity));
         }
+
         geolocationSwitch.setChecked(viewModel.geolocationEnabled);
 
         if (viewModel.posterImageUri != null) {
-            ImageView posterImageView = getView().findViewById(R.id.poster_image);
+            ImageView posterImageView = requireView().findViewById(R.id.poster_image);
             posterImageView.setImageURI(viewModel.posterImageUri); // Set the image URI
             posterImageView.setTag(viewModel.posterImageUri); // Set the tag
         }
-
     }
 
     private void saveToCache() {
         viewModel.eventName = eventNameEditText.getText().toString();
         viewModel.eventDescription = eventDescriptionEditText.getText().toString();
-        viewModel.selectedDate = selectedDate;
-        viewModel.selectedTime = selectedTime;
-        viewModel.regDeadline = regDeadline;
+
+        viewModel.selectedDate = dateTextView.getText().toString(); // Save the date from the TextView
+        selectedDate = viewModel.selectedDate; // Update the variable
+
+        viewModel.selectedTime = timeTextView.getText().toString(); // Save the time from the TextView
+        selectedTime = viewModel.selectedTime; // Update the variable
+
+        viewModel.regDeadline = regDeadlineTextView.getText().toString(); // Save the deadline
+        regDeadline = viewModel.regDeadline; // Update the variable
+
         viewModel.capacity = TextUtils.isEmpty(eventCapacityEditText.getText())
                 ? null : Integer.parseInt(eventCapacityEditText.getText().toString());
+
         viewModel.waitListCapacity = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
         viewModel.geolocationEnabled = geolocationSwitch.isChecked();
+
         ImageView posterImageView = requireView().findViewById(R.id.poster_image);
         viewModel.posterImageUri = (Uri) posterImageView.getTag(); // Save the tag holding the URI
     }
