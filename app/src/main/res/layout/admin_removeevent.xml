@@ -1,9 +1,7 @@
-<!-- res/layout/activity_event_details.xml -->
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     android:background="@android:color/white">
 
     <LinearLayout
@@ -11,163 +9,260 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Event Title and Date -->
         <LinearLayout
+            android:id="@+id/upper_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:id="@+id/event_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:text="Event 1"
-                android:textColor="#000000"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/event_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="mm/dd/yyyy hh:mm"
-                android:textSize="16sp"
-                android:textColor="#000000" />
-        </LinearLayout>
-
-        <!-- Location Requirement -->
-        <TextView
-            android:id="@+id/location_requirement"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Geo Location Required"
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Event Image and Delete Icon -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_height="200dp"
+            android:background="#FDE3FD"
+            android:gravity="center"
+            android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/event_image"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
                 android:background="@drawable/circle_background"
-                android:layout_centerInParent="true" />
+                android:contentDescription="Event Image"
+                android:src="@drawable/event_image" />
 
-            <ImageView
-                android:id="@+id/delete_icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentStart="true"
-                android:layout_margin="8dp"
-                android:src="@android:drawable/ic_delete"
-                android:contentDescription="Delete Image"
-                app:tint="#FF0000" />
-        </RelativeLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <!-- Facility and Organizer Information -->
-        <TextView
-            android:id="@+id/facility_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Facility: Facility Name"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#000000"
-            android:layout_marginBottom="4dp" />
+                <TextView
+                    android:id="@+id/change_picture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="80dp"
+                    android:text="Change Event Picture"
+                    android:textColor="#712C95"
+                    android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/organizer_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Organizer: Name"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#000000"
-            android:layout_marginBottom="12dp" />
+                <TextView
+                    android:id="@+id/remove_picture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remove Event Picture"
+                    android:textColor="#712C95"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <!-- Event Description -->
-        <TextView
-            android:id="@+id/event_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo."
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Slots and Registration Deadline -->
-        <TextView
-            android:id="@+id/available_slots"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Available Slots: 2/50"
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/registration_deadline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Registration Deadline: mm/dd/yyyy"
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:layout_marginBottom="20dp" />
-
-        <!-- QR Code -->
-        <ImageView
-            android:id="@+id/qr_code"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="24dp" />
-
-        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal">
+            android:padding="24dp">
 
-            <Button
-                android:id="@+id/btn_remove_qr_data"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Remove QR Code Data"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:backgroundTint="#6A1B9A"
-                android:paddingHorizontal="20dp"
-                android:layout_marginBottom="12dp" />
+                android:text="Event Information"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
 
-            <Button
-                android:id="@+id/btn_remove_event"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Name:"/>
+                <TextView
+                    android:id="@+id/event_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Date:"/>
+                <TextView
+                    android:id="@+id/event_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Description:"/>
+                <TextView
+                    android:id="@+id/event_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Remove Event"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:backgroundTint="#6A1B9A"
-                android:paddingHorizontal="20dp"
-                android:layout_marginBottom="12dp" />
+                android:text="Organizer Details"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"/>
 
-            <Button
-                android:id="@+id/btn_remove_facility"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Name:"/>
+                <TextView
+                    android:id="@+id/organizer_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Remove Facility"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:backgroundTint="#6A1B9A"
-                android:paddingHorizontal="20dp" />
+                android:text="Facility Details"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Name:"/>
+                <TextView
+                    android:id="@+id/facility_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Location:"/>
+                <TextView
+                    android:id="@+id/facility_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Capacity Information"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Capacity:"/>
+                <TextView
+                    android:id="@+id/event_capacity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="Waitlist:"/>
+                <TextView
+                    android:id="@+id/waitlist_capacity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="32dp">
+
+                <Button
+                    android:id="@+id/btn_remove_qr_data"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="Remove QR Code Data"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#6A1B9A"
+                    android:paddingHorizontal="20dp"/>
+
+                <Button
+                    android:id="@+id/btn_remove_event"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remove Event"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#6A1B9A"
+                    android:paddingHorizontal="20dp"/>
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
