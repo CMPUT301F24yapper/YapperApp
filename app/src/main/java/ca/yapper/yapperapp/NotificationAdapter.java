@@ -1,5 +1,4 @@
 package ca.yapper.yapperapp;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,14 +7,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 /**
@@ -23,14 +21,11 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
  * This adapter binds the {@link Notification} data to each item view in the list.
  */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
-
     private List<Notification> notificationList;
     private Context context;
-
     public NotificationAdapter(List<Notification> notificationList) {
         this.notificationList = notificationList;
     }
-
     @NonNull
     @Override
     public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -39,59 +34,70 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 .inflate(R.layout.entrant_notifications_item, parent, false);
         return new NotificationViewHolder(itemView);
     }
-
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         Notification notification = notificationList.get(position);
-
         holder.eventName.setText(notification.getTitle());
         holder.message.setText(notification.getMessage());
-
         // Format and set date
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
         holder.date.setText(dateFormat.format(notification.getDateTimeStamp()));
-
         // Handle Selection notifications
         if (notification.getNotificationType() != null &&
                 notification.getNotificationType().equals("Selection")) {
             holder.selectionButtons.setVisibility(View.VISIBLE);
 
+            // Accept Button Logic
             holder.acceptButton.setOnClickListener(v -> {
-                // Add accept logic here
-                Toast.makeText(context, "Accepted", Toast.LENGTH_SHORT).show();
-                // Move to final list
-                notification.markAsRead();
-                notificationList.remove(position);
-                notifyItemRemoved(position);
+                String eventId = notification.getEventId(); // Ensure Notification has eventId
+                String userId = notification.getUserToId(); // Ensure Notification has userToId
+
+                OrganizerDatabase.addUserToFinalList(eventId, userId, success -> {
+                    if (success) {
+                        // Remove the notification after successful addition
+                        notification.markAsRead();
+                        notificationList.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Accepted and added to Final List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error adding to Final List", Toast.LENGTH_SHORT).show();
+                    }
+                });
             });
 
+            // Reject Button Logic
             holder.rejectButton.setOnClickListener(v -> {
-                // Add reject logic here
-                Toast.makeText(context, "Rejected", Toast.LENGTH_SHORT).show();
-                // Move to cancelled list
-                notification.markAsRead();
-                notificationList.remove(position);
-                notifyItemRemoved(position);
+                String eventId = notification.getEventId(); // Ensure Notification has eventId
+                String userId = notification.getUserToId(); // Ensure Notification has userToId
+
+                OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
+                    if (success) {
+                        // Remove the notification after successful rejection
+                        notification.markAsRead();
+                        notificationList.remove(position);
+                        notifyItemRemoved(position);
+                        Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error adding to Cancelled List", Toast.LENGTH_SHORT).show();
+                    }
+                });
             });
         } else {
             holder.selectionButtons.setVisibility(View.GONE);
         }
-
         // Dim if read
         holder.itemView.setAlpha(notification.isRead() ? 0.6f : 1.0f);
     }
+
 
     @Override
     public int getItemCount() {
         return notificationList == null ? 0 : notificationList.size();
     }
-
-
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView eventName, message, date;
         LinearLayout selectionButtons;
         ImageView acceptButton, rejectButton;
-
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
             eventName = itemView.findViewById(R.id.event_name);
