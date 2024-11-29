@@ -2,6 +2,7 @@ package ca.yapper.yapperapp.Databases;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -242,6 +243,53 @@ public class EntrantDatabase {
     public interface OnFieldUpdateListener {
         void onFieldUpdated(Object value);  // When the image is successfully loaded
         void onError(String error);                    // When there's an error
+    }
+
+    public static Task<Void> updateFacilityNameForEvents(String userId, String facilityName) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityName", facilityName);
+
+        Map<String, Object> eventUpdates = new HashMap<>();
+        eventUpdates.put("facilityName", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), eventUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
+    public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityAddress", facilityLocation);
+
+        Map<String, Object> eventUpdates = new HashMap<>();
+        eventUpdates.put("facilityLocation", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), eventUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
     }
 
 }

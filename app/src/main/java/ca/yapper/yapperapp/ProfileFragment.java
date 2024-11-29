@@ -52,6 +52,8 @@ public class ProfileFragment extends Fragment {
     private EditText emailEditText;
     private EditText phoneEditText;
     private EditText facilityEditText;
+    private boolean facilityNameChange;
+    private boolean facilityAddressChange;
     private EditText addressEditText;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
@@ -206,37 +208,6 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Error loading profile data: " + error, Toast.LENGTH_SHORT).show();
             }
         });
-        /**userRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                nameEditText.setText(documentSnapshot.getString("entrantName"));
-                emailEditText.setText(documentSnapshot.getString("entrantEmail"));
-                phoneEditText.setText(documentSnapshot.getString("entrantPhone"));
-
-                String base64Image = documentSnapshot.getString("profileImage");
-                if (base64Image != null) {
-                    Bitmap bitmap = decodeBase64ToBitmap(base64Image);
-                    if (bitmap != null) {
-                        profileImage.setImageBitmap(bitmap);
-                    } else {
-                        profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-                    }
-                } else {
-                    profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-                }
-
-                if (facilitySection.getVisibility() == View.VISIBLE) {
-                    facilityEditText.setText(documentSnapshot.getString("facilityName"));
-                    addressEditText.setText(documentSnapshot.getString("facilityAddress"));
-                }
-
-                if (notificationsSection.getVisibility() == View.VISIBLE) {
-                    Boolean notificationsEnabled = documentSnapshot.getBoolean("notificationsEnabled");
-                    notificationsSwitch.setChecked(notificationsEnabled != null ? notificationsEnabled : true);
-                }
-            }
-        }).addOnFailureListener(e -> {
-            Toast.makeText(getContext(), "Error loading profile data", Toast.LENGTH_SHORT).show();
-        }); **/
     }
 
     private void loadFacilityData(User user) {
@@ -286,6 +257,7 @@ public class ProfileFragment extends Fragment {
 
         if (facilitySection.getVisibility() == View.VISIBLE) {
             facilityEditText.addTextChangedListener(createTextWatcher("facilityName"));
+
             addressEditText.addTextChangedListener(createTextWatcher("facilityAddress"));
         }
     }
@@ -310,20 +282,18 @@ public class ProfileFragment extends Fragment {
 
                 // Add a new update with a delay (e.g., 500ms)
                 Runnable updateTask = () -> updateField(field, newValue);
+                if (field == "facilityName") {
+                    EntrantDatabase.updateFacilityNameForEvents(userDeviceId, field);
+                }
+                else if (field == "facilityLocation") {
+                    EntrantDatabase.updateFacilityNameForEvents(userDeviceId, field);
+                }
+                // EntrantDatabase.updateFacilityAddressForEvents(userDeviceId, facilityAddress);
                 pendingUpdates.put(field, updateTask);
                 handler.postDelayed(updateTask, 500); // Delay of 500ms
             }
         };
     }
-
-    /**private void updateField(String field, Object value) {
-        Map<String, Object> updates = new HashMap<>();
-        updates.put(field, value);
-
-        userRef.update(updates).addOnFailureListener(e -> {
-            Toast.makeText(getContext(), "Error updating " + field, Toast.LENGTH_SHORT).show();
-        });
-    }**/
 
     private void updateField(String field, Object value) {
         UserDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {

@@ -34,13 +34,16 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -67,7 +70,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private Button dateButton, timeButton, regDeadlineButton, saveEventButton;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch geolocationSwitch;
-
+    private boolean createEvent = true;  // boolean initially set to true (used to clarify whether or not organizer is accessing event to update or to create it!)
 
     /**
      * Inflates the fragment layout, initializes form fields, and sets up date pickers
@@ -91,9 +94,11 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey("eventId")) {
             String eventId = bundle.getString("eventId");
+            // in case that user is UPDATING EVENT
+            createEvent = false;
             loadEventDetails(eventId);
         }
-
+        // in case that user is UPDATING EVENT or CREATING EVENT (both call this)
         saveEventButton.setOnClickListener(v -> {
             saveOrUpdateEvent();
         });
@@ -114,7 +119,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     }
                 }
         );
-
         setupChoosePosterButton(view);
         return view;
     }
@@ -126,7 +130,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         restoreCachedData();
         setupClickListeners();
     }
-
     @Override
     public void onPause() {
         super.onPause();
@@ -255,28 +258,25 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     //------------------------------------DataBase Operation-------------------------------------------------
 
     private void loadEventDetails(String eventId) {
+        // method for organizers that are UPDATING previously existing event
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
+
                 regDeadline = event.getRegistrationDeadline();
                 if (!TextUtils.isEmpty(regDeadline)) {
                     regDeadlineTextView.setText(regDeadline);
                 } else {
                     regDeadlineTextView.setText(""); // Clear the field if no deadline
                 }
-
                 eventNameEditText.setText(event.getName());
                 regDeadlineTextView.setText(event.getRegistrationDeadline());
                 eventCapacityEditText.setText(String.valueOf(event.getCapacity()));
-
                 if (event.getWaitListCapacity() != null) {
                     eventWaitListCapacityEditText.setText(String.valueOf(event.getWaitListCapacity()));
                 }
-
                 eventDescriptionEditText.setText(event.getDescription());
                 geolocationSwitch.setChecked(event.isGeolocationEnabled());
-
-
 
                 // Parse the concatenated dateTime string
                 String dateTime = event.getDate_Time();
@@ -312,7 +312,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     posterImageView.setImageBitmap(decodedBitmap); // Set the bitmap
                 }
             }
-
             @Override
             public void onEventLoadError(String error) {
                 Toast.makeText(getContext(), "Error loading event: " + error, Toast.LENGTH_SHORT).show();
@@ -323,6 +322,31 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private void saveOrUpdateEvent() {
         saveEventButton.setEnabled(false);
 
+        String eventId = getArguments() != null ? getArguments().getString("eventId") : null;
+
+        if (eventId != null) {
+            // Check if the event exists in Firestore before updating
+            FirebaseFirestore.getInstance().collection("Events").document(eventId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            updateEvent(eventId, documentSnapshot);
+                        } else {
+                            showToast("Event not found. Please try again.");
+                            saveEventButton.setEnabled(true);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        showToast("Error checking event: " + e.getMessage());
+                        saveEventButton.setEnabled(true);
+                    });
+        } else {
+            // Create new event after facility details are loaded
+            createNewEvent();
+        }
+    }
+    /**
+    // the following database call relevant for both updating & creating events (e.g. IF facility profile data has changed for updating event)
         OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
             @Override
             public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
@@ -338,10 +362,124 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
                 saveEventButton.setEnabled(true);
             }
-
             @Override
             public void onError(String error) {
                 showToast("Error loading facility details. Please try again.");
+                saveEventButton.setEnabled(true);
+            }
+        });**/
+
+// Function to handle event updates
+private void updateEvent(String eventId, DocumentSnapshot eventSnapshot) {
+    if (!validateInputs()) {
+        saveEventButton.setEnabled(true);
+        return;
+    }
+    String dateTime = selectedDate + " " + selectedTime;
+    if (!validateDates(dateTime, regDeadline)) {
+        saveEventButton.setEnabled(true);
+        return;
+    }
+
+    String updatedName = eventNameEditText.getText().toString();
+    String updatedDescription = eventDescriptionEditText.getText().toString();
+    boolean updatedGeolocationEnabled = geolocationSwitch.isChecked();
+
+    uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
+        if (!success) {
+            saveEventButton.setEnabled(true);
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("name", updatedName);
+        updates.put("description", updatedDescription);
+        updates.put("date_time", dateTime);
+        updates.put("registrationDeadline", regDeadline);
+        updates.put("geolocationEnabled", updatedGeolocationEnabled);
+        if (viewModel.posterImageBase64 != null) {
+            updates.put("posterBase64", viewModel.posterImageBase64);
+        }
+
+        FirebaseFirestore.getInstance().collection("Events").document(eventId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    showToast("Event updated successfully!");
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new OrganizerHomeFragment())
+                            .commit();
+                })
+                .addOnFailureListener(e -> {
+                    showToast("Failed to update event: " + e.getMessage());
+                })
+                .addOnCompleteListener(task -> saveEventButton.setEnabled(true));
+    });
+}
+
+    // Function to handle new event creation
+    private void createNewEvent() {
+        OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
+            @Override
+            public void onFacilityDataLoaded(String facilityName, String facilityAddress) {
+                if (TextUtils.isEmpty(facilityName) || TextUtils.isEmpty(facilityAddress)) {
+                    promptAddFacilityDetails();
+                    saveEventButton.setEnabled(true);
+                    return;
+                }
+                facilityNameFinal = facilityName;
+                facilityAddressFinal = facilityAddress;
+
+                if (!validateInputs()) {
+                    saveEventButton.setEnabled(true);
+                    return;
+                }
+
+                String dateTime = selectedDate + " " + selectedTime;
+                if (!validateDates(dateTime, regDeadline)) {
+                    saveEventButton.setEnabled(true);
+                    return;
+                }
+
+                int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
+                Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
+
+                if (waitListCapacityInt != null && waitListCapacityInt < capacityInt) {
+                    showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
+                    saveEventButton.setEnabled(true);
+                    return;
+                }
+
+                String newEventId = generateEventId();
+                Map<String, Object> newEvent = new HashMap<>();
+                newEvent.put("name", eventNameEditText.getText().toString());
+                newEvent.put("description", eventDescriptionEditText.getText().toString());
+                newEvent.put("capacity", capacityInt);
+                newEvent.put("waitListCapacity", waitListCapacityInt);
+                newEvent.put("date_time", dateTime);
+                newEvent.put("registrationDeadline", regDeadline);
+                newEvent.put("geolocationEnabled", geolocationSwitch.isChecked());
+                newEvent.put("facilityName", facilityNameFinal);
+                newEvent.put("facilityAddress", facilityAddressFinal);
+                newEvent.put("userDeviceId", userDeviceId);
+
+                uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
+                    if (!success) {
+                        saveEventButton.setEnabled(true);
+                        return;
+                    }
+                    newEvent.put("posterBase64", viewModel.posterImageBase64);
+
+                    FirebaseFirestore.getInstance().collection("Events").document(newEventId)
+                            .set(newEvent)
+                            .addOnSuccessListener(aVoid -> showToast("Event created successfully!"))
+                            .addOnFailureListener(e -> showToast("Failed to create event: " + e.getMessage()))
+                            .addOnCompleteListener(task -> saveEventButton.setEnabled(true));
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                showToast("Error loading facility details: " + error);
                 saveEventButton.setEnabled(true);
             }
         });
@@ -351,33 +489,26 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         if (!validateInputs()) {
             return;
         }
-
         String dateTime = selectedDate + " " + selectedTime;
-
         if (!validateDates(dateTime, regDeadline)) {
             return;
         }
-
         int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
         Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
-
         if (waitListCapacityInt != null && waitListCapacityInt < capacityInt) {
             showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
             return;
         }
-
-        // Gather all event data
+        // Gather all event data (relevant for
         String eventName = eventNameEditText.getText().toString();
         String eventDescription = eventDescriptionEditText.getText().toString();
         boolean isGeolocationEnabled = geolocationSwitch.isChecked();
-
         // Upload poster first
         uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
             if (!success) {
                 saveEventButton.setEnabled(true);
                 return;
             }
-
             // Use OrganizerDatabase to create the event and generate eventId
             OrganizerDatabase.createEventInDatabase(
                     capacityInt,
@@ -388,7 +519,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     isGeolocationEnabled,
                     eventName,
                     regDeadline,
-                    waitListCapacityInt != null ? waitListCapacityInt : 0,
+                    waitListCapacityInt,
                     userDeviceId,
                     viewModel.posterImageBase64,
                     success1 -> {
@@ -405,7 +536,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             );
         });
     }
-
 
     private void promptAddFacilityDetails() {
         new AlertDialog.Builder(requireContext())
@@ -495,7 +625,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             listener.onComplete(true); // No image to upload, continue saving other data
             return;
         }
-
         String storagePath = "posters/" + eventId + ".jpg"; // Use eventId as the file name
         FirebaseStorage.getInstance().getReference(storagePath)
                 .putFile(posterUri)
@@ -516,7 +645,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
 //----------------------------------------------------- Cache------------------------------------------
-
     private void restoreCachedData() {
         if (viewModel.eventName != null) eventNameEditText.setText(viewModel.eventName);
         if (viewModel.eventDescription != null) eventDescriptionEditText.setText(viewModel.eventDescription);
