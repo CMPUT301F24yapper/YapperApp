@@ -231,10 +231,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Facility Name:"
+                    android:paddingEnd="8dp"
+                    android:text="Name:"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:paddingEnd="8dp" />
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/edit_facility"

@@ -350,4 +350,39 @@ public class AdminDatabase {
                     throw task.getException();
                 });
     }
+
+    public interface OnFacilityDetailsLoadedListener {
+        void onFacilityLoaded(String facilityName, String facilityAddress);
+        void onError(String error);
+    }
+
+    public static void getFacilityDetails(String userId, OnFacilityDetailsLoadedListener listener) {
+        FirebaseFirestore.getInstance().collection("Users").document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    String facilityName = document.getString("facilityName");
+                    String facilityAddress = document.getString("facilityAddress");
+                    listener.onFacilityLoaded(facilityName, facilityAddress);
+                })
+                .addOnFailureListener(e -> listener.onError(e.getMessage()));
+    }
+
+    public static void getOrganizerName(String organizerId, OnNameLoadedListener listener) {
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(organizerId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String name = document.getString("entrantName");
+                        listener.onNameLoaded(name != null ? name : "Unknown");
+                    } else {
+                        listener.onNameLoaded("Unknown");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onNameLoaded("Unknown"));
+    }
+
+    public interface OnNameLoadedListener {
+        void onNameLoaded(String name);
+    }
 }
