@@ -41,7 +41,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -69,6 +71,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private Button dateButton, timeButton, regDeadlineButton, saveEventButton;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch geolocationSwitch;
+    private boolean isCreatingEvent;
 
 
     /**
@@ -87,14 +90,21 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         View view = inflater.inflate(R.layout.organizer_create_edit_event, container, false);
         viewModel = new ViewModelProvider(requireActivity()).get(CreateEventViewModel.class);
 
-        initializeFields(view);
-        setupClickListeners();
+
 
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey("eventId")) {
+            isCreatingEvent = false;
             String eventId = bundle.getString("eventId");
             loadEventDetails(eventId);
+
         }
+        else{
+            isCreatingEvent = true;
+        }
+
+        initializeFields(view);
+        setupClickListeners();
 
         saveEventButton.setOnClickListener(v -> {
             saveOrUpdateEvent();
@@ -125,14 +135,14 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initializeFields(view);
-        restoreCachedData();
+        //restoreCachedData();
         setupClickListeners();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        saveToCache();
+        //saveToCache();
     }
 
     /**
@@ -156,6 +166,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         eventWaitListCapacityEditText = view.findViewById(R.id.wl_capacity_input);
         geolocationSwitch = view.findViewById(R.id.geo_location_toggle);
         saveEventButton = view.findViewById(R.id.save_event_button);
+        if (!isCreatingEvent) {
+            eventCapacityEditText.setEnabled(false);
+            eventWaitListCapacityEditText.setEnabled(false);
+        }
     }
 
     /**
@@ -353,7 +367,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 facilityNameFinal = facilityName;
                 facilityAddressFinal = facilityAddress;
 
-                processEventSave();
+                if (isCreatingEvent) {
+                    createEvent();
+                } else {
+                    updateEvent();
+                }
+
 
                 saveEventButton.setEnabled(true);
             }
@@ -425,6 +444,62 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+    private void createEvent() {
+        if (!validateInputs()) return;
+
+        String dateTime = selectedDate + " " + selectedTime;
+        if (!validateDates(dateTime, regDeadline)) return;
+
+        int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
+        Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
+
+        if (waitListCapacityInt != null && waitListCapacityInt < capacityInt) {
+            showToast("Waiting list capacity must be greater than or equal to the number of attendees.");
+            return;
+        }
+
+        // Gather all event details
+        String eventName = eventNameEditText.getText().toString();
+        String eventDescription = eventDescriptionEditText.getText().toString();
+        boolean isGeolocationEnabled = geolocationSwitch.isChecked();
+
+        // Upload poster first
+        uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
+            if (!success) {
+                saveEventButton.setEnabled(true);
+                return;
+            }
+
+            OrganizerDatabase.createEventInDatabase(
+                    capacityInt,
+                    dateTime,
+                    eventDescription,
+                    facilityAddressFinal,
+                    facilityNameFinal,
+                    isGeolocationEnabled,
+                    eventName,
+                    regDeadline,
+                    waitListCapacityInt != null ? waitListCapacityInt : 0,
+                    userDeviceId,
+                    viewModel.posterImageBase64,
+                    success1 -> {
+                        if (success1) {
+                            showToast("Event created successfully!");
+                            navigateToHome();
+                        } else {
+                            showToast("Failed to create event. Please try again.");
+                        }
+                    }
+            );
+        });
+    }
+
+    private void navigateToHome() {
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new OrganizerHomeFragment())
+                .commit();
+    }
+
 
     private void promptAddFacilityDetails() {
         new AlertDialog.Builder(requireContext())
@@ -444,6 +519,48 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                     dialog.dismiss();
                 })
                 .show();
+    }
+
+
+    private void updateEvent() {
+        if (!validateInputs()) return;
+
+        String dateTime = selectedDate + " " + selectedTime;
+        if (!validateDates(dateTime, regDeadline)) return;
+
+        // Gather updated event details
+        String updatedName = eventNameEditText.getText().toString();
+        String updatedDescription = eventDescriptionEditText.getText().toString();
+        boolean updatedGeolocationEnabled = geolocationSwitch.isChecked();
+
+        // Upload updated poster
+        uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
+            if (!success) {
+                saveEventButton.setEnabled(true);
+                return;
+            }
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("name", updatedName);
+            updates.put("description", updatedDescription);
+            updates.put("date_time", dateTime);
+            updates.put("registrationDeadline", regDeadline);
+            updates.put("geolocationEnabled", updatedGeolocationEnabled);
+
+            if (viewModel.posterImageBase64 != null) {
+                updates.put("posterBase64", viewModel.posterImageBase64);
+            }
+
+            FirebaseFirestore.getInstance().collection("Events").document(getArguments().getString("eventId"))
+                    .update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        showToast("Event updated successfully!");
+                        navigateToHome();
+                    })
+                    .addOnFailureListener(e -> {
+                        showToast("Failed to update event: " + e.getMessage());
+                    });
+        });
     }
 
     // Helper to validate input fields
