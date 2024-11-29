@@ -52,15 +52,24 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 String eventId = notification.getEventId(); // Ensure Notification has eventId
                 String userId = notification.getUserToId(); // Ensure Notification has userToId
 
+                if (eventId == null || eventId.isEmpty()) {
+                    Toast.makeText(context, "Error: Missing Event ID.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (userId == null || userId.isEmpty()) {
+                    Toast.makeText(context, "Error: Missing User ID.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 OrganizerDatabase.addUserToFinalList(eventId, userId, success -> {
                     if (success) {
-                        // Remove the notification after successful addition
+                        // Mark the notification as read and remove it from the list
                         notification.markAsRead();
                         notificationList.remove(position);
                         notifyItemRemoved(position);
                         Toast.makeText(context, "Accepted and added to Final List", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(context, "Error adding to Final List", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Error adding to Final List. Please try again.", Toast.LENGTH_SHORT).show();
                     }
                 });
             });
@@ -70,18 +79,28 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 String eventId = notification.getEventId(); // Ensure Notification has eventId
                 String userId = notification.getUserToId(); // Ensure Notification has userToId
 
+                if (eventId == null || eventId.isEmpty()) {
+                    Toast.makeText(context, "Error: Missing Event ID.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (userId == null || userId.isEmpty()) {
+                    Toast.makeText(context, "Error: Missing User ID.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
                     if (success) {
-                        // Remove the notification after successful rejection
+                        // Mark the notification as read and remove it from the list
                         notification.markAsRead();
                         notificationList.remove(position);
                         notifyItemRemoved(position);
                         Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(context, "Error adding to Cancelled List", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Error adding to Cancelled List. Please try again.", Toast.LENGTH_SHORT).show();
                     }
                 });
             });
+
         } else {
             holder.selectionButtons.setVisibility(View.GONE);
         }
