@@ -143,7 +143,7 @@ public class UserDatabase {
         userData.put("Entrant", user.isEntrant());
         userData.put("Organizer", user.isOrganizer());
         userData.put("entrantName", user.getName());
-        userData.put("entrantPhone", user.getPhoneNum());
+        userData.put("entrantPhone", user.getPhoneNum().isEmpty() ? "" : user.getPhoneNum());
         userData.put("notificationsEnabled", !user.isOptedOut());
         userData.put("facilityName", "");
         userData.put("facilityAddress", "");

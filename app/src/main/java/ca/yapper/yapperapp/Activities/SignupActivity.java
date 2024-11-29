@@ -114,7 +114,7 @@ public class SignupActivity extends AppCompatActivity {
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
         String entrantEmail = addEntrantEmailEditText.getText().toString();
 
-        if (entrantName.isEmpty() || entrantPhone.isEmpty() || entrantEmail.isEmpty()) {
+        if (entrantName.isEmpty() || entrantEmail.isEmpty()) {
             Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show();
             return;
         }
