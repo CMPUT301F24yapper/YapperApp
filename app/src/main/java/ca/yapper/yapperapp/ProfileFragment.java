@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,7 +68,7 @@ public class ProfileFragment extends Fragment {
     private Handler handler = new Handler(Looper.getMainLooper());
     private Map<String, Runnable> pendingUpdates = new HashMap<>();
     private boolean isUpdatingField = false;
-
+    private Bitmap generatedProfilePicture;
 
     @Nullable
     @Override
@@ -143,7 +146,12 @@ public class ProfileFragment extends Fragment {
 
     private void removeProfilePicture() {
         updateField("profileImage", null); // Reset the Firestore field
-        profileImage.setImageResource(R.drawable.ic_profile_placeholder); // Reset to placeholder
+
+        Bitmap bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888);
+        generatedProfilePicture = bitmap;
+        generateProfileImage(generatedProfilePicture);
+
+        profileImage.setImageBitmap(generatedProfilePicture); // Reset to generated pic
         Toast.makeText(getContext(), "Profile picture removed", Toast.LENGTH_SHORT).show();
     }
 
@@ -260,15 +268,20 @@ public class ProfileFragment extends Fragment {
         EntrantDatabase.loadProfileImage(userDeviceId, new EntrantDatabase.OnProfileImageLoadedListener() {
             @Override
             public void onProfileImageLoaded(String base64Image) {
+                Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+                generatedProfilePicture = bitmap;
+                generateProfileImage(generatedProfilePicture);
+
                 if (base64Image != null) {
-                    Bitmap bitmap = decodeBase64ToBitmap(base64Image);
+                    bitmap = decodeBase64ToBitmap(base64Image);
                     if (bitmap != null) {
                         profileImage.setImageBitmap(bitmap);
                     } else {
-                        profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        //profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        profileImage.setImageBitmap(generatedProfilePicture);
                     }
                 } else {
-                    profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    profileImage.setImageBitmap(generatedProfilePicture);
                 }
             }
 
@@ -277,6 +290,41 @@ public class ProfileFragment extends Fragment {
                 // Handle error if needed
             }
         });
+    }
+
+    private void generateProfileImage(Bitmap bitmap){
+        Canvas imageName = new Canvas(bitmap);
+        Paint textStyle = new Paint();
+        Paint circleStyle = new Paint();
+        circleStyle.setColor(Color.parseColor("#80712C95"));
+
+        textStyle.setTextSize(500);
+        //String[] profileName = nameEditText.getText().toString().split("[ .;:]");
+        String[] profileName = nameEditText.getText().toString().trim().split("\\s+");
+        String initials = "";
+        for (String word : profileName){
+            initials += word.charAt(0);
+        }
+
+        float textWidthOnScreen = textStyle.measureText(initials);
+        Paint.FontMetrics fontMetrics = textStyle.getFontMetrics();
+        float textHeightOnScreen = fontMetrics.descent - fontMetrics.ascent;
+
+        textStyle.setColor(Color.BLACK);
+        textStyle.setTextAlign(Paint.Align.CENTER);
+
+        while ((textHeightOnScreen >= imageName.getHeight() * 0.5) || (textWidthOnScreen >= imageName.getWidth() * 0.5)){
+            textStyle.setTextSize(textStyle.getTextSize() - 1);
+
+            textWidthOnScreen = textStyle.measureText(initials);
+            fontMetrics = textStyle.getFontMetrics();
+            textHeightOnScreen = fontMetrics.descent - fontMetrics.ascent;
+            // NOTE: descent is distance from _ bar beneath char to bottom of lowest char,
+            //       ascent is distance from _ to the top of highest char(-'ve)
+        }
+
+        imageName.drawCircle(imageName.getWidth() / 2, imageName.getHeight() / 2, imageName.getWidth() / 2, circleStyle);
+        imageName.drawText(initials,imageName.getWidth() / 2, (imageName.getHeight() / 2) - ((fontMetrics.ascent + fontMetrics.descent) / 2), textStyle);
     }
 
     private void setupTextChangeListeners() {
