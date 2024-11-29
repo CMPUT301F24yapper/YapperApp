@@ -11,6 +11,7 @@ import java.util.ArrayList;
  */
 public class Event {
 
+    private String documentId;
     private int capacity;
     private String date_Time;
     private String description;
@@ -297,5 +298,13 @@ public class Event {
 
     public String getPosterBase64() {
         return posterBase64;
+    }
+
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
     }
 }
