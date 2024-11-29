@@ -169,6 +169,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         if (!isCreatingEvent) {
             eventCapacityEditText.setEnabled(false);
             eventWaitListCapacityEditText.setEnabled(false);
+            eventNameEditText.setEnabled((false));
         }
     }
 
@@ -543,9 +544,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             Map<String, Object> updates = new HashMap<>();
             updates.put("name", updatedName);
             updates.put("description", updatedDescription);
-            updates.put("date_time", dateTime);
+            updates.put("date_Time", dateTime);
             updates.put("registrationDeadline", regDeadline);
-            updates.put("geolocationEnabled", updatedGeolocationEnabled);
+            updates.put("isGeolocationEnabled", updatedGeolocationEnabled);
 
             if (viewModel.posterImageBase64 != null) {
                 updates.put("posterBase64", viewModel.posterImageBase64);
