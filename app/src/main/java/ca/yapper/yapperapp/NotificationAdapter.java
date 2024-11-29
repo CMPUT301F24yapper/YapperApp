@@ -88,16 +88,22 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     return;
                 }
 
-                // First remove the user from the selectedList
+                // Remove from selectedList
                 OrganizerDatabase.removeUserFromSelectedList(eventId, userId, success -> {
                     if (success) {
-                        // Then add the user to the cancelledList
+                        // Add to cancelledList
                         OrganizerDatabase.addUserToCancelledList(eventId, userId, successAdd -> {
                             if (successAdd) {
-                                // Mark notification as read and remove it from the list
+                                // Remove the notification safely
                                 notification.markAsRead();
-                                notificationList.remove(position);
-                                notifyItemRemoved(position);
+
+                                // Find the notification in the list by object reference
+                                int notificationIndex = notificationList.indexOf(notification);
+                                if (notificationIndex >= 0) {
+                                    notificationList.remove(notificationIndex);
+                                    notifyItemRemoved(notificationIndex);
+                                }
+
                                 Toast.makeText(context, "Declined and added to Cancelled List.", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(context, "Error adding to Cancelled List.", Toast.LENGTH_SHORT).show();
@@ -108,6 +114,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     }
                 });
             });
+
 
 
         } else {
