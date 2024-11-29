@@ -16,12 +16,26 @@ import ca.yapper.yapperapp.AdminImageAdapter;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.R;
 
+/**
+ * Fragment to display the images stored in the database as lists that only admins can browse.
+ */
 public class AdminImageListFragment extends Fragment {
     private RecyclerView recyclerView;
     private AdminImageAdapter adapter;
     private List<AdminImageAdapter.ImageData> imageList;
     private LinearLayout emptyStateLayout;
 
+
+    /**
+     * Inflates the fragments layout, sets up views, and starts search function all related to
+     * images from the app
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     *
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -40,6 +54,11 @@ public class AdminImageListFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * Function to obtain images from the database and update the UI accordingly, if no images exist
+     * then displays a custom message.
+     */
     private void loadImages() {
         AdminDatabase.getAllImages()
                 .addOnSuccessListener(images -> {

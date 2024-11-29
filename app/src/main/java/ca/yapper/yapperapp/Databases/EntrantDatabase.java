@@ -18,17 +18,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * Class holding all the entrant related functions that interact with the database.
+ */
 public class EntrantDatabase {
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
+
+    /**
+     * Interface that defines callback methods
+     */
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
         void onError(String error);
     }
 
+
+    /**
+     * Interface for operation completion checks.
+     */
     public interface OnOperationCompleteListener {
         void onComplete(boolean success);
     }
+
 
     /**
      * Interface for handling the result of loading a User from Firestore.
@@ -38,23 +50,47 @@ public class EntrantDatabase {
         void onUserLoadError(String error);
     }
 
+
+    /**
+     * Interface for event finding methods and errors associated with it
+     */
     public interface OnEventFoundListener {
         void onEventFound(String eventId);
         void onEventNotFound();
         void onError(Exception e);
     }
 
+
+    /**
+     * Interface for event loading methods and errors associated with it
+     */
     public interface OnEventsLoadedListener {
         void onEventsLoaded(List<Event> events);
         void onError(String error);
     }
 
+
+    /**
+     * Function that uses a listener to check if a user is in an events waiting list.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The unique id for the user, created from the device id.
+     * @param listener handles the outcome of the user check
+     */
     public static void checkUserInEvent(String eventId, String userId, EntrantDatabase.OnUserCheckListener listener) {
         FirestoreUtils.checkDocumentField("Events/" + eventId + "/waitingList", userId, null)
                 .addOnSuccessListener(listener::onUserInList)
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
+
+    /**
+     * Function that adds a user to the waiting list of an event and updates the joined events list.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The unique id for the user, created from the device id.
+     * @param listener handles the outcome of the event check
+     */
     public static void joinEvent(String eventId, String userId, OnOperationCompleteListener listener) {
         // Implement join event logic using Firestore batch writes
 
@@ -85,6 +121,14 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onComplete(false));
         }
 
+
+    /**
+     * Function that removes a user to the waiting list of an event and updates the joined events list.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The unique id for the user, created from the device id.
+     * @param listener handles the outcome of the event check
+     */
     public static void unjoinEvent(String eventId, String userId, EntrantDatabase.OnOperationCompleteListener listener) {
      // Start a batch write
             WriteBatch batch = db.batch();
@@ -108,6 +152,7 @@ public class EntrantDatabase {
                     .addOnSuccessListener(aVoid -> listener.onComplete(true))
                     .addOnFailureListener(e -> listener.onComplete(false));
         }
+
 
     /**
      * Loads event IDs from a specified subcollection in Firestore and populates the eventIdsList.
@@ -134,6 +179,13 @@ public class EntrantDatabase {
         });
     }
 
+
+    /**
+     * This function obtains an event by using its document id, which is the QR Code string value.
+     *
+     * @param documentId id of the event in the database
+     * @param listener listener to handle outcome of getting the event
+     */
     public static void getEventByQRCode(String documentId, OnEventFoundListener listener) {
         db.collection("Events").document(documentId).get()
                 .addOnCompleteListener(task -> {
@@ -149,6 +201,14 @@ public class EntrantDatabase {
                 });
     }
 
+
+    /**
+     * Loads a list of events for the given event list type for a specified user.
+     *
+     * @param userDeviceId id of the users device used in database, different from profile name
+     * @param type the type of events list(joined, registered, missed)
+     * @param listener listener to handle outcome of loading an event
+     */
     public static void loadEventsList(String userDeviceId, EventListType type, OnEventsLoadedListener listener) {
         Log.e("loadeventslist from entrantsdb", "loading events list");
         String collectionName;
@@ -214,12 +274,23 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading events: " + e.getMessage()));
     }
 
+
+    /**
+     * enumerates the types of event lists
+     */
     public enum EventListType {
         JOINED,
         REGISTERED,
         MISSED
     }
 
+
+    /**
+     * Function that loads a profile image for a given user by accessing the database.
+     *
+     * @param deviceId The unique device ID of the user.
+     * @param listener listener to handle outcome of loading an image profile
+     */
     public static void loadProfileImage(String deviceId, final OnProfileImageLoadedListener listener) {
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -233,15 +304,21 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving image: " + e.getMessage()));
     }
 
-    // Define an interface to handle the result when the profile image is loaded
+
+    /**
+     * Interface for loading images and associated error handling
+     */
     public interface OnProfileImageLoadedListener {
-        void onProfileImageLoaded(String base64Image);  // When the image is successfully loaded
-        void onError(String error);                    // When there's an error
+        void onProfileImageLoaded(String base64Image);
+        void onError(String error);
     }
 
+    /**
+     * Interface for updating fields and the associated error handling
+     */
     public interface OnFieldUpdateListener {
-        void onFieldUpdated(Object value);  // When the image is successfully loaded
-        void onError(String error);                    // When there's an error
+        void onFieldUpdated(Object value);
+        void onError(String error);
     }
 
 }

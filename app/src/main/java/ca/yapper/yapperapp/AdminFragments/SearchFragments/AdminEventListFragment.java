@@ -25,14 +25,17 @@ import ca.yapper.yapperapp.Databases.AdminDatabase;
  * Fragment to display the event stored in the database as lists that only admins can browse.
  */
 public class AdminEventListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private AdminEventAdapter adapter;
     private List<Event> eventList;
     private EditText searchBar;
     private LinearLayout emptyStateLayout;
 
+
     /**
-     * Inflates the fragments layout, sets up views, and starts search function
+     * Inflates the fragments layout, sets up views, and starts search function, all relating to
+     * events from the app
      *
      * @param inflater LayoutInflater used to inflate the fragment layout.
      * @param container The parent view that this fragment's UI is attached to.
@@ -59,6 +62,7 @@ public class AdminEventListFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Displays stored events specific to the fragment and updates UI
      */
@@ -68,8 +72,9 @@ public class AdminEventListFragment extends Fragment {
         loadEvents();
     }
 
+
     /**
-     * Obtains event information from all events and displays them while updating the UI.
+     * Obtains event information from all events and updates the list adapters.
      */
     private void loadEvents() {
         AdminDatabase.getAllEvents()
@@ -80,6 +85,7 @@ public class AdminEventListFragment extends Fragment {
                     updateEmptyState();
                 });
     }
+
 
     /**
      * Function that sets up the search functionality for admin lists of events
@@ -101,6 +107,7 @@ public class AdminEventListFragment extends Fragment {
         });
     }
 
+
     /**
      *  Function that filters event list based on searchText string and updates the UI with
      *  an adapter.
@@ -117,6 +124,7 @@ public class AdminEventListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         updateEmptyState();
     }
+
 
     /**
      * Function to check if list is empty and change visibility accordingly. If list is empty,

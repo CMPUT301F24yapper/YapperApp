@@ -19,6 +19,7 @@ import ca.yapper.yapperapp.R;
  * */
 public class AdminActivity extends AppCompatActivity {
 
+
     /**
      * Initial setup for admin activity
      *
@@ -36,6 +37,7 @@ public class AdminActivity extends AppCompatActivity {
                     .commit();
         }
     }
+
 
     /**
      * This function sets up the fragment switching functionality of the bottom navigation bar.
@@ -69,6 +71,7 @@ public class AdminActivity extends AppCompatActivity {
             return true;
         });
     }
+
 
     /**
      * Function for displaying a popup menu that displays different roles and sets the

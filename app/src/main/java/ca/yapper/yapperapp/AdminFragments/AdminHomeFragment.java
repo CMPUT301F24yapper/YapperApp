@@ -14,12 +14,28 @@ import ca.yapper.yapperapp.R;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Fragment for the admins home page which displays statistics regarding events, users, facilities
+ * and the biggest events on the app.
+ */
 public class AdminHomeFragment extends Fragment {
+
     private TextView totalEventsText;
     private TextView totalOrganizersText;
     private TextView totalUsersText;
     private LinearLayout eventsListContainer;
 
+
+    /**
+     * Function which inflates the admin home page view group, initializes view UI elements,
+     * obtains statistics, then obtains the stats for the largest events.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     *
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -32,6 +48,11 @@ public class AdminHomeFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Function that attaches UI elements with variables for ease of access and modification
+     *
+     * @param view The UI element that will be used for the various text views
+     */
     private void initializeViews(View view) {
         totalEventsText = view.findViewById(R.id.total_events);
         totalOrganizersText = view.findViewById(R.id.organizers);
@@ -39,6 +60,9 @@ public class AdminHomeFragment extends Fragment {
         eventsListContainer = view.findViewById(R.id.events_list_container);
     }
 
+    /**
+     * Function that sets the specified UI elements to statistics obtained from the database
+     */
     private void loadStats() {
         AdminDatabase.getAdminStats().addOnSuccessListener(stats -> {
             if (getContext() == null) return;
@@ -49,6 +73,10 @@ public class AdminHomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Function that organizes all the events by total users and then displays a list with the
+     * five largest events.
+     */
     private void loadBiggestEvents() {
         AdminDatabase.getBiggestEvents().addOnSuccessListener(events -> {
             if (getContext() == null) return;
