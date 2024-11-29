@@ -167,8 +167,7 @@ public class WaitingListFragment extends Fragment {
      * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
      */
     private void drawMultipleApplicants() {
-        // make sure eventCapacity updated
-        loadEventCapacity(); // should update int eventCapacity (confirm)
+        loadEventCapacity(); // Ensure eventCapacity is updated
         Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
         OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnDataFetchListener<Integer>() {
             @Override
@@ -176,12 +175,11 @@ public class WaitingListFragment extends Fragment {
                 int remainingSlots = eventCapacity - currentSelectedCount;
                 Log.e("draw multiple applicants", "Remaining slots: " + remainingSlots);
 
-
                 if (remainingSlots <= 0) {
                     Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                int drawCount = Math.min(remainingSlots, usersWaitingList.size());  // returns the smaller of the two
+                int drawCount = Math.min(remainingSlots, usersWaitingList.size()); // Ensure draw count doesn't exceed remaining slots or waiting list size
                 final int[] completedMoves = {0};
 
                 for (int i = 0; i < drawCount; i++) {
@@ -190,14 +188,17 @@ public class WaitingListFragment extends Fragment {
                         int index = random.nextInt(usersWaitingList.size());
                         User selectedUser = usersWaitingList.remove(index);
 
-                        // Create notification
+                        // Create notification with eventId
                         Notification notification = new Notification(
                                 new Date(),
+                                selectedUser.getDeviceId(),
+                                null, // Assuming no specific sender is set
                                 "Selected for Event",
                                 "You have been selected from the waiting list",
                                 "Selection"
                         );
-                        notification.saveToDatabase(selectedUser.getDeviceId());
+                        notification.setEventId(eventId); // Set the event ID
+                        notification.saveToDatabase();
 
                         OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
                                 success -> {
@@ -220,44 +221,6 @@ public class WaitingListFragment extends Fragment {
                 Log.e("FirestoreError", "Error fetching selected list count", e);
             }
         });
-        /**db.collection("Events").document(eventId)
-                .collection("selectedList").get()
-                .addOnSuccessListener(selectedSnapshot -> {
-                    int currentSelectedCount = selectedSnapshot.size();
-                    int remainingSlots = eventCapacity - currentSelectedCount;
-
-                    if (remainingSlots <= 0) {
-                        Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    int drawCount = Math.min(remainingSlots, usersWaitingList.size());
-                    final int[] completedMoves = {0};
-
-                    for (int i = 0; i < drawCount; i++) {
-                        if (!usersWaitingList.isEmpty()) {
-                            Random random = new Random();
-                            int index = random.nextInt(usersWaitingList.size());
-                            User selectedUser = usersWaitingList.get(index);
-
-                            // Create notification
-                            Notification notification = new Notification(
-                                    new Date(),
-                                    "Selected for Event",
-                                    "You have been selected from the waiting list",
-                                    "Selection"
-                            );
-                            notification.saveToDatabase(selectedUser.getDeviceId());
-
-                            moveUserToSelectedList(selectedUser, () -> {
-                                completedMoves[0]++;
-                                if (completedMoves[0] == drawCount) {
-                                    refreshAllFragments();
-                                }
-                            });
-                        }
-                    }
-                });**/
     }
 
 
