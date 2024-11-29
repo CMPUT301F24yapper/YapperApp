@@ -11,6 +11,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerDatabase {
@@ -456,6 +459,53 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
 
+    public static Task<Void> updateFacilityNameForEvents(String userId, String facilityName) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityName", facilityName);
+
+        // Map<String, Object> eventUpdates = new HashMap<>();
+        // eventUpdates.put("facilityName", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), userUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
+  
+    public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityAddress", facilityLocation);
+
+        // Map<String, Object> eventUpdates = new HashMap<>();
+        // eventUpdates.put("facilityLocation", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), userUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
 
     public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -473,7 +523,6 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
-
 
 
     public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
@@ -522,5 +571,4 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
-
 }
