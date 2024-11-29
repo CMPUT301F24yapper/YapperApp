@@ -15,8 +15,8 @@ import java.util.List;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 
 public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.ImageViewHolder> {
-    private List<ImageData> images;
-    private Context context;
+    private final List<ImageData> images;
+    private final Context context;
 
     public static class ImageData {
         String base64Image;

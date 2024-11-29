@@ -23,7 +23,7 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
  * This adapter binds the {@link Notification} data to each item view in the list.
  */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
-    private List<Notification> notificationList;
+    private final List<Notification> notificationList;
     private Context context;
     public NotificationAdapter(List<Notification> notificationList) {
         this.notificationList = notificationList;
