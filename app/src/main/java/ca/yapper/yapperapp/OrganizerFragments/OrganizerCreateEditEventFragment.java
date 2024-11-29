@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -57,6 +58,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     //------------------Constants----------------------------------------------------------------
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "hh:mm a";
+    private static final int REQUEST_CODE_PICK_IMAGE = 1;
     private ActivityResultLauncher<Intent> pickImageLauncher;
 
     //-------------------------------------------UI Components------------------------------------------------
@@ -170,11 +172,28 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     private void setupChoosePosterButton(View view) {
         Button choosePosterButton = view.findViewById(R.id.choose_poster_button);
         choosePosterButton.setOnClickListener(v -> {
-            // Create an intent to pick an image
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
-            pickImageLauncher.launch(intent);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                pickImageLauncher.launch(intent);
+            } else {
+                startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
+            }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedImageUri = data.getData();
+            if (selectedImageUri != null) {
+                ImageView posterImageView = getView().findViewById(R.id.poster_image);
+                posterImageView.setImageURI(selectedImageUri);
+            }
+        }
     }
 
     private void uploadPosterImageAsBase64(Uri posterUri, OnOperationCompleteListener listener) {
