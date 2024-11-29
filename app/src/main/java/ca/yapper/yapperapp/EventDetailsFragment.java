@@ -206,7 +206,7 @@ public class EventDetailsFragment extends Fragment {
 
     private void checkEventDates(Event event) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a", Locale.getDefault());
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         try {
             Date currentDate = new Date();
             Date regDeadlineDate = dateFormat.parse(regDeadlineTextView.getText().toString().replace("Registration Deadline: ", ""));
@@ -229,7 +229,9 @@ public class EventDetailsFragment extends Fragment {
         OrganizerDatabase.getWaitingListCount(eventId, new OrganizerDatabase.OnWaitListCountLoadedListener() {
             @Override
             public void onCountLoaded(int waitListCount) {
-                if (event.getWaitListCapacity() != null && (event.getWaitListCapacity() - waitListCount) <= 0) {
+                if (event.getWaitListCapacity() != null
+                        && event.getWaitListCapacity() != 0
+                        && (event.getWaitListCapacity() - waitListCount) <= 0) {
                     setButtonState("Wait List Full", Color.GRAY, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);

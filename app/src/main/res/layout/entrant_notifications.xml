@@ -13,8 +13,6 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
-
-
         <!-- Title for the toolbar -->
         <TextView
             android:id="@+id/notification_title"

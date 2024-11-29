@@ -10,13 +10,22 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
         android:background="@android:color/white"
+        android:layout_marginBottom="7dp"
         app:tabTextColor="@android:color/black"
         app:tabSelectedTextColor="@android:color/black"
-        app:tabIndicatorHeight="0dp"
+        app:tabIndicatorHeight="3dp"
         app:tabMode="fixed"
-        app:tabGravity="fill">
+        app:tabGravity="fill"
+        app:tabTextAppearance="@style/TabTextAppearance"
+        app:tabSelectedTextAppearance="@style/TabTextAppearance.Selected"
+        app:tabPaddingBottom="0dp"
+        app:tabPaddingTop="10dp"
+        app:tabRippleColor="@null"
+        app:tabIndicatorFullWidth="false"
+        app:tabIndicator="@drawable/tab_indicator">
+
 
         <!-- Tabs -->
         <com.google.android.material.tabs.TabItem
