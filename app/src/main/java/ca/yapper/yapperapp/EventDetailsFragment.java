@@ -49,6 +49,7 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 public class EventDetailsFragment extends Fragment {
 
     private String eventId;
+    private Event finalEvent;
     private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, organizerNameTextView;
     boolean geolocationEnabled;
     private Button joinButton; // Entrant Button:
@@ -181,9 +182,12 @@ public class EventDetailsFragment extends Fragment {
                     }
                 }
                 eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
+
                 // setupButtonListeners();
                 Log.i("loadEventDetails", "checkUserInList being called on event");
-                checkUserInList(event);  // Check user is in waiting list first
+                checkUserInList();  // Check user is in waiting list first
 
             }
             @Override
@@ -196,17 +200,18 @@ public class EventDetailsFragment extends Fragment {
     /**
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
-    private void checkUserInList(Event event) {
-        Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + eventId + userDeviceId);
+    private void checkUserInList() {
+        // Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + eventId + userDeviceId);
+        Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
         // OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
-        OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
-            @Override
+        OrganizerDatabase.checkUserInEvent(finalEvent.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+        @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
                     setButtonState("Unjoin Event", Color.GRAY, false);
                 }
                 else {
-                    checkEventDates(event);  // then check event dates
+                    checkEventDates();  // then check event dates
                 }
             }
 
@@ -217,7 +222,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
-    private void checkEventDates(Event event) {
+    private void checkEventDates() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         try {
@@ -230,26 +235,26 @@ public class EventDetailsFragment extends Fragment {
                 setButtonState("Event Passed", Color.GRAY, false);
             }
             else {
-                checkWaitListCapacity(event);  // Check if waitlist capacity is full
+                checkWaitListCapacity();  // Check if waitlist capacity is full
             }
         } catch (ParseException e) {
             Log.e("EventDetailsFragment", "Date parsing error: " + e.getMessage());
         }
     }
 
-    private void checkWaitListCapacity(Event event) {
+    private void checkWaitListCapacity() {
         // check if full
         // OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
-        OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
+        OrganizerDatabase.getWaitingListCount(finalEvent.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
             @Override
             public void onCountLoaded(int waitListCount) {
-                if (event.getWaitListCapacity() != null
-                        && event.getWaitListCapacity() != 0
-                        && (event.getWaitListCapacity() - waitListCount) <= 0) {
+                if (finalEvent.getWaitListCapacity() != null
+                        && finalEvent.getWaitListCapacity() != 0
+                        && (finalEvent.getWaitListCapacity() - waitListCount) <= 0) {
                     setButtonState("Wait List Full", Color.GRAY, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
-                    joinButton.setOnClickListener(v -> handleJoinButtonClick(event));
+                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
                 }
             }
             @Override
@@ -285,19 +290,19 @@ public class EventDetailsFragment extends Fragment {
      * If geolocation is required, it prompts the user to confirm. If not, it proceeds to join the event.
      * If the button displays "Unjoin", it unjoins the user from the event.
      */
-    private void handleJoinButtonClick(Event event) {
+    private void handleJoinButtonClick() {
         Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
                 Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
-                showGeolocationWarningDialog(event);
+                showGeolocationWarningDialog();
             } else {
                 Log.d("EventDetailsFragment", "Joining event directly");
-                joinEvent(event);
+                joinEvent();
             }
         } else {
             Log.d("EventDetailsFragment", "Unjoining event");
-            unjoinEvent(event);
+            unjoinEvent();
         }
     }
 
@@ -319,7 +324,7 @@ public class EventDetailsFragment extends Fragment {
     private void handleViewParticipantsButtonClick() {
         ViewParticipantsFragment viewParticipantsFragment = new ViewParticipantsFragment();
         Bundle args = new Bundle();
-        args.putString("eventId", eventId); // Pass to ViewParticipantsFragment
+        args.putString("eventId", finalEvent.getDocumentId()); // Pass to ViewParticipantsFragment
         viewParticipantsFragment.setArguments(args);
 
         getParentFragmentManager().beginTransaction()
@@ -334,7 +339,7 @@ public class EventDetailsFragment extends Fragment {
     private void handleEditEventButtonClick() {
         OrganizerCreateEditEventFragment editEventFragment = new OrganizerCreateEditEventFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("eventId", eventId); // Pass eventId to the EditEventFragment
+        bundle.putString("eventId", finalEvent.getDocumentId()); // Pass eventId to the EditEventFragment
         editEventFragment.setArguments(bundle);
 
         getParentFragmentManager().beginTransaction()
@@ -348,7 +353,7 @@ public class EventDetailsFragment extends Fragment {
      */
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
-        QRCodeData.putString("0", eventId);
+        QRCodeData.putString("0", finalEvent.getDocumentId());
 
         OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
         newFragment.setArguments(QRCodeData);
@@ -359,10 +364,10 @@ public class EventDetailsFragment extends Fragment {
      * Shows a dialog to warn the user that geolocation is required for this event.
      * If the user confirms, the event will be joined.
      */
-    private void showGeolocationWarningDialog(Event event) {
+    private void showGeolocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
-                .setPositiveButton("Continue", (dialog, id) -> requestLocationPermission(event)) // confirm this still works
+                .setPositiveButton("Continue", (dialog, id) -> requestLocationPermission()) // confirm this still works
                 .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss())
                 .create()
                 .show();
@@ -372,27 +377,25 @@ public class EventDetailsFragment extends Fragment {
      * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
      * If successful, it updates the join button to display "Unjoin" and shows a success message.
      */
-    private void joinEvent(Event event) {
+    private void joinEvent() {
             if (userDeviceId == null) {
                 Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (geolocationEnabled && !geolocationPermitted) {
-                showGeolocationWarningDialog(event);
+                showGeolocationWarningDialog();
                 return;
             }
-            EntrantDatabase.joinEvent(event.getDocumentId(), userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
-                @Override
-                public void onComplete(boolean success) {
-                    if (getContext() == null) return;
+            Log.d("joinEvent()", "about to call EntrantDb.joinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+            EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+                if (getContext() == null) return;
 
-                    if (success) {
-                        joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY);
-                        Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                if (success) {
+                    joinButton.setText("Unjoin");
+                    joinButton.setBackgroundColor(Color.GRAY);
+                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -406,25 +409,22 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
+        Log.d("unjoinEvent()", "about to call EntrantDb.unjoinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+        EntrantDatabase.unjoinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+            if (getContext() == null) return;
 
-        EntrantDatabase.unjoinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
-            @Override
-            public void onComplete(boolean success) {
-                if (getContext() == null) return;
-
-                if (success) {
-                    joinButton.setText("Join");
-                    joinButton.setBackgroundColor(Color.BLUE);
-                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                }
+            if (success) {
+                joinButton.setText("Join");
+                joinButton.setBackgroundColor(Color.BLUE);
+                Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @SuppressLint("MissingPermission")
-    private void getUserLocation(Event event) {
+    private void getUserLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -437,11 +437,11 @@ public class EventDetailsFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         // Call UserDatabase to save the location
-                        UserDatabase.saveLocationToFirestore(event.getDocumentId(), userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
+                        UserDatabase.saveLocationToFirestore(finalEvent.getDocumentId(), userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
                             @Override
                             public void onSuccess() {
                                 Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
-                                joinEvent(event); // Proceed to join the event
+                                joinEvent(); // Proceed to join the event
                             }
 
                             @Override
@@ -456,12 +456,12 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    private void requestLocationPermission(Event event) {
+    private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
         } else {
             geolocationPermitted = true;
-            getUserLocation(event);
+            getUserLocation();
         }
     }
 
@@ -469,7 +469,7 @@ public class EventDetailsFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1001) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getUserLocation(event); // Retry getting location
+                getUserLocation(); // Retry getting location
             } else {
                 Toast.makeText(getContext(), "Permission denied. Cannot join geolocation-enabled events.", Toast.LENGTH_SHORT).show();
             }
