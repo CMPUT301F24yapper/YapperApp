@@ -301,51 +301,38 @@ public class SelectedListFragment extends Fragment {
      * @param user The user to be moved.
      * @param onComplete Runnable executed once the move is complete.
      */
+    /**
+     * Moves a user from the waiting list to the selected list in Firestore.
+     *
+     * @param user The user to be moved.
+     * @param onComplete Runnable executed once the move is complete.
+     */
     private void moveToSelectedList(User user, Runnable onComplete) {
+
+        // Create notification with eventId
         Notification notification = new Notification(
                 new Date(),
+                user.getDeviceId(), // Recipient's device ID
+                null, // Assuming no specific sender is set
                 "Selected for Event",
-                "You have been selected from the waiting list",
-                "Selection"
+                "You have been selected from the waiting list for event: " + eventId,
+                "Selection",
+                eventId // Include the event ID in the notification
         );
-        notification.saveToDatabase(user.getDeviceId());
+        notification.saveToDatabase(); // Save the notification to Firestore
 
         OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
             @Override
             public void onComplete(boolean success) {
                 if (success) {
-                    onComplete.run();
+                    onComplete.run(); // Notify that the operation was successful
                 } else {
                     Toast.makeText(getContext(), "Failed to move user to selected list", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
-        /** Map<String, Object> timestamp = new HashMap<>();
-        timestamp.put("timestamp", FieldValue.serverTimestamp());
 
-        DocumentReference waitingListRef = db.collection("Events").document(eventId)
-                .collection("waitingList").document(user.getDeviceId());
-        DocumentReference selectedListRef = db.collection("Events").document(eventId)
-                .collection("selectedList").document(user.getDeviceId());
-
-        // Create and save notification
-        Notification notification = new Notification(
-                new Date(),
-                "Selected for Event",
-                "You have been selected from the waiting list",
-                "Selection"
-        );
-        notification.saveToDatabase(user.getDeviceId());
-
-        db.runTransaction(transaction -> {
-            transaction.delete(waitingListRef);
-            transaction.set(selectedListRef, timestamp);
-            return null;
-        }).addOnSuccessListener(aVoid -> {
-            onComplete.run();
-        });
-    } **/
 
 
     /**
@@ -367,23 +354,6 @@ public class SelectedListFragment extends Fragment {
             }
         });
     }
-        /**Map<String, Object> timestamp = new HashMap<>();
-        timestamp.put("timestamp", FieldValue.serverTimestamp());
-
-        DocumentReference selectedListRef = db.collection("Events").document(eventId)
-                .collection("selectedList").document(user.getDeviceId());
-        DocumentReference waitingListRef = db.collection("Events").document(eventId)
-                .collection("waitingList").document(user.getDeviceId());
-
-        db.runTransaction(transaction -> {
-            transaction.delete(selectedListRef);
-            transaction.set(waitingListRef, timestamp);
-            return null;
-        }).addOnSuccessListener(aVoid -> {
-            refreshAllFragments();
-            drawFromWaitingList();
-        });
-    }**/
 
 
 

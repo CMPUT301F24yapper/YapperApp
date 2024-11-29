@@ -220,6 +220,39 @@ public class EntrantDatabase {
         MISSED
     }
 
+    /**
+     * Loads a User from Firestore using the specified device ID and provides the result
+     * through the provided listener.
+     *
+     * @param userDeviceId The unique device ID of the user to be loaded.
+     * @param listener The listener to handle success or error when loading the user.
+     */
+    public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Users").document(userDeviceId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            User user = new User(
+                                    documentSnapshot.getString("deviceId"),
+                                    documentSnapshot.getString("entrantEmail"),
+                                    documentSnapshot.getBoolean("Admin"),
+                                    documentSnapshot.getBoolean("Entrant"),
+                                    documentSnapshot.getBoolean("Organizer"),
+                                    documentSnapshot.getString("entrantName"),
+                                    documentSnapshot.getString("entrantPhone"),
+                                    documentSnapshot.getBoolean("notificationsEnabled"),
+                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+                            );
+                            listener.onUserLoaded(user);
+                        }
+                        catch (Exception e) {
+                            listener.onUserLoadError("Error creating user");
+                        }
+                    }
+                });
+    }
+
     public static void loadProfileImage(String deviceId, final OnProfileImageLoadedListener listener) {
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {

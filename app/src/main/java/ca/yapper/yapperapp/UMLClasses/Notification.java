@@ -32,25 +32,48 @@ public class Notification {
     private String message;
     private String notificationType;    // Type such as "Invitation", "Rejection", etc.
     private boolean isRead;
-    private static final String channel_Id = "event_notifications";
-    private static final String channel_Name = "event_notifications";
-    private static final String channel_desc = "event_notifications";
+
+
+    public String getEventId() {
+        return eventId;
+    }
+
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+
+    private String eventId;
+
+    public Notification(Date dateTimeStamp, String userToId, String userFromId,
+                        String title, String message, String notificationType, String eventId) {
+        this.dateTimeStamp = dateTimeStamp;
+        this.userToId = userToId;
+        this.userFromId = userFromId;
+        this.title = title;
+        this.message = message;
+        this.notificationType = notificationType;
+        this.eventId = eventId;
+        this.isRead = false;
+    }
 
 
     /**
-     * Default constructor required for Firestore deserialization.
+     * Default constructor required for Firebase deserialization.
      */
-    public Notification() {}
-    /**
-     * Constructs a Notification with specified details.
-     *
-     * @param dateTimeStamp The timestamp of the notification.
-     * @param userToId The recipient's device ID.
-     * @param userFromId The sender's device ID.
-     * @param title The title of the notification.
-     * @param message The message content of the notification.
-     * @param notificationType The type of notification (e.g., "Invitation", "Rejection").
-     */
+    public Notification() {
+        this.id = null;
+        this.dateTimeStamp = new Date(); // Default to the current date
+        this.userToId = null;
+        this.userFromId = null;
+        this.title = "";
+        this.message = "";
+        this.notificationType = "";
+        this.isRead = false;
+        this.eventId = null;
+    }
+
     public Notification(Date dateTimeStamp, String userToId, String userFromId,
                         String title, String message, String notificationType) {
         this.dateTimeStamp = dateTimeStamp;
@@ -81,26 +104,22 @@ public class Notification {
      * Saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
      */
-    public void saveToDatabase(String userToId) {
-        NotificationsDatabase.saveToDatabase(dateTimeStamp, userToId, userFromId, title, message, notificationType, isRead);
+    public void saveToDatabase() {
+        if (userToId == null || userToId.isEmpty()) {
+            Log.e("NotificationError", "Cannot save notification: userToId is null or empty.");
+            return;
+        }
 
-        /**FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> notificationData = new HashMap<>();
-        notificationData.put("dateTimeStamp", dateTimeStamp);
-        notificationData.put("userToId", userToId);
-        notificationData.put("userFromId", userFromId);
-        notificationData.put("title", title);
-        notificationData.put("message", message);
-        notificationData.put("notificationType", notificationType);
-        notificationData.put("isRead", isRead);
-
-        db.collection("Notifications")
-                .add(notificationData)
-                .addOnSuccessListener(documentReference -> {
-                    setId(documentReference.getId()); // Set the document ID
-                    Log.d("Notification", "Notification added with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e)); **/
+        NotificationsDatabase.saveToDatabase(
+                dateTimeStamp,
+                userToId,
+                userFromId,
+                title,
+                message,
+                notificationType,
+                isRead,
+                eventId
+        );
     }
 
     /**

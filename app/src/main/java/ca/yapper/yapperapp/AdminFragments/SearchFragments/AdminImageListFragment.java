@@ -30,7 +30,9 @@ public class AdminImageListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.images_recycler_view);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
 
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3);
+        recyclerView.setLayoutManager(gridLayoutManager);
+
         imageList = new ArrayList<>();
         adapter = new AdminImageAdapter(imageList, getContext());
         recyclerView.setAdapter(adapter);

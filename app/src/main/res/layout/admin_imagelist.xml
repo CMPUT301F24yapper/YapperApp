@@ -1,9 +1,7 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="8dp"
-    android:background="#FFFFFF">
+    android:layout_height="match_parent">
 
     <!-- Empty State View -->
     <LinearLayout
@@ -14,7 +12,6 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <!-- Error Icon -->
         <ImageView
             android:id="@+id/emptyImageView"
             android:layout_width="100dp"
@@ -23,7 +20,6 @@
             android:contentDescription="No participants available"
             android:layout_marginBottom="16dp" />
 
-        <!-- Error Text -->
         <TextView
             android:id="@+id/emptyTextView"
             android:layout_width="wrap_content"
@@ -34,12 +30,9 @@
             android:gravity="center" />
     </LinearLayout>
 
-    <!-- Images Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/images_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="8dp"
-        android:clipToPadding="false" />
+        android:layout_height="match_parent" />
 
-</LinearLayout>
+</FrameLayout>
