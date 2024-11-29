@@ -190,10 +190,11 @@ public class EntrantDatabase {
                                                 eventDoc.getString("name"),
                                                 eventDoc.getString("organizerId"),
                                                 eventDoc.getString("registrationDeadline"),
-                                                eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : 0,
+                                                eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : null,
                                                 new ArrayList<>(), new ArrayList<>(),
                                                 new ArrayList<>(), new ArrayList<>()
                                         );
+                                        event.setDocumentId(eventId);
                                         eventList.add(event);
                                     } catch (WriterException e) {
                                         Log.e("Database", "Error creating event", e);

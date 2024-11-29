@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -257,6 +258,8 @@ public class UserDatabase {
 
         locationData.put("longitude", longitude);
         Log.d("UserDB", "Saving longitude: " + longitude);
+
+        locationData.put("timestamp", FieldValue.serverTimestamp());
 
         db.collection("Events").document(eventId)
                 .collection("waitingList").document(userDeviceId)

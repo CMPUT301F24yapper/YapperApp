@@ -132,6 +132,7 @@ public class AdminDatabase {
                                         new ArrayList<>(),
                                         new ArrayList<>()
                                 );
+                                event.setDocumentId(doc.getId());
                                 events.add(event);
                             } catch (Exception e) {
                                 // Skip invalid events
