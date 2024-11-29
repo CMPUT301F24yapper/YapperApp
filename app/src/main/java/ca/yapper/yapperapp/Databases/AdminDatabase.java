@@ -2,6 +2,7 @@ package ca.yapper.yapperapp.Databases;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
@@ -10,9 +11,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
+import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
     public static Task<Map<String, Long>> getAdminStats() {
@@ -25,9 +28,11 @@ public class AdminDatabase {
 
             db.collection("Users").get().addOnSuccessListener(userSnapshot -> {
                 long organizerCount = 0;
-                for (int i = 0; i < userSnapshot.size(); i++) {
-                    Boolean isOrganizer = userSnapshot.getDocuments().get(i).getBoolean("Organizer");
-                    if (isOrganizer != null && isOrganizer) {
+                for (DocumentSnapshot doc : userSnapshot.getDocuments()) {
+                    String facilityName = doc.getString("facilityName");
+                    String facilityAddress = doc.getString("facilityAddress");
+                    if (facilityName != null && !facilityName.isEmpty() &&
+                            facilityAddress != null && !facilityAddress.isEmpty()) {
                         organizerCount++;
                     }
                 }
@@ -46,23 +51,45 @@ public class AdminDatabase {
 
         db.collection("Events").get().addOnSuccessListener(querySnapshot -> {
             List<Map<String, Object>> eventList = new ArrayList<>();
+            AtomicInteger pendingEvents = new AtomicInteger(querySnapshot.size());
 
             querySnapshot.forEach(doc -> {
                 Map<String, Object> eventMap = new HashMap<>();
                 eventMap.put("name", doc.getString("name"));
-                eventMap.put("capacity", doc.getLong("capacity"));
-                eventList.add(eventMap);
+                String eventId = doc.getId();
+
+                Task<Integer> waitingCountTask = db.collection("Events").document(eventId)
+                        .collection("waitingList").get().continueWith(task -> task.getResult().size());
+
+                Task<Integer> selectedCountTask = db.collection("Events").document(eventId)
+                        .collection("selectedList").get().continueWith(task -> task.getResult().size());
+
+                Task<Integer> cancelledCountTask = db.collection("Events").document(eventId)
+                        .collection("cancelledList").get().continueWith(task -> task.getResult().size());
+
+                Tasks.whenAllSuccess(waitingCountTask, selectedCountTask, cancelledCountTask)
+                        .addOnSuccessListener(results -> {
+                            int totalCount = (Integer)results.get(0) + (Integer)results.get(1) + (Integer)results.get(2);
+                            eventMap.put("capacity", (long)totalCount);
+                            eventList.add(eventMap);
+
+                            if (pendingEvents.decrementAndGet() == 0) {
+                                eventList.sort((e1, e2) -> {
+                                    Long cap1 = (Long) e1.get("capacity");
+                                    Long cap2 = (Long) e2.get("capacity");
+                                    return cap2.compareTo(cap1);
+                                });
+
+                                List<Map<String, Object>> topEvents = eventList.subList(0, Math.min(5, eventList.size()));
+                                tcs.setResult(topEvents);
+                            }
+                        });
             });
 
-            eventList.sort((e1, e2) -> {
-                Long cap1 = (Long) e1.get("capacity");
-                Long cap2 = (Long) e2.get("capacity");
-                return cap2.compareTo(cap1);
-            });
-
-            // Get top 5 events
-            List<Map<String, Object>> topEvents = eventList.subList(0, Math.min(5, eventList.size()));
-            tcs.setResult(topEvents);
+            // Handle case when there are no events
+            if (querySnapshot.isEmpty()) {
+                tcs.setResult(new ArrayList<>());
+            }
         });
 
         return tcs.getTask();
@@ -235,6 +262,92 @@ public class AdminDatabase {
                         }
                     }
                     return batch.commit();
+                });
+    }
+
+    public static Task<List<ImageData>> getAllImages() {
+        TaskCompletionSource<List<ImageData>> tcs = new TaskCompletionSource<>();
+        List<ImageData> allImages = new ArrayList<>();
+
+        FirebaseFirestore.getInstance().collection("Events").get()
+                .addOnSuccessListener(eventsSnapshot -> {
+                    for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
+                        String posterBase64 = doc.getString("posterBase64");
+                        if (posterBase64 != null && !posterBase64.isEmpty()) {
+                            allImages.add(new ImageData(posterBase64, doc.getId(), "event", "posterBase64"));
+                        }
+                    }
+
+                    FirebaseFirestore.getInstance().collection("Users").get()
+                            .addOnSuccessListener(usersSnapshot -> {
+                                for (DocumentSnapshot doc : usersSnapshot.getDocuments()) {
+                                    String profileImage = doc.getString("profileImage");
+                                    if (profileImage != null && !profileImage.isEmpty()) {
+                                        allImages.add(new ImageData(profileImage, doc.getId(), "user", "profileImage"));
+                                    }
+                                }
+                                tcs.setResult(allImages);
+                            })
+                            .addOnFailureListener(tcs::setException);
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
+
+    public static Task<Void> deleteImage(String documentId, String documentType, String fieldName) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(fieldName, null);
+
+        return FirebaseFirestore.getInstance()
+                .collection(documentType.equals("event") ? "Events" : "Users")
+                .document(documentId)
+                .update(updates);
+    }
+
+    public static Task<String> getProfileImage(String userId) {
+        TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
+
+        FirebaseFirestore.getInstance()
+                .collection("Users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String profileImage = document.getString("profileImage");
+                        tcs.setResult(profileImage);
+                    } else {
+                        tcs.setResult(null);
+                    }
+                })
+                .addOnFailureListener(tcs::setException);
+
+        return tcs.getTask();
+    }
+
+    public static Task<Void> removeFacility(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityName", "");
+        userUpdates.put("facilityAddress", "");
+
+        Map<String, Object> eventUpdates = new HashMap<>();
+        eventUpdates.put("facilityName", "[Facility removed]");
+        eventUpdates.put("facilityLocation", "[Facility removed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), eventUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
                 });
     }
 }

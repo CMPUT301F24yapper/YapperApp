@@ -22,7 +22,7 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerDatabase {
 
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
@@ -32,6 +32,11 @@ public class OrganizerDatabase {
     public interface OnDataFetchListener<T> {
         void onFetch(T data);
         void onError(Exception e);
+    }
+
+    public interface OnWaitListCountLoadedListener {
+        void onCountLoaded(int waitListCount);
+        void onError(String errorMessage);
     }
 
     public interface OnOperationCompleteListener {
@@ -64,7 +69,19 @@ public class OrganizerDatabase {
         void onError(String error);
     }
 
+    public interface OnEventsLoadedListener {
+        void onEventsLoaded(List<String> eventIds);
+        void onEventsLoadError(String error);
+    }
+
+    public interface OnFacilityDataLoadedListener {
+        void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
+        void onError(String error);                                        // When there's an error
+    }
+
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
         db.collection("Users").document(deviceId).get()
@@ -82,12 +99,14 @@ public class OrganizerDatabase {
     }
 
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
                             Event event = new Event(
-                                    documentSnapshot.getLong("capacity") != null ? documentSnapshot.getLong("capacity").intValue() : 0,
+                                    documentSnapshot.getLong("capacity").intValue(),
                                     documentSnapshot.getString("date_Time"),
                                     documentSnapshot.getString("description"),
                                     documentSnapshot.getString("facilityLocation"),
@@ -96,7 +115,7 @@ public class OrganizerDatabase {
                                     documentSnapshot.getString("name"),
                                     documentSnapshot.getString("organizerId"),
                                     documentSnapshot.getString("registrationDeadline"),
-                                    documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : 0,
+                                    documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : null,
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
 
@@ -118,6 +137,8 @@ public class OrganizerDatabase {
     }
 
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
@@ -136,6 +157,8 @@ public class OrganizerDatabase {
     }
 
     public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         ArrayList<String> userIdsList = new ArrayList<>();
 
         db.collection("Events").document(eventId).collection(subcollectionName)
@@ -202,28 +225,14 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        try {
-                            Integer capacity = documentSnapshot.getLong("capacity") != null
-                                    ? documentSnapshot.getLong("capacity").intValue()
-                                    : null;
-                            if (capacity != null) {
-                                listener.onCapacityLoaded(capacity);
-                                Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
-                            } else {
-                                listener.onCapacityLoaded(0); // Default if capacity is null
+                        int capacity = documentSnapshot.getLong("capacity").intValue();
+                        Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
+                        listener.onCapacityLoaded(capacity);
                             }
-                        } catch (Exception e) {
-                            Log.e("loadEventCapacity", "Error parsing capacity field in document: " + eventId, e);
-                            listener.onCapacityLoaded(0); // Default in case of an exception
-                        }
-                    } else {
+                    else {
                         Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId);
                         listener.onCapacityLoaded(0); // Default if document does not exist
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("loadEventCapacity", "Failed to fetch document for eventId: " + eventId, e);
-                    listener.onError(e.getMessage());
                 });
     }
 
@@ -247,6 +256,8 @@ public class OrganizerDatabase {
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,
                                              String name, String registrationDeadline, Integer waitListCapacity,
                                              String organizerId, String posterBase64, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         try {
             // Create the Event object
             Event event = new Event(
@@ -316,7 +327,6 @@ public class OrganizerDatabase {
         });
     }
 
-
     /**
      * Initializes Firestore subcollections for the event with placeholder data.
      *
@@ -334,7 +344,6 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
-
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -382,6 +391,15 @@ public class OrganizerDatabase {
                 .addOnFailureListener(listener::onError);
     }
 
+    public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Events").document(eventId)
+                .collection("waitingList").get()
+                .addOnSuccessListener(snapshot -> {
+                    listener.onCountLoaded(snapshot.size());
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving wait list count data: " + e.getMessage()));    }
+
     public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -406,13 +424,9 @@ public class OrganizerDatabase {
                 });
     }
 
-    // Define an interface for callback
-    public interface OnEventsLoadedListener {
-        void onEventsLoaded(List<String> eventIds);
-        void onEventsLoadError(String error);
-    }
-
     public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
@@ -433,17 +447,14 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
     }
 
-    // Define an interface to handle the result when the facility data is loaded
-    public interface OnFacilityDataLoadedListener {
-        void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
-        void onError(String error);                                        // When there's an error
-    }
-
     public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId).set(eventData)
                 .addOnSuccessListener(unused -> listener.onComplete(true))
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
+
 
 
     public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
@@ -491,7 +502,6 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
-
 
 
 }
