@@ -17,6 +17,9 @@ import java.util.Map;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * Class holding all the user class related functions that interact with the database.
+ */
 public class UserDatabase {
 
 
@@ -51,6 +54,7 @@ public class UserDatabase {
                 })
                 .addOnFailureListener(e -> listener.onUserLoadError("Failed to load user: " + e.getMessage()));
     }
+
 
     /**
      * Creates a new user entry in Firestore with the provided details.
@@ -89,6 +93,13 @@ public class UserDatabase {
         // return saveUserToFirestore(deviceId, user, userData); // Step 4: Save to Firestore
     }
 
+
+    /**
+     * This function adds user specific events that are missed out to the users corresponding subcollection
+     *
+     * @param userDeviceId The device ID of the user.
+     * @return a task that adds all the missed out events then completes, otherwise it fails.
+     */
     private static Task<Void> addMissedOutEventsSubcollection(String userDeviceId) {
         FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
         CollectionReference eventsRef = db.collection("Events");
@@ -111,6 +122,13 @@ public class UserDatabase {
     }
 
 
+    /**
+     * This function provides user input validation, for the device id, email and name.
+     *
+     * @param deviceId The Id for users device.
+     * @param email The user profile email
+     * @param name The user profile name
+     */
     private static void validateUserInputs(String deviceId, String email, String name) {
         if (deviceId == null || deviceId.isEmpty()) {
             throw new IllegalArgumentException("Device ID cannot be null or empty");
@@ -123,8 +141,20 @@ public class UserDatabase {
         }
     }
 
+
     /**
-     * Creates a User object based on the provided details.
+     * This function creates a user object using the given data.
+     *
+     * @param deviceId The Id for users device.
+     * @param email The user profile email
+     * @param isAdmin Boolean for checking if the user has the admin role
+     * @param isEntrant Boolean for checking if the user has the entrant role
+     * @param isOrganizer Boolean for checking if the user has the organizer role
+     * @param name The user profile name
+     * @param phoneNum The user profile phone number
+     * @param isOptedOut The user status on recieving notifcations. (True means they don't want to
+     *                   recieve any notifications)
+     * @return a new user object created from the given data
      */
     private static User createUserObject(String deviceId, String email, boolean isAdmin, boolean isEntrant,
                                          boolean isOrganizer, String name, String phoneNum, boolean isOptedOut) {
@@ -132,8 +162,12 @@ public class UserDatabase {
                 isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
+
     /**
-     * Prepares a Map of user data for Firestore.
+     * This function obtains user data from a user object and converts it into a map of the data
+     *
+     * @param user a user object
+     * @return a map of the users data
      */
     private static Map<String, Object> prepareUserData(User user) {
         Map<String, Object> userData = new HashMap<>();
@@ -151,8 +185,14 @@ public class UserDatabase {
         return userData;
     }
 
+
     /**
-     * Saves the user data to Firestore.
+     * This function takes user data and saves it to the FireStore database
+     *
+     * @param deviceId The Id for users device.
+     * @param user a user object
+     * @param userData A map of the users data
+     * @return a task that saves the user data to the database and completes, otherwise we recieve an error on failure
      */
     private static Task<User> saveUserToFirestore(String deviceId, User user, Map<String, Object> userData) {
         TaskCompletionSource<User> tcs = new TaskCompletionSource<>();
@@ -170,6 +210,15 @@ public class UserDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * This function updates a given field in the users document in the database.
+     *
+     * @param deviceId The Id for users device.
+     * @param field name of the field we want to update
+     * @param fieldContents the value we want to change the chosen field to
+     * @param listener handles the outcome of the operation
+     */
     public static void updateUserField(String deviceId, String field, Object fieldContents, EntrantDatabase.OnFieldUpdateListener listener) {
         // Validate deviceId
         if (deviceId == null || deviceId.isEmpty()) {
@@ -200,6 +249,14 @@ public class UserDatabase {
                 .addOnFailureListener(e -> listener.onError("Error updating field: " + e.getMessage()));  // Update failed
     }
 
+
+    /**
+     * This function is for validating a field value
+     *
+     * @param field name of the field we want to validate
+     * @param value the value we are validating
+     * @return returns true if the value in the field is valid
+     */
     private static boolean validateFieldValue(String field, Object value) {
         switch (field) {
             case "entrantEmail":
@@ -215,19 +272,41 @@ public class UserDatabase {
         }
     }
 
+
+    /**
+     * Checks if the given email is valid
+     *
+     * @param email the users email
+     * @return true if email is a valid format
+     */
     private static boolean isValidEmail(String email) {
         return email != null && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
     }
 
+
+    /**
+     * Checks if the given phone is valid
+     *
+     * @param phone the users phone number
+     * @return true if phone is a valid format
+     */
     private static boolean isValidPhone(String phone) {
         return phone != null && phone.matches("^\\+?[0-9]{7,15}$");
     }
 
+
+    /**
+     * Checks if the users profile fields are valid
+     *
+     * @param field a given field
+     * @return true if the given field is a user profile valid
+     */
     private static boolean isValidField(String field) {
         // Add all valid field names
         List<String> validFields = List.of("entrantEmail", "entrantName", "entrantPhone", "notificationsEnabled");
         return validFields.contains(field);
     }
+
 
     /**
      * Checks if a user is an admin based on their device ID.
@@ -239,11 +318,25 @@ public class UserDatabase {
         return FirestoreUtils.checkDocumentField("Users", deviceId, "Admin");
     }
 
+
+    /**
+     * Interface for location saving success and errors associated with it
+     */
     public interface OnLocationSavedListener {
         void onSuccess();
         void onError(String error);
     }
 
+
+    /**
+     * This function saves the users location to the database, for a given event.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userDeviceId The device ID of the user.
+     * @param latitude The users latitude
+     * @param longitude The users longitude
+     * @param listener Listener to handle the outcome of saving the location
+     */
     public static void saveLocationToFirestore(String eventId, String userDeviceId, double latitude, double longitude, OnLocationSavedListener listener) {
         if (eventId == null || eventId.isEmpty() || userDeviceId == null || userDeviceId.isEmpty()) {
             listener.onError("Invalid event ID or device ID.");

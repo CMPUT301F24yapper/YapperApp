@@ -83,7 +83,7 @@ public class FirestoreUtils {
 
     /**
      * Returns true if we are using mock instance of firestore
-     * @return
+     * @return true if in mock mode, otherwise false
      */
     public static boolean isMockMode() {
         return isMockMode;
@@ -91,7 +91,10 @@ public class FirestoreUtils {
 
 
     /**
+     * Validates the current environment. Checks if we are set to the mock instance and throws
+     * an error if true.
      *
+     * @throws IllegalStateException if the firestore instance is a mock one
      */
     public static void validateEnvironment() {
         if (isMockMode) {
@@ -101,9 +104,12 @@ public class FirestoreUtils {
 
 
     /**
+     * The function obtains a document and makes a user object with it. Throwing an
+     * IllegalArgumentException if we are missing certain fields.
      *
-     * @param doc
-     * @return
+     * @param doc a snapshot of a user document from the database, with the users data
+     * @return a new user with the information from the snapshot
+     * @throws IllegalArgumentException if we are missing device id, email or admin.
      */
     public static User parseUserFromSnapshot(DocumentSnapshot doc) {
         // Ensure all required fields are present

@@ -13,12 +13,18 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.Activities.SignupActivity;
 
+/**
+ * Class holding all the signup page related functions that interact with the database.
+ */
 public class SignUpDatabase {
 
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     /**
-     * Checks if a user exists in the database based on the device ID (used by SignupActivity...)
+     * This function uses the device Id to check if we have the given user in the database (used by SignupActivity...)
+     *
+     * @param deviceId The Id for users device.
+     * @return a Task with a result that indicates if a user exists(true) or not(false).
      */
     public static Task<Boolean> checkUserExists(String deviceId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -32,7 +38,13 @@ public class SignUpDatabase {
     }
 
     /**
-     * Creates a new user in the database with the provided details.
+     * This function uses the given details to make a new user object
+     *
+     * @param deviceId The Id for users device.
+     * @param name The name the user input
+     * @param phone The phone number the user input
+     * @param email The email the user input
+     * @return a task that creates a new user document and completes, otherwise it fails.
      */
     public static Task<Void> createUser(String deviceId, String name, String phone, String email) {
         Map<String, Object> userMap = new HashMap<>();

@@ -13,17 +13,31 @@ import java.util.Map;
 
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
+/**
+ * Class holding all the notification related functions that interact with the database.
+ */
 public class NotificationsDatabase {
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Interface for handling notification loading methods
+     */
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);
         void onError(String error);
     }
 
     /**
-     * Saves the notification to Firestore under the "Notifications" collection.
+     * Function that saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
+     *
+     * @param dateTimeStamp when the notification was made
+     * @param userToId id of user getting the notification
+     * @param userFromId id of user sending the notification
+     * @param title title of notification
+     * @param message contents of the notification
+     * @param notificationType the type of notification
+     * @param isRead the status of the notification(if it's been read or not)
      */
     public static void saveToDatabase(Date dateTimeStamp, String userToId, String userFromId, String title, String message, String notificationType, boolean isRead) {
         //FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -46,6 +60,12 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
     }
 
+    /**
+     * Function that loads notifications that haven't been read, for a given user.
+     *
+     * @param userDeviceId The device ID of the user.
+     * @param listener listener to handle outcome of loading a notification
+     */
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
         db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)
@@ -65,6 +85,12 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading notifications: " + e.getMessage()));
     }
 
+    /**
+     * Function that changes notifications from unread to read.
+     *
+     * @param notificationId id of a specific notification
+     * @return a Task with the result of the operation
+     */
     public static Task<Void> markNotificationAsRead(String notificationId) {
         return db.collection("Notifications").document(notificationId)
                 .update("isRead", true);

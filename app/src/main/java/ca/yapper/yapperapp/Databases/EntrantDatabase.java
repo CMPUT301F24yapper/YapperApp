@@ -74,7 +74,7 @@ public class EntrantDatabase {
      * Function that uses a listener to check if a user is in an events waiting list.
      *
      * @param eventId The unique id for the event, created from the QR code.
-     * @param userId The unique id for the user, created from the device id.
+     * @param userId The id for the user, created from the device id.
      * @param listener handles the outcome of the user check
      */
     public static void checkUserInEvent(String eventId, String userId, EntrantDatabase.OnUserCheckListener listener) {
@@ -88,7 +88,7 @@ public class EntrantDatabase {
      * Function that adds a user to the waiting list of an event and updates the joined events list.
      *
      * @param eventId The unique id for the event, created from the QR code.
-     * @param userId The unique id for the user, created from the device id.
+     * @param userId The id for the user, created from the device id.
      * @param listener handles the outcome of the event check
      */
     public static void joinEvent(String eventId, String userId, OnOperationCompleteListener listener) {
@@ -126,7 +126,7 @@ public class EntrantDatabase {
      * Function that removes a user to the waiting list of an event and updates the joined events list.
      *
      * @param eventId The unique id for the event, created from the QR code.
-     * @param userId The unique id for the user, created from the device id.
+     * @param userId The id for the user, created from the device id.
      * @param listener handles the outcome of the event check
      */
     public static void unjoinEvent(String eventId, String userId, EntrantDatabase.OnOperationCompleteListener listener) {
@@ -158,7 +158,7 @@ public class EntrantDatabase {
      * Loads event IDs from a specified subcollection in Firestore and populates the eventIdsList.
      *
      * @param db Firestore instance.
-     * @param userDeviceId The unique device ID of the user.
+     * @param userDeviceId The device ID of the user.
      * @param subcollectionName The name of the subcollection to load.
      * @param eventIdsList The list to store retrieved event IDs.
      */
@@ -288,7 +288,7 @@ public class EntrantDatabase {
     /**
      * Function that loads a profile image for a given user by accessing the database.
      *
-     * @param deviceId The unique device ID of the user.
+     * @param deviceId The device ID of the user.
      * @param listener listener to handle outcome of loading an image profile
      */
     public static void loadProfileImage(String deviceId, final OnProfileImageLoadedListener listener) {
