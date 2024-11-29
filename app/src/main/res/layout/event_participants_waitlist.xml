@@ -28,7 +28,7 @@
             android:id="@+id/emptyTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No participants found"
+            android:text="No users are on the wait list"
             android:textSize="20sp"
             android:textColor="@android:color/black"
             android:gravity="center" />
