@@ -88,18 +88,27 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     return;
                 }
 
-                OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
+                // First remove the user from the selectedList
+                OrganizerDatabase.removeUserFromSelectedList(eventId, userId, success -> {
                     if (success) {
-                        // Mark the notification as read and remove it from the list
-                        notification.markAsRead();
-                        notificationList.remove(position);
-                        notifyItemRemoved(position);
-                        Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
+                        // Then add the user to the cancelledList
+                        OrganizerDatabase.addUserToCancelledList(eventId, userId, successAdd -> {
+                            if (successAdd) {
+                                // Mark notification as read and remove it from the list
+                                notification.markAsRead();
+                                notificationList.remove(position);
+                                notifyItemRemoved(position);
+                                Toast.makeText(context, "Declined and added to Cancelled List.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Error adding to Cancelled List.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } else {
-                        Toast.makeText(context, "Error adding to Cancelled List. Please try again.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Error removing from Selected List.", Toast.LENGTH_SHORT).show();
                     }
                 });
             });
+
 
         } else {
             holder.selectionButtons.setVisibility(View.GONE);
