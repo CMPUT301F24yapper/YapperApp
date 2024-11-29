@@ -121,6 +121,7 @@ public class OrganizerDatabase {
                                     documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : null,
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
+                            event.setDocumentId(documentSnapshot.getId());
 
                             // Check if posterBase64 exists
                             String posterBase64 = documentSnapshot.getString("posterBase64");

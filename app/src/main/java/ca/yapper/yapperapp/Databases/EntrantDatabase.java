@@ -194,6 +194,7 @@ public class EntrantDatabase {
                                                 new ArrayList<>(), new ArrayList<>(),
                                                 new ArrayList<>(), new ArrayList<>()
                                         );
+                                        event.setDocumentId(eventId);
                                         eventList.add(event);
                                     } catch (WriterException e) {
                                         Log.e("Database", "Error creating event", e);

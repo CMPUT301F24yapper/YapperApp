@@ -169,7 +169,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         if (!isCreatingEvent) {
             eventCapacityEditText.setEnabled(false);
             eventWaitListCapacityEditText.setEnabled(false);
-            eventNameEditText.setEnabled((false));
+            //eventNameEditText.setEnabled((false));
         }
     }
 
