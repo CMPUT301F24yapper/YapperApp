@@ -19,8 +19,8 @@ import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.UserViewHolder> {
-    private List<User> userList;
-    private Context context;
+    private final List<User> userList;
+    private final Context context;
 
     public AdminUserAdapter(List<User> userList, Context context) {
         this.userList = userList;
