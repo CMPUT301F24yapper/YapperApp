@@ -25,9 +25,9 @@ public class NotificationsDatabase {
      * Saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
      */
-    public static void saveToDatabase(Date dateTimeStamp, String userToId, String userFromId, String title, String message, String notificationType, boolean isRead) {
-        //FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Notification notification = new Notification(dateTimeStamp, userToId, userFromId, title, message, notificationType);
+    public static void saveToDatabase(Date dateTimeStamp, String userToId, String userFromId,
+                                      String title, String message, String notificationType,
+                                      boolean isRead, String eventId) {
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
         notificationData.put("userToId", userToId);
@@ -36,15 +36,16 @@ public class NotificationsDatabase {
         notificationData.put("message", message);
         notificationData.put("notificationType", notificationType);
         notificationData.put("isRead", isRead);
+        notificationData.put("eventId", eventId); // Ensure eventId is saved
 
         db.collection("Notifications")
                 .add(notificationData)
                 .addOnSuccessListener(documentReference -> {
-                    notification.setId(documentReference.getId()); // Set the document ID
                     Log.d("Notification", "Notification added with ID: " + documentReference.getId());
                 })
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
     }
+
 
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
         db.collection("Notifications")

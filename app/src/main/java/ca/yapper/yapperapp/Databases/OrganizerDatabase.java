@@ -454,4 +454,72 @@ public class OrganizerDatabase {
                 .addOnSuccessListener(unused -> listener.onComplete(true))
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
+
+
+    public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Events")
+                .document(eventId)
+                .collection("selectedList")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User removed from Selected List.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error removing user from Selected List: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+
+
+    public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e("OrganizerDatabase", "Event ID is null or empty.");
+            listener.onComplete(false);
+            return;
+        }
+        if (userId == null || userId.isEmpty()) {
+            Log.e("OrganizerDatabase", "User ID is null or empty.");
+            listener.onComplete(false);
+            return;
+        }
+
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        db.collection("Events").document(eventId).collection("finalList").document(userId)
+                .set(timestamp)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User added to final list.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error adding user to final list.", e);
+                    listener.onComplete(false);
+                });
+    }
+
+
+    public static void addUserToCancelledList(String eventId, String userId, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Create a timestamp for the cancelled list entry
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        // Add the user to the cancelled list
+        db.collection("Events").document(eventId).collection("cancelledList").document(userId)
+                .set(timestamp)
+                .addOnSuccessListener(aVoid -> {
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    listener.onComplete(false);
+                });
+    }
+
 }
