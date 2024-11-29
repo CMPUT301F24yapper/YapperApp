@@ -23,8 +23,8 @@ import ca.yapper.yapperapp.UMLClasses.Event;
  */
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsViewHolder> {
 
-    private List<Event> eventList;
-    private Context context;
+    private final List<Event> eventList;
+    private final Context context;
 
 
     /**

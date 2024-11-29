@@ -1,6 +1,7 @@
 package ca.yapper.yapperapp;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -65,8 +66,8 @@ public class ProfileFragment extends Fragment {
     private TextView removePicture;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private String userDeviceId;
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private Map<String, Runnable> pendingUpdates = new HashMap<>();
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Map<String, Runnable> pendingUpdates = new HashMap<>();
     private boolean isUpdatingField = false;
     private Bitmap generatedProfilePicture;
 
@@ -87,7 +88,8 @@ public class ProfileFragment extends Fragment {
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                    getActivity();
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         try {
                             String base64Image = encodeImageToBase64(imageUri);

@@ -20,9 +20,9 @@ import ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments.WaitingLi
  */
 public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
 
-    private String eventId;
+    private final String eventId;
     private final String[] tabTitles = new String[]{"Waiting", "Selected", "Final", "Cancelled"};
-    private Map<Integer, Fragment> fragmentMap;
+    private final Map<Integer, Fragment> fragmentMap;
 
 
     /**
@@ -89,10 +89,10 @@ public class EventParticipantsViewPagerAdapter extends FragmentStateAdapter {
             else if (fragment instanceof SelectedListFragment) {
                 ((SelectedListFragment) fragment).refreshList();
             }
-            else if (fragment instanceof FinalListFragment && ((FinalListFragment) fragment).isAdded()) {
+            else if (fragment instanceof FinalListFragment && fragment.isAdded()) {
                 ((FinalListFragment) fragment).refreshList();
             }
-            else if (fragment instanceof CancelledListFragment && ((CancelledListFragment) fragment).isAdded()) {
+            else if (fragment instanceof CancelledListFragment && fragment.isAdded()) {
                 ((CancelledListFragment) fragment).refreshList();
             }
         }

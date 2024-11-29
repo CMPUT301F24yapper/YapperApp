@@ -180,7 +180,7 @@ public class EventDetailsFragment extends Fragment {
                         posterImageView.setBackgroundResource(R.drawable.event_image); // Placeholder image
                     }
                 }
-
+                eventId = event.getDocumentId();
                 // setupButtonListeners();
                 Log.i("loadEventDetails", "checkUserInList being called on event");
                 checkUserInList(event);  // Check user is in waiting list first
@@ -197,8 +197,8 @@ public class EventDetailsFragment extends Fragment {
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
     private void checkUserInList(Event event) {
-        Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + event.getDocumentId() + userDeviceId);
-        // OrganizerDatabase.checkUserInEvent(eventId, userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+        Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + eventId + userDeviceId);
+        // OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
         OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
             @Override
             public void onUserInList(boolean inList) {
@@ -239,7 +239,8 @@ public class EventDetailsFragment extends Fragment {
 
     private void checkWaitListCapacity(Event event) {
         // check if full
-        OrganizerDatabase.getWaitingListCount(eventId, new OrganizerDatabase.OnWaitListCountLoadedListener() {
+        // OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
+        OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
             @Override
             public void onCountLoaded(int waitListCount) {
                 if (event.getWaitListCapacity() != null
@@ -248,7 +249,7 @@ public class EventDetailsFragment extends Fragment {
                     setButtonState("Wait List Full", Color.GRAY, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
-                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
+                    joinButton.setOnClickListener(v -> handleJoinButtonClick(event));
                 }
             }
             @Override
@@ -284,19 +285,19 @@ public class EventDetailsFragment extends Fragment {
      * If geolocation is required, it prompts the user to confirm. If not, it proceeds to join the event.
      * If the button displays "Unjoin", it unjoins the user from the event.
      */
-    private void handleJoinButtonClick() {
+    private void handleJoinButtonClick(Event event) {
         Log.d("EventDetailsFragment", "Join button clicked");
         if (joinButton.getText().equals("Join")) {
             if (geolocationEnabled) {
                 Log.d("EventDetailsFragment", "Geolocation required, showing dialog");
-                showGeolocationWarningDialog();
+                showGeolocationWarningDialog(event);
             } else {
                 Log.d("EventDetailsFragment", "Joining event directly");
-                joinEvent();
+                joinEvent(event);
             }
         } else {
             Log.d("EventDetailsFragment", "Unjoining event");
-            unjoinEvent();
+            unjoinEvent(event);
         }
     }
 
@@ -358,10 +359,10 @@ public class EventDetailsFragment extends Fragment {
      * Shows a dialog to warn the user that geolocation is required for this event.
      * If the user confirms, the event will be joined.
      */
-    private void showGeolocationWarningDialog() {
+    private void showGeolocationWarningDialog(Event event) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Warning: this event requires geolocation.")
-                .setPositiveButton("Continue", (dialog, id) -> requestLocationPermission()) // confirm this still works
+                .setPositiveButton("Continue", (dialog, id) -> requestLocationPermission(event)) // confirm this still works
                 .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss())
                 .create()
                 .show();
@@ -371,16 +372,16 @@ public class EventDetailsFragment extends Fragment {
      * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
      * If successful, it updates the join button to display "Unjoin" and shows a success message.
      */
-    private void joinEvent() {
+    private void joinEvent(Event event) {
             if (userDeviceId == null) {
                 Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (geolocationEnabled && !geolocationPermitted) {
-                showGeolocationWarningDialog();
+                showGeolocationWarningDialog(event);
                 return;
             }
-            EntrantDatabase.joinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
+            EntrantDatabase.joinEvent(event.getDocumentId(), userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
                 @Override
                 public void onComplete(boolean success) {
                     if (getContext() == null) return;
@@ -423,7 +424,7 @@ public class EventDetailsFragment extends Fragment {
     }
 
     @SuppressLint("MissingPermission")
-    private void getUserLocation() {
+    private void getUserLocation(Event event) {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -436,11 +437,11 @@ public class EventDetailsFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         // Call UserDatabase to save the location
-                        UserDatabase.saveLocationToFirestore(eventId, userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
+                        UserDatabase.saveLocationToFirestore(event.getDocumentId(), userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
                             @Override
                             public void onSuccess() {
                                 Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
-                                joinEvent(); // Proceed to join the event
+                                joinEvent(event); // Proceed to join the event
                             }
 
                             @Override
@@ -455,12 +456,12 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    private void requestLocationPermission() {
+    private void requestLocationPermission(Event event) {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
         } else {
             geolocationPermitted = true;
-            getUserLocation();
+            getUserLocation(event);
         }
     }
 
@@ -468,7 +469,7 @@ public class EventDetailsFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1001) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getUserLocation(); // Retry getting location
+                getUserLocation(event); // Retry getting location
             } else {
                 Toast.makeText(getContext(), "Permission denied. Cannot join geolocation-enabled events.", Toast.LENGTH_SHORT).show();
             }
