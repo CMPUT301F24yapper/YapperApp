@@ -366,4 +366,23 @@ public class AdminDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
+
+    public static void getOrganizerName(String organizerId, OnNameLoadedListener listener) {
+        FirebaseFirestore.getInstance().collection("Users")
+                .document(organizerId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String name = document.getString("entrantName");
+                        listener.onNameLoaded(name != null ? name : "Unknown");
+                    } else {
+                        listener.onNameLoaded("Unknown");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onNameLoaded("Unknown"));
+    }
+
+    public interface OnNameLoadedListener {
+        void onNameLoaded(String name);
+    }
 }
