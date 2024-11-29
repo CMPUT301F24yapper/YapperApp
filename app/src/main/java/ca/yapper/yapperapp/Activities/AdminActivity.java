@@ -12,8 +12,18 @@ import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
+/**
+ * This class represents the parent activity page used for admins, which holds all the
+ * functionality for switching between admin fragments. It holds functions to show the admins nav
+ * bar and also the ability to switch between admins and other roles.
+ * */
 public class AdminActivity extends AppCompatActivity {
 
+    /**
+     * Initial setup for admin activity
+     *
+     * @param savedInstanceState bundle, containing data from another fragment/activity
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +37,9 @@ public class AdminActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This function sets up the fragment switching functionality of the bottom navigation bar.
+     * */
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
@@ -57,6 +70,12 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Function for displaying a popup menu that displays different roles and sets the
+     * functionality for each button press so users can switch activities using intents.
+     *
+     * @param view The UI element that will be used for the popup menu
+     */
     private void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
