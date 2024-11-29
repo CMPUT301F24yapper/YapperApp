@@ -426,20 +426,25 @@ private void updateEvent(String eventId, DocumentSnapshot eventSnapshot) {
                     saveEventButton.setEnabled(true);
                     return;
                 }
+
                 facilityNameFinal = facilityName;
                 facilityAddressFinal = facilityAddress;
 
+                // Validate inputs
                 if (!validateInputs()) {
                     saveEventButton.setEnabled(true);
                     return;
                 }
 
                 String dateTime = selectedDate + " " + selectedTime;
+
+                // Validate date and registration deadline
                 if (!validateDates(dateTime, regDeadline)) {
                     saveEventButton.setEnabled(true);
                     return;
                 }
 
+                // Parse capacities
                 int capacityInt = Integer.parseInt(eventCapacityEditText.getText().toString());
                 Integer waitListCapacityInt = parseOptionalInt(eventWaitListCapacityEditText.getText().toString());
 
@@ -449,37 +454,49 @@ private void updateEvent(String eventId, DocumentSnapshot eventSnapshot) {
                     return;
                 }
 
-                String newEventId = generateEventId();
-                Map<String, Object> newEvent = new HashMap<>();
-                newEvent.put("name", eventNameEditText.getText().toString());
-                newEvent.put("description", eventDescriptionEditText.getText().toString());
-                newEvent.put("capacity", capacityInt);
-                newEvent.put("waitListCapacity", waitListCapacityInt);
-                newEvent.put("date_time", dateTime);
-                newEvent.put("registrationDeadline", regDeadline);
-                newEvent.put("geolocationEnabled", geolocationSwitch.isChecked());
-                newEvent.put("facilityName", facilityNameFinal);
-                newEvent.put("facilityAddress", facilityAddressFinal);
-                newEvent.put("userDeviceId", userDeviceId);
+                // Gather all event data
+                String eventName = eventNameEditText.getText().toString();
+                String eventDescription = eventDescriptionEditText.getText().toString();
+                boolean isGeolocationEnabled = geolocationSwitch.isChecked();
 
+                // Upload poster first
                 uploadPosterImageAsBase64(viewModel.posterImageUri, success -> {
                     if (!success) {
                         saveEventButton.setEnabled(true);
                         return;
                     }
-                    newEvent.put("posterBase64", viewModel.posterImageBase64);
 
-                    FirebaseFirestore.getInstance().collection("Events").document(newEventId)
-                            .set(newEvent)
-                            .addOnSuccessListener(aVoid -> showToast("Event created successfully!"))
-                            .addOnFailureListener(e -> showToast("Failed to create event: " + e.getMessage()))
-                            .addOnCompleteListener(task -> saveEventButton.setEnabled(true));
+                    // Use OrganizerDatabase to save the event
+                    OrganizerDatabase.createEventInDatabase(
+                            capacityInt,
+                            dateTime,
+                            eventDescription,
+                            facilityAddressFinal,
+                            facilityNameFinal,
+                            isGeolocationEnabled,
+                            eventName,
+                            regDeadline,
+                            waitListCapacityInt != null ? waitListCapacityInt : 0,
+                            userDeviceId,
+                            viewModel.posterImageBase64,
+                            success1 -> {
+                                if (success1) {
+                                    showToast("Event created successfully!");
+                                    getParentFragmentManager().beginTransaction()
+                                            .replace(R.id.fragment_container, new OrganizerHomeFragment())
+                                            .commit();
+                                } else {
+                                    showToast("Failed to create event. Please try again.");
+                                }
+                                saveEventButton.setEnabled(true);
+                            }
+                    );
                 });
             }
 
             @Override
             public void onError(String error) {
-                showToast("Error loading facility details: " + error);
+                showToast("Failed to load facility data: " + error);
                 saveEventButton.setEnabled(true);
             }
         });
