@@ -300,7 +300,7 @@ public class ProfileFragment extends Fragment {
 
         textStyle.setTextSize(500);
         //String[] profileName = nameEditText.getText().toString().split("[ .;:]");
-        String[] profileName = nameEditText.getText().toString().split(" ");
+        String[] profileName = nameEditText.getText().toString().trim().split("\\s+");
         String initials = "";
         for (String word : profileName){
             initials += word.charAt(0);
