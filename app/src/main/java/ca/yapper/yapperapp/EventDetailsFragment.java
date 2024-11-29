@@ -30,7 +30,9 @@ import com.google.android.gms.location.LocationServices;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
@@ -423,11 +425,12 @@ public class EventDetailsFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         // Call UserDatabase to save the location
+                        joinEvent();
                         UserDatabase.saveLocationToFirestore(eventId, userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
                             @Override
                             public void onSuccess() {
                                 Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
-                                joinEvent(); // Proceed to join the event
+                                //joinEvent(); // Proceed to join the event
                             }
 
                             @Override

@@ -1,5 +1,6 @@
 package ca.yapper.yapperapp.Databases;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
