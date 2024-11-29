@@ -3,6 +3,7 @@ package ca.yapper.yapperapp;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,8 @@ public class AdminRemoveProfileFragment extends Fragment {
     private Button removeFacilityButton;
     private Button removeProfilePictureButton;
     private ImageView profileImage;
+    private View facilitySection;
+    private TextView facilityHeader;
 
     @Nullable
     @Override
@@ -58,10 +61,16 @@ public class AdminRemoveProfileFragment extends Fragment {
         deviceIdText = view.findViewById(R.id.device_id);
         notificationStatus = view.findViewById(R.id.notification_status);
         profileImage = view.findViewById(R.id.profile_image);
+        facilitySection = view.findViewById(R.id.facility_section);
+        facilityHeader = view.findViewById(R.id.facility_header);
 
         removeProfileButton = view.findViewById(R.id.btn_remove_profile);
         removeFacilityButton = view.findViewById(R.id.btn_remove_facility);
         removeProfilePictureButton = view.findViewById(R.id.btn_remove_profile_picture);
+
+        facilitySection.setVisibility(View.GONE);
+        facilityHeader.setVisibility(View.GONE);
+        removeFacilityButton.setVisibility(View.GONE);
     }
 
     private void loadUserDetails() {
@@ -75,7 +84,6 @@ public class AdminRemoveProfileFragment extends Fragment {
 
                 adminStatus.setText(user.isAdmin() ? "Yes" : "No");
                 entrantStatus.setText(user.isEntrant() ? "Yes" : "No");
-                organizerStatus.setText(user.isOrganizer() ? "Yes" : "No");
                 notificationStatus.setText(user.isOptedOut() ? "Disabled" : "Enabled");
 
                 EntrantDatabase.loadProfileImage(userId, new EntrantDatabase.OnProfileImageLoadedListener() {
@@ -91,6 +99,33 @@ public class AdminRemoveProfileFragment extends Fragment {
                     @Override
                     public void onError(String error) {
                         profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                });
+
+                AdminDatabase.getFacilityDetails(userId, new AdminDatabase.OnFacilityDetailsLoadedListener() {
+                    @Override
+                    public void onFacilityLoaded(String facilityName, String facilityAddress) {
+                        boolean isOrganizer = !TextUtils.isEmpty(facilityName) && !TextUtils.isEmpty(facilityAddress);
+                        organizerStatus.setText(isOrganizer ? "Yes" : "No");
+
+                        if (isOrganizer) {
+                            facilitySection.setVisibility(View.VISIBLE);
+                            facilityHeader.setVisibility(View.VISIBLE);
+                            removeFacilityButton.setVisibility(View.VISIBLE);
+                            profileFacility.setText(facilityName);
+                            profileAddress.setText(facilityAddress);
+                        } else {
+                            facilitySection.setVisibility(View.GONE);
+                            facilityHeader.setVisibility(View.GONE);
+                            removeFacilityButton.setVisibility(View.GONE);
+                        }
+                    }
+                    @Override
+                    public void onError(String error) {
+                        organizerStatus.setText("No");
+                        facilitySection.setVisibility(View.GONE);
+                        facilityHeader.setVisibility(View.GONE);
+                        removeFacilityButton.setVisibility(View.GONE);
                     }
                 });
             }

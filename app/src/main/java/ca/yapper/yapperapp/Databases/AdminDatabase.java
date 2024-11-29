@@ -350,4 +350,20 @@ public class AdminDatabase {
                     throw task.getException();
                 });
     }
+
+    public interface OnFacilityDetailsLoadedListener {
+        void onFacilityLoaded(String facilityName, String facilityAddress);
+        void onError(String error);
+    }
+
+    public static void getFacilityDetails(String userId, OnFacilityDetailsLoadedListener listener) {
+        FirebaseFirestore.getInstance().collection("Users").document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    String facilityName = document.getString("facilityName");
+                    String facilityAddress = document.getString("facilityAddress");
+                    listener.onFacilityLoaded(facilityName, facilityAddress);
+                })
+                .addOnFailureListener(e -> listener.onError(e.getMessage()));
+    }
 }
