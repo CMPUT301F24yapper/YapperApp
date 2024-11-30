@@ -44,6 +44,7 @@
         android:clipChildren="true"
         app:itemIconTint="#000000"
         app:itemTextColor="#000000"
+        app:labelVisibilityMode="selected"
         app:menu="@menu/admin_nav_bar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
