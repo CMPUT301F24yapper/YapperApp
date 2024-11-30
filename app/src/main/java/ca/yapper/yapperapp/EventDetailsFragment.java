@@ -36,6 +36,7 @@ import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.OrganizerFragments.CustomNotificationFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -285,6 +286,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
             editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
+            customNotificationButton.setOnClickListener(v -> handleCustomNotificationButtonClick());
         }
     }
 
@@ -467,6 +469,28 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+    /**
+     * Handles the "Custom Notification" button click.
+     * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
+     */
+    private void handleCustomNotificationButtonClick() {
+        if (finalEvent == null || finalEvent.getDocumentId() == null || finalEvent.getName() == null) {
+            Toast.makeText(getContext(), "Event details are not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CustomNotificationFragment customNotificationFragment = CustomNotificationFragment.newInstance(
+                finalEvent.getDocumentId(),
+                finalEvent.getName() // Pass event name
+        );
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, customNotificationFragment)
+                .addToBackStack(null) // Allow navigating back to EventDetailsFragment
+                .commit();
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

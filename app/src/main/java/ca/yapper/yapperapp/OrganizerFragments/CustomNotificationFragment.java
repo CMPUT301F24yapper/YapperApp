@@ -13,8 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import java.util.ArrayList;
+import com.google.android.material.tabs.TabLayout;
 
+import java.util.ArrayList;
+import java.util.Date;
+
+import ca.yapper.yapperapp.Databases.NotificationsDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 
@@ -22,17 +26,19 @@ public class CustomNotificationFragment extends Fragment {
 
     private EditText notificationTextBox;
     private Button sendNotificationButton;
+    private TabLayout notificationTabLayout;
     private String eventId;
-    private String selectedList; // e.g., "waitingList", "selectedList", "cancelledList", "finalList"
+    private String selectedList = "waitingList"; // Default to "waitingList"
 
-    public static CustomNotificationFragment newInstance(String eventId, String selectedList) {
+    public static CustomNotificationFragment newInstance(String eventId, String eventName) {
         CustomNotificationFragment fragment = new CustomNotificationFragment();
         Bundle args = new Bundle();
         args.putString("eventId", eventId);
-        args.putString("selectedList", selectedList);
+        args.putString("eventName", eventName); // Pass event name
         fragment.setArguments(args);
         return fragment;
     }
+
 
     @Nullable
     @Override
@@ -42,16 +48,59 @@ public class CustomNotificationFragment extends Fragment {
         // Initialize views
         notificationTextBox = view.findViewById(R.id.notificationTextBox);
         sendNotificationButton = view.findViewById(R.id.sendNotificationButton);
+        notificationTabLayout = view.findViewById(R.id.notificationTabLayout);
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            selectedList = getArguments().getString("selectedList");
+            String eventName = getArguments().getString("eventName"); // Retrieve event name
+            requireActivity().setTitle(eventName); // Set title to the event name
         }
 
+        setupTabLayout();
         sendNotificationButton.setOnClickListener(v -> sendNotification());
 
         return view;
     }
+
+    private void setupTabLayout() {
+        // Add tabs
+        notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Waiting"));
+        notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Selected"));
+        notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Final"));
+        notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Cancelled"));
+
+        // Set default selected tab
+        notificationTabLayout.selectTab(notificationTabLayout.getTabAt(0));
+
+        // Handle tab selection
+        notificationTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                switch (tab.getPosition()) {
+                    case 0:
+                        selectedList = "waitingList";
+                        break;
+                    case 1:
+                        selectedList = "selectedList";
+                        break;
+                    case 2:
+                        selectedList = "finalList";
+                        break;
+                    case 3:
+                        selectedList = "cancelledList";
+                        break;
+                }
+                Log.d("CustomNotification", "Selected List: " + selectedList);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+
 
     private void sendNotification() {
         String notificationMessage = notificationTextBox.getText().toString().trim();
@@ -66,19 +115,23 @@ public class CustomNotificationFragment extends Fragment {
             return;
         }
 
-        // Fetch users from the selected list and send notifications
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, selectedList, new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 for (String userId : userIdsList) {
-                    OrganizerDatabase.sendNotificationToUser(eventId, userId, notificationMessage, success -> {
-                        if (success) {
-                            Toast.makeText(getContext(), "Notification sent successfully.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getContext(), "Failed to send notification.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    NotificationsDatabase.saveToDatabase(
+                            new Date(),                  // Timestamp
+                            userId,                      // User to notify
+                            null,                        // Sender ID (optional)
+                            "Custom Notification",       // Notification title
+                            notificationMessage,         // Notification message
+                            "Custom",                    // Notification type
+                            false,                       // isRead status
+                            eventId,                     // Event ID
+                            getArguments().getString("eventName") // Event name
+                    );
                 }
+                Toast.makeText(getContext(), "Notifications sent successfully.", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -87,4 +140,7 @@ public class CustomNotificationFragment extends Fragment {
             }
         });
     }
+
+
+
 }
