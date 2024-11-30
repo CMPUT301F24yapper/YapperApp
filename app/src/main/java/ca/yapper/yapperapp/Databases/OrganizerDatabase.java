@@ -53,6 +53,11 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
+    public interface OnOrganizerDetailsLoadedListener {
+        void onOrganizerLoaded(String organizerName);
+        void onError(String error);
+    }
+
     /**
      * Checks if the user is an admin based on their device ID.
      *
@@ -170,15 +175,20 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
                         listener.onUserInList(true);
+                        Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
                     }
                     else {
                         // Check selectedList only if not found in waitingList
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
                         db.collection("Events").document(eventId).collection("selectedList").document(userId).get()
                                 .addOnSuccessListener(selectedListDoc -> {
                                     listener.onUserInList(selectedListDoc.exists()); // User found in selectedList or not at all
+                                    Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
                                 })
                                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
+                                Log.i("OrganizerDatabase", "checkUserInEvent: user not in waiting or selected list -> can join event!");
                     }
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
@@ -473,6 +483,28 @@ public class OrganizerDatabase {
                     }
                 })
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
+    }
+
+    public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Users").document(organizerId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Retrieve the organizerName
+                        String organizerName = document.getString("entrantName");
+
+                        // Check if the data is available
+                        if (organizerName != null) {
+                            listener.onOrganizerLoaded(organizerName); // Send the data to the listener
+                        } else {
+                            listener.onError("Organizer data not found");
+                        }
+                    } else {
+                        listener.onError("User not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving organizer data: " + e.getMessage()));
     }
 
     public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {

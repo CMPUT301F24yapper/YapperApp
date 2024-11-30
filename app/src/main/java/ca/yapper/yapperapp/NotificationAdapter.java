@@ -23,6 +23,7 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notificationList;
+
     private Context context;
 
     public NotificationAdapter(List<Notification> notificationList) {

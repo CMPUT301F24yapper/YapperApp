@@ -28,7 +28,10 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="16dp"
                 android:contentDescription="Profile Picture"
-                android:src="@drawable/ic_profile_placeholder" />
+                android:scaleType="centerCrop"
+                android:background="@drawable/circular_image"
+                android:src="@drawable/ic_profile_placeholder"
+                android:clipToOutline="true" />/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
