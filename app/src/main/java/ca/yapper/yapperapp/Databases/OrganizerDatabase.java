@@ -51,6 +51,11 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
+    public interface OnOrganizerDetailsLoadedListener {
+        void onOrganizerLoaded(String organizerName);
+        void onError(String error);
+    }
+
     /**
      * Checks if the user is an admin based on their device ID.
      *
@@ -146,15 +151,20 @@ public class OrganizerDatabase {
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
                         listener.onUserInList(true);
+                        Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
                     }
                     else {
                         // Check selectedList only if not found in waitingList
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
                         db.collection("Events").document(eventId).collection("selectedList").document(userId).get()
                                 .addOnSuccessListener(selectedListDoc -> {
                                     listener.onUserInList(selectedListDoc.exists()); // User found in selectedList or not at all
+                                    Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
                                 })
                                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
+                        Log.i("OrganizerDatabase", "checkUserInEvent: user not in waiting or selected list -> can join event!");
                     }
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
@@ -198,29 +208,29 @@ public class OrganizerDatabase {
                                     }
                                 });
                     } });
-                    /**for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String userIdRef = doc.getId();
-                        db.collection("Users").document(userIdRef).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    if (userDoc.exists()) {
-                                        String deviceId = userDoc.getString("deviceId");
-                                        if (deviceId != null) {
-                                            userIdsList.add(deviceId);
-                                        }
-                                    }
+        /**for (DocumentSnapshot doc : queryDocumentSnapshots) {
+         String userIdRef = doc.getId();
+         db.collection("Users").document(userIdRef).get()
+         .addOnSuccessListener(userDoc -> {
+         if (userDoc.exists()) {
+         String deviceId = userDoc.getString("deviceId");
+         if (deviceId != null) {
+         userIdsList.add(deviceId);
+         }
+         }
 
-                                    // Call the listener only after all documents are processed
-                                    if (userIdsList.size() == queryDocumentSnapshots.size()) {
-                                        listener.onUserIdsLoaded(userIdsList);
-                                    }
-                                });
-                    }
+         // Call the listener only after all documents are processed
+         if (userIdsList.size() == queryDocumentSnapshots.size()) {
+         listener.onUserIdsLoaded(userIdsList);
+         }
+         });
+         }
 
-                    // Handle case when there are no documents in subcollection
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        listener.onUserIdsLoaded(userIdsList);
-                    }
-                });**/
+         // Handle case when there are no documents in subcollection
+         if (queryDocumentSnapshots.isEmpty()) {
+         listener.onUserIdsLoaded(userIdsList);
+         }
+         });**/
     }
 
     public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
@@ -232,7 +242,7 @@ public class OrganizerDatabase {
                         int capacity = documentSnapshot.getLong("capacity").intValue();
                         Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
                         listener.onCapacityLoaded(capacity);
-                            }
+                    }
                     else {
                         Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId);
                         listener.onCapacityLoaded(0); // Default if document does not exist
@@ -341,12 +351,12 @@ public class OrganizerDatabase {
         // Empty implementation - no placeholder data added
         // Subcollections will be implicitly created when documents are added later
         /**Map<String, Object> placeholderData = new HashMap<>();
-        placeholderData.put("placeholder", true);
+         placeholderData.put("placeholder", true);
 
-        db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
+         db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
@@ -451,6 +461,28 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
     }
 
+    public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Users").document(organizerId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Retrieve the organizerName
+                        String organizerName = document.getString("entrantName");
+
+                        // Check if the data is available
+                        if (organizerName != null) {
+                            listener.onOrganizerLoaded(organizerName); // Send the data to the listener
+                        } else {
+                            listener.onError("Organizer data not found");
+                        }
+                    } else {
+                        listener.onError("User not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving organizer data: " + e.getMessage()));
+    }
+
     public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -482,7 +514,7 @@ public class OrganizerDatabase {
                     throw task.getException();
                 });
     }
-  
+
     public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         WriteBatch batch = db.batch();
