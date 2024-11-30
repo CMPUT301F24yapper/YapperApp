@@ -64,6 +64,7 @@ public class EventDetailsFragment extends Fragment {
     private boolean geolocationPermitted = false;
     private final int wlSpotsLeft = -1;
     private ImageView posterImageView;
+    private Button customNotificationButton;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -122,6 +123,8 @@ public class EventDetailsFragment extends Fragment {
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
         posterImageView = view.findViewById(R.id.event_image);
+        customNotificationButton = view.findViewById(R.id.button_custom_notification);
+
     }
 
     /**
@@ -486,26 +489,31 @@ public class EventDetailsFragment extends Fragment {
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.VISIBLE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
-            // setupButtonListeners();
+            customNotificationButton.setVisibility(View.GONE); // Hide for entrants
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
-            setupButtonListeners();
+            customNotificationButton.setVisibility(View.VISIBLE); // Show for organizers
+            setupButtonListeners(); // Ensure Organizer buttons have listeners
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Default hidden
         }
     }
 }
