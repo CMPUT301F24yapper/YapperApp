@@ -115,6 +115,7 @@ public class WaitingListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
                     // Show empty state if the list is empty
+                    Log.i("WaitingListFrag", "userIdsList is EMPTY");
                     emptyStateLayout.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 } else {
@@ -169,9 +170,9 @@ public class WaitingListFragment extends Fragment {
     private void drawMultipleApplicants() {
         loadEventCapacity(); // Ensure eventCapacity is updated
         Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
-        OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnDataFetchListener<Integer>() {
+        OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnSelectedListLoadCountListener() {
             @Override
-            public void onFetch(Integer currentSelectedCount) {
+            public void onSelectedListCountLoaded(int currentSelectedCount) {
                 int remainingSlots = eventCapacity - currentSelectedCount;
                 Log.e("draw multiple applicants", "Remaining slots: " + remainingSlots);
 
@@ -216,9 +217,9 @@ public class WaitingListFragment extends Fragment {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 Toast.makeText(getContext(), "Failed to fetch selected list count", Toast.LENGTH_SHORT).show();
-                Log.e("FirestoreError", "Error fetching selected list count", e);
+                Log.e("FirestoreError", "Error fetching selected list count" + e);
             }
         });
     }
@@ -232,7 +233,7 @@ public class WaitingListFragment extends Fragment {
      * @param onComplete Runnable executed once the move is complete.
      */
     private void moveUserToSelectedList(User user, Runnable onComplete) {
-        OrganizerDatabase.moveUserToWaitingList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+        OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
             @Override
             public void onComplete(boolean success) {
                 if (success) {
@@ -243,25 +244,6 @@ public class WaitingListFragment extends Fragment {
                 }
             }
         });
-        /**Map<String, Object> timestamp = new HashMap<>();
-        timestamp.put("timestamp", FieldValue.serverTimestamp());
-
-        DocumentReference waitingListRef = db.collection("Events").document(eventId)
-                .collection("waitingList").document(user.getDeviceId());
-        DocumentReference selectedListRef = db.collection("Events").document(eventId)
-                .collection("selectedList").document(user.getDeviceId());
-
-        db.runTransaction(transaction -> {
-            transaction.delete(waitingListRef);
-            transaction.set(selectedListRef, timestamp);
-            return null;
-        }).addOnSuccessListener(aVoid -> {
-            Toast.makeText(getContext(), "User " + user.getName() + " moved to selected list", Toast.LENGTH_SHORT).show();
-            onComplete.run();
-        }).addOnFailureListener(e -> {
-            Log.e("FirestoreError", "Error moving user to selected list", e);
-            onComplete.run();
-        });**/
     }
 
     /**

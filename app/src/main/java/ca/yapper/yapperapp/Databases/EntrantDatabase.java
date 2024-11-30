@@ -134,6 +134,50 @@ public class EntrantDatabase {
         });
     }
 
+    public static void addEventToRegisteredEvents(String userId, String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Reference to the user's joinedEvents subcollection
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        // Add the event with initial status
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("timestamp", FieldValue.serverTimestamp());
+        eventData.put("invitationStatus", "Pending");  // Default status is "Pending"
+
+        eventDocRef.set(eventData)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("EntrantDatabase", "Event added to registeredEvents with Pending status.");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantDatabase", "Error adding event to registeredEvents: " + e.getMessage());
+                });
+    }
+
+    public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("invitationStatus", newStatus);
+
+        eventDocRef.update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("EntrantDatabase", "Invitation status updated to: " + newStatus);
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantDatabase", "Error updating invitation status: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
     public static void getEventByQRCode(String documentId, OnEventFoundListener listener) {
         db.collection("Events").document(documentId).get()
                 .addOnCompleteListener(task -> {
@@ -254,6 +298,37 @@ public class EntrantDatabase {
                 });
     }
 
+    public static void getInvitationStatus(String userId, String eventId, OnStatusCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        eventDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String status = documentSnapshot.getString("invitationStatus");
+                        if (status != null) {
+                            listener.onStatusLoaded(status);
+                        } else {
+                            listener.onStatusNotFound();  // Status field missing
+                        }
+                    } else {
+                        listener.onUserNotInList();  // User not part of this event
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
+    }
+
+    // Define callback interface
+    public interface OnStatusCheckListener {
+        void onStatusLoaded(String status);  // "Pending", "Accepted", "Rejected", etc.
+        void onStatusNotFound();             // If status is missing
+        void onUserNotInList();              // If event is not in joinedEvents
+        void onError(String error);          // Error handling
+    }
+
     public static void loadProfileImage(String deviceId, final OnProfileImageLoadedListener listener) {
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -277,5 +352,4 @@ public class EntrantDatabase {
         void onFieldUpdated(Object value);  // When the image is successfully loaded
         void onError(String error);                    // When there's an error
     }
-
 }
