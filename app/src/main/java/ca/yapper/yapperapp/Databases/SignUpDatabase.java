@@ -15,13 +15,12 @@ import ca.yapper.yapperapp.Activities.SignupActivity;
 
 public class SignUpDatabase {
 
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     /**
      * Checks if a user exists in the database based on the device ID (used by SignupActivity...)
      */
     public static Task<Boolean> checkUserExists(String deviceId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
         db.collection("Users").document(deviceId)

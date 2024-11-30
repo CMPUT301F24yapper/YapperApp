@@ -229,7 +229,6 @@ public class EntrantDatabase {
      * @param listener The listener to handle success or error when loading the user.
      */
     public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userDeviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {

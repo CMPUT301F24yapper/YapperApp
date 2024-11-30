@@ -18,8 +18,11 @@ import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
+    
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+    
+    
     public static Task<Map<String, Long>> getAdminStats() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         TaskCompletionSource<Map<String, Long>> tcs = new TaskCompletionSource<>();
         Map<String, Long> stats = new HashMap<>();
 
@@ -46,7 +49,6 @@ public class AdminDatabase {
     }
 
     public static Task<List<Map<String, Object>>> getBiggestEvents() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         TaskCompletionSource<List<Map<String, Object>>> tcs = new TaskCompletionSource<>();
 
         db.collection("Events").get().addOnSuccessListener(querySnapshot -> {
@@ -96,7 +98,7 @@ public class AdminDatabase {
     }
 
     public static Task<List<Event>> getAllEvents() {
-        return FirebaseFirestore.getInstance()
+        return db
                 .collection("Events")
                 .get()
                 .continueWith(task -> {
@@ -144,7 +146,7 @@ public class AdminDatabase {
     }
 
     public static Task<List<User>> getAllUsers() {
-        return FirebaseFirestore.getInstance()
+        return db
                 .collection("Users")
                 .get()
                 .continueWith(task -> {
@@ -182,13 +184,13 @@ public class AdminDatabase {
     }
 
     public static Task<Void> removeEvent(String eventId) {
-        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+        WriteBatch batch = db.batch();
 
         // Delete the event document itself
-        batch.delete(FirebaseFirestore.getInstance().collection("Events").document(eventId));
+        batch.delete(db.collection("Events").document(eventId));
 
         // First get all users to check their collections
-        return FirebaseFirestore.getInstance().collection("Users").get()
+        return db.collection("Users").get()
                 .continueWithTask(task -> {
                     if (task.isSuccessful()) {
                         for (DocumentSnapshot userDoc : task.getResult()) {
@@ -219,13 +221,13 @@ public class AdminDatabase {
     }
 
     public static Task<Void> removeUser(String userId) {
-        WriteBatch batch = FirebaseFirestore.getInstance().batch();
+        WriteBatch batch = db.batch();
 
         // Delete the user document itself
-        batch.delete(FirebaseFirestore.getInstance().collection("Users").document(userId));
+        batch.delete(db.collection("Users").document(userId));
 
         // Get all events to clean up participant lists
-        return FirebaseFirestore.getInstance().collection("Events").get()
+        return db.collection("Events").get()
                 .continueWithTask(task -> {
                     if (task.isSuccessful()) {
                         for (DocumentSnapshot eventDoc : task.getResult()) {
@@ -252,7 +254,7 @@ public class AdminDatabase {
                     }
 
                     // Delete user's notifications
-                    return FirebaseFirestore.getInstance().collection("Notifications")
+                    return db.collection("Notifications")
                             .whereEqualTo("userToId", userId)
                             .get();
                 })
@@ -270,7 +272,7 @@ public class AdminDatabase {
         TaskCompletionSource<List<ImageData>> tcs = new TaskCompletionSource<>();
         List<ImageData> allImages = new ArrayList<>();
 
-        FirebaseFirestore.getInstance().collection("Events").get()
+        db.collection("Events").get()
                 .addOnSuccessListener(eventsSnapshot -> {
                     for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
                         String posterBase64 = doc.getString("posterBase64");
@@ -279,7 +281,7 @@ public class AdminDatabase {
                         }
                     }
 
-                    FirebaseFirestore.getInstance().collection("Users").get()
+                    db.collection("Users").get()
                             .addOnSuccessListener(usersSnapshot -> {
                                 for (DocumentSnapshot doc : usersSnapshot.getDocuments()) {
                                     String profileImage = doc.getString("profileImage");
@@ -300,7 +302,7 @@ public class AdminDatabase {
         Map<String, Object> updates = new HashMap<>();
         updates.put(fieldName, null);
 
-        return FirebaseFirestore.getInstance()
+        return db
                 .collection(documentType.equals("event") ? "Events" : "Users")
                 .document(documentId)
                 .update(updates);
@@ -309,7 +311,7 @@ public class AdminDatabase {
     public static Task<String> getProfileImage(String userId) {
         TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
 
-        FirebaseFirestore.getInstance()
+        db
                 .collection("Users")
                 .document(userId)
                 .get()
@@ -327,7 +329,6 @@ public class AdminDatabase {
     }
 
     public static Task<Void> removeFacility(String userId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         WriteBatch batch = db.batch();
 
         Map<String, Object> userUpdates = new HashMap<>();
@@ -358,7 +359,7 @@ public class AdminDatabase {
     }
 
     public static void getFacilityDetails(String userId, OnFacilityDetailsLoadedListener listener) {
-        FirebaseFirestore.getInstance().collection("Users").document(userId)
+        db.collection("Users").document(userId)
                 .get()
                 .addOnSuccessListener(document -> {
                     String facilityName = document.getString("facilityName");
@@ -369,7 +370,7 @@ public class AdminDatabase {
     }
 
     public static void getOrganizerName(String organizerId, OnNameLoadedListener listener) {
-        FirebaseFirestore.getInstance().collection("Users")
+        db.collection("Users")
                 .document(organizerId)
                 .get()
                 .addOnSuccessListener(document -> {

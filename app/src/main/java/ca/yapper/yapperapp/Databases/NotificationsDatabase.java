@@ -14,7 +14,7 @@ import java.util.Map;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
 public class NotificationsDatabase {
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);

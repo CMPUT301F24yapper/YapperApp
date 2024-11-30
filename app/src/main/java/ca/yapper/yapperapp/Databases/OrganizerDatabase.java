@@ -25,7 +25,7 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class OrganizerDatabase {
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
@@ -88,7 +88,7 @@ public class OrganizerDatabase {
     }
 
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
@@ -107,7 +107,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -146,7 +146,7 @@ public class OrganizerDatabase {
     }
 
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
@@ -171,7 +171,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         ArrayList<String> userIdsList = new ArrayList<>();
 
@@ -234,7 +234,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -270,7 +270,7 @@ public class OrganizerDatabase {
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,
                                              String name, String registrationDeadline, Integer waitListCapacity,
                                              String organizerId, String posterBase64, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         try {
             // Create the Event object
@@ -360,7 +360,7 @@ public class OrganizerDatabase {
     }
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
@@ -378,7 +378,7 @@ public class OrganizerDatabase {
     }
 
     public static void moveUserToWaitingList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
@@ -396,7 +396,7 @@ public class OrganizerDatabase {
     }
 
     public static void getSelectedListCount(String eventId, OnDataFetchListener<Integer> listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId)
                 .collection("selectedList").get()
                 .addOnSuccessListener(snapshot -> {
@@ -406,7 +406,7 @@ public class OrganizerDatabase {
     }
 
     public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId)
                 .collection("waitingList").get()
                 .addOnSuccessListener(snapshot -> {
@@ -415,7 +415,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving wait list count data: " + e.getMessage()));    }
 
     public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         if (userDeviceId == null) {
             listener.onEventsLoadError("Error: Unable to get user ID");
@@ -439,7 +439,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -462,7 +462,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Users").document(organizerId).get()
                 .addOnSuccessListener(document -> {
@@ -484,7 +484,7 @@ public class OrganizerDatabase {
     }
 
     public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).set(eventData)
                 .addOnSuccessListener(unused -> listener.onComplete(true))
@@ -492,7 +492,7 @@ public class OrganizerDatabase {
     }
 
     public static Task<Void> updateFacilityNameForEvents(String userId, String facilityName) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         WriteBatch batch = db.batch();
 
         Map<String, Object> userUpdates = new HashMap<>();
@@ -516,7 +516,7 @@ public class OrganizerDatabase {
     }
   
     public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         WriteBatch batch = db.batch();
 
         Map<String, Object> userUpdates = new HashMap<>();
@@ -540,7 +540,7 @@ public class OrganizerDatabase {
     }
 
     public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events")
                 .document(eventId)
                 .collection("selectedList")
@@ -558,7 +558,7 @@ public class OrganizerDatabase {
 
 
     public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         if (eventId == null || eventId.isEmpty()) {
             Log.e("OrganizerDatabase", "Event ID is null or empty.");
             listener.onComplete(false);
@@ -587,7 +587,7 @@ public class OrganizerDatabase {
 
 
     public static void addUserToCancelledList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         // Create a timestamp for the cancelled list entry
         Map<String, Object> timestamp = new HashMap<>();
