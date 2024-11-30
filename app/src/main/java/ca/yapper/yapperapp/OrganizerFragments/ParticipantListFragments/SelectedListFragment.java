@@ -372,30 +372,33 @@ public class SelectedListFragment extends Fragment {
      * @param onComplete Runnable executed once the move is complete.
      */
     private void moveToSelectedList(User user, Runnable onComplete) {
-        // Create notification with eventId
+        // Create notification with event details
         Notification notification = new Notification(
                 new Date(),
                 user.getDeviceId(), // Recipient's device ID
                 null, // Assuming no specific sender is set
-                "Selected for Event",
-                "You have been selected from the waiting list for event: " + eventId,
+                eventName, // Use the event name as the title
+                "You have been selected from the waiting list for the event: " + eventName,
                 "Selection",
-                eventId // Include the event ID in the notification
+                eventId, // Include the event ID
+                eventName // Include the event name
         );
         notification.saveToDatabase(); // Save the notification to Firestore
 
         OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
-            @Override
-            public void onComplete(boolean success) {
-                if (success) {
-                    onComplete.run(); // Notify that the operation was successful
-                } else {
-                    Toast.makeText(getContext(), "Failed to move user to selected list", Toast.LENGTH_SHORT).show();
-                }
+          @Override
+          public void onComplete(boolean success) {
+            if (success) {
+                onComplete.run(); // Notify that the operation was successful
+                Toast.makeText(getContext(), user.getName() + " has been moved to the selected list.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Failed to move user to selected list. Please try again.", Toast.LENGTH_SHORT).show();
             }
-        });
-    }
+        }
+    });
+}
 
+                                                 
     /**
      * Moves a user from the selected list back to the waiting list in Firestore.
      * Refreshes the list after the user is moved.

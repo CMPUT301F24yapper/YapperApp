@@ -19,6 +19,8 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
+  
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
@@ -40,7 +42,7 @@ public class UserDatabase {
         }
 
         // Query Firestore
-        FirestoreUtils.getFirestoreInstance().collection("Users").document(userDeviceId).get()
+        db.collection("Users").document(userDeviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
@@ -95,7 +97,6 @@ public class UserDatabase {
     }
 
     private static Task<Void> addMissedOutEventsSubcollection(String userDeviceId) {
-        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
         CollectionReference eventsRef = db.collection("Events");
         CollectionReference missedOutEventsRef = db.collection("Users").document(userDeviceId).collection("missedOutEvents");
 
@@ -255,7 +256,6 @@ public class UserDatabase {
             return;
         }
 
-        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
         Map<String, Object> locationData = new HashMap<>();
         locationData.put("latitude", latitude);
         Log.d("UserDB", "Saving latitude: " + latitude);

@@ -5,6 +5,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
 public class NotificationsDatabase {
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);
@@ -27,7 +28,7 @@ public class NotificationsDatabase {
      */
     public static void saveToDatabase(Date dateTimeStamp, String userToId, String userFromId,
                                       String title, String message, String notificationType,
-                                      boolean isRead, String eventId) {
+                                      boolean isRead, String eventId, String eventName) { // Include eventName
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("dateTimeStamp", dateTimeStamp);
         notificationData.put("userToId", userToId);
@@ -36,7 +37,8 @@ public class NotificationsDatabase {
         notificationData.put("message", message);
         notificationData.put("notificationType", notificationType);
         notificationData.put("isRead", isRead);
-        notificationData.put("eventId", eventId); // Ensure eventId is saved
+        notificationData.put("eventId", eventId);
+        notificationData.put("eventName", eventName); // Include eventName
 
         db.collection("Notifications")
                 .add(notificationData)
@@ -46,11 +48,10 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
     }
 
-
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
         db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)
-                .whereEqualTo("isRead", false)          // Load only unread notifications
+                .whereEqualTo("isRead", false) // Load only unread notifications
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Notification> notifications = new ArrayList<>();

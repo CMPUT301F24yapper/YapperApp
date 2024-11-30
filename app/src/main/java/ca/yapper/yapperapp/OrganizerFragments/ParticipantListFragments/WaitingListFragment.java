@@ -167,6 +167,10 @@ public class WaitingListFragment extends Fragment {
      * Draws multiple users from the waiting list, filling available slots in the selected list
      * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
      */
+    /**
+     * Draws multiple users from the waiting list, filling available slots in the selected list
+     * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
+     */
     private void drawMultipleApplicants() {
         loadEventCapacity(); // Ensure eventCapacity is updated
         Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
@@ -245,6 +249,7 @@ public class WaitingListFragment extends Fragment {
             }
         });
     }
+
 
     /**
      * Refreshes all fragments displaying participant lists for the event,
