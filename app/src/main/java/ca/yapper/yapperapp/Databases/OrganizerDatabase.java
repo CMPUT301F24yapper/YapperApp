@@ -429,6 +429,50 @@ public class OrganizerDatabase {
                 .addOnFailureListener(listener::onError);
     }
 
+
+    public static void sendNotificationToUser(String eventId, String userId, String message, OnOperationCompleteListener listener) {
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e("OrganizerDatabase", "Event ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (userId == null || userId.isEmpty()) {
+            Log.e("OrganizerDatabase", "User ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (message == null || message.isEmpty()) {
+            Log.e("OrganizerDatabase", "Message is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+
+        // Create the notification data
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("dateTimeStamp", FieldValue.serverTimestamp());
+        notificationData.put("userToId", userId);
+        notificationData.put("userFromId", null); // Assuming no specific sender
+        notificationData.put("title", "Custom Notification");
+        notificationData.put("message", message);
+        notificationData.put("notificationType", "CustomNotification");
+        notificationData.put("eventId", eventId);
+        notificationData.put("isRead", false);
+
+        // Save the notification to Firestore
+        db.collection("Notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("OrganizerDatabase", "Notification sent successfully with ID: " + documentReference.getId());
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Failed to send notification: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+
+
     public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
 
         db.collection("Events").document(eventId)

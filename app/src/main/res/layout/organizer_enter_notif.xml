@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <!-- Tab Layout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/notificationTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#E0B0FF"/>
+
+    <!-- Text Input Field -->
+    <EditText
+        android:id="@+id/notificationTextBox"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:hint="Type your notification"
+        android:textColorHint="#808080"
+        android:padding="12dp"
+        android:textColor="#000000"
+        android:inputType="text"
+        android:gravity="center"
+        android:background="@drawable/rounded_border"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Send Notification Button -->
+    <Button
+        android:id="@+id/sendNotificationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Notification"
+        android:backgroundTint="#E0B0FF"
+        android:textColor="@android:color/black"
+        android:padding="12dp"
+        android:elevation="4dp"
+        android:layout_gravity="center" />
+</LinearLayout>
