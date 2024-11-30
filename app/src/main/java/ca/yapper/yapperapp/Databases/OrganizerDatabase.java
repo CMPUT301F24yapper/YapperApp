@@ -27,6 +27,8 @@ public class OrganizerDatabase {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+
+
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
         void onError(String error);
@@ -105,6 +107,28 @@ public class OrganizerDatabase {
 
         return tcs.getTask();
     }
+
+    public static void getEventDetails(String eventId, OnEventDetailsFetchListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Events").document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("name")) {
+                        listener.onEventDetailsFetched(documentSnapshot.getString("name"));
+                    } else {
+                        listener.onError("Event name not found.");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error fetching event details: " + e.getMessage()));
+    }
+
+    // Define the callback interface:
+    public interface OnEventDetailsFetchListener {
+        void onEventDetailsFetched(String eventName);
+        void onError(String errorMessage);
+    }
+
+
 
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();

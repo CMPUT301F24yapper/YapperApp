@@ -141,12 +141,7 @@ public class SignupActivity extends AppCompatActivity {
      * Displays a signup success notification.
      */
     private void showSignupSuccessNotification(String entrantName) {
-        Notification signupNotification = new Notification(
-                new Date(),
-                "Welcome to Event Lottery!",
-                "Hello " + entrantName + ", you have successfully signed up.",
-                "Signup Success"
-        );
+
         Log.d("SignupActivity", "Signup success notification displayed.");
     }
 
