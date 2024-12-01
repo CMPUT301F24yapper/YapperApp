@@ -57,7 +57,7 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
-    private void showProfileSwitchMenu(View view) {
+    public void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
 
