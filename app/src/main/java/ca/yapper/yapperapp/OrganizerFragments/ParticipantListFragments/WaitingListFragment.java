@@ -115,6 +115,7 @@ public class WaitingListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
                     // Show empty state if the list is empty
+                    Log.i("WaitingListFrag", "userIdsList is EMPTY");
                     emptyStateLayout.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 } else {
@@ -173,72 +174,81 @@ public class WaitingListFragment extends Fragment {
     private void drawMultipleApplicants() {
         loadEventCapacity(); // Ensure eventCapacity is updated
         Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
-
-        OrganizerDatabase.getEventDetails(eventId, new OrganizerDatabase.OnEventDetailsFetchListener() {
+        OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnSelectedListLoadCountListener() {
             @Override
-            public void onEventDetailsFetched(String eventName) {
-                OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnDataFetchListener<Integer>() {
-                    @Override
-                    public void onFetch(Integer currentSelectedCount) {
-                        int remainingSlots = eventCapacity - currentSelectedCount;
-                        Log.e("draw multiple applicants", "Remaining slots: " + remainingSlots);
+            public void onSelectedListCountLoaded(int currentSelectedCount) {
+                int remainingSlots = eventCapacity - currentSelectedCount;
+                Log.e("draw multiple applicants", "Remaining slots: " + remainingSlots);
 
-                        if (remainingSlots <= 0) {
-                            Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        int drawCount = Math.min(remainingSlots, usersWaitingList.size()); // Ensure draw count doesn't exceed remaining slots or waiting list size
-                        final int[] completedMoves = {0};
+                if (remainingSlots <= 0) {
+                    Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int drawCount = Math.min(remainingSlots, usersWaitingList.size()); // Ensure draw count doesn't exceed remaining slots or waiting list size
+                final int[] completedMoves = {0};
 
-                        for (int i = 0; i < drawCount; i++) {
-                            if (!usersWaitingList.isEmpty()) {
-                                Random random = new Random();
-                                int index = random.nextInt(usersWaitingList.size());
-                                User selectedUser = usersWaitingList.remove(index);
+                for (int i = 0; i < drawCount; i++) {
+                    if (!usersWaitingList.isEmpty()) {
+                        Random random = new Random();
+                        int index = random.nextInt(usersWaitingList.size());
+                        User selectedUser = usersWaitingList.remove(index);
 
-                                // Create notification with event details
-                                Notification notification = new Notification(
-                                        new Date(),
-                                        selectedUser.getDeviceId(), // Recipient's device ID
-                                        null, // Assuming no specific sender is set
-                                        eventName, // Use the event name as the title
-                                        "You have been selected from the waiting list for the event: " + eventName,
-                                        "Selection",
-                                        eventId, // Include the event ID
-                                        eventName // Include the event name
-                                );
-                                notification.saveToDatabase(); // Save the notification to Firestore
+                        // Create notification with eventId
+                        Notification notification = new Notification(
+                                new Date(),
+                                selectedUser.getDeviceId(),
+                                null, // Assuming no specific sender is set
+                                "Selected for Event",
+                                "You have been selected from the waiting list",
+                                "Selection"
+                        );
+                        notification.setEventId(eventId); // Set the event ID
+                        notification.saveToDatabase();
 
-                                OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
-                                        success -> {
-                                            if (success) {
-                                                completedMoves[0]++;
-                                                if (completedMoves[0] == drawCount) {
-                                                    refreshAllFragments();
-                                                }
-                                            } else {
-                                                Toast.makeText(getContext(), "Failed to move some users", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
-                        }
+                        OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
+                                success -> {
+                                    if (success) {
+                                        completedMoves[0]++;
+                                        if (completedMoves[0] == drawCount) {
+                                            refreshAllFragments();
+                                        }
+                                    } else {
+                                        Toast.makeText(getContext(), "Failed to move some users", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(getContext(), "Failed to fetch selected list count", Toast.LENGTH_SHORT).show();
-                        Log.e("FirestoreError", "Error fetching selected list count", e);
-                    }
-                });
+                }
             }
 
             @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(getContext(), "Error fetching event details: " + errorMessage, Toast.LENGTH_SHORT).show();
+            public void onError(String e) {
+                Toast.makeText(getContext(), "Failed to fetch selected list count", Toast.LENGTH_SHORT).show();
+                Log.e("FirestoreError", "Error fetching selected list count" + e);
             }
         });
     }
 
+
+    /**
+     * Moves a user from the waiting list to the selected list in Firestore.
+     * Displays a confirmation message and updates the UI.
+     *
+     * @param user The user to be moved.
+     * @param onComplete Runnable executed once the move is complete.
+     */
+    private void moveUserToSelectedList(User user, Runnable onComplete) {
+        OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+            @Override
+            public void onComplete(boolean success) {
+                if (success) {
+                    refreshAllFragments();
+                    drawMultipleApplicants();
+                } else {
+                    Toast.makeText(getContext(), "Failed to move user to waiting list", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 
 
     /**

@@ -44,13 +44,33 @@
     <!-- Redraw Button -->
     <Button
         android:id="@+id/button_redraw"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="100dp"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginBottom="50dp"
         android:backgroundTint="@color/black"
+        android:insetLeft="0dp"
         android:padding="12dp"
         android:text="Redraw Applicant"
         android:textColor="@android:color/white" />
 
+    <!-- Dump Pending Applicant Button -->
+    <Button
+        android:id="@+id/button_dump_pending"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginBottom="40dp"
+        android:backgroundTint="@color/black"
+        android:padding="12dp"
+        android:text="Dump Pending Applicants"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/selected_count_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:padding="16dp"
+        android:textSize="16sp" />
 </LinearLayout>

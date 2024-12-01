@@ -2,6 +2,7 @@ package ca.yapper.yapperapp;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -25,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -223,7 +225,7 @@ public class EventDetailsFragment extends Fragment {
             @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
-                    setButtonState("Unjoin Event", Color.GRAY, false);
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
                 }
                 else {
                     checkEventDates();  // then check event dates
@@ -247,7 +249,8 @@ public class EventDetailsFragment extends Fragment {
 
             if ((regDeadlineDate != null && regDeadlineDate.before(currentDate)) ||
                     (eventDate != null && eventDate.before(currentDate))) {
-                setButtonState("Event Passed", Color.GRAY, false);
+                // setButtonState("Event Passed", Color.RED, false);
+                setButtonState("Event Passed", R.color.unjoin_event, false);
             }
             else {
                 checkWaitListCapacity();  // Check if waitlist capacity is full
@@ -266,7 +269,8 @@ public class EventDetailsFragment extends Fragment {
                 if (finalEvent.getWaitListCapacity() != null
                         && finalEvent.getWaitListCapacity() != 0
                         && (finalEvent.getWaitListCapacity() - waitListCount) <= 0) {
-                    setButtonState("Wait List Full", Color.GRAY, false);
+                    // setButtonState("Wait List Full", Color.GRAY, false);
+                    setButtonState("Wait List Full", R.color.unjoin_event, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
                     joinButton.setOnClickListener(v -> handleJoinButtonClick());
@@ -407,15 +411,14 @@ public class EventDetailsFragment extends Fragment {
             EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
                 if (getContext() == null) return;
 
-            if (success) {
-                joinButton.setText("Unjoin");
-                joinButton.setBackgroundColor(Color.GRAY);
-                Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+                if (success) {
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
+                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
     /**
      * Unjoins the user from the event. It removes the user from both the event's waiting list and their list of joined events.

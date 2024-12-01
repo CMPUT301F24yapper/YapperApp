@@ -20,8 +20,14 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
-
+  
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public interface OnUserLoadedListener {
+        void onUserLoaded(User user);
+        void onUserLoadError(String error);
+    }
+
     /**
      * Loads a User from Firestore using the specified device ID and provides the result
      * through the provided listener.
