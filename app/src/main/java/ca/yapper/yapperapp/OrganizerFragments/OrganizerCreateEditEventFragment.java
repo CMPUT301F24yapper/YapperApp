@@ -135,14 +135,14 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         initializeFields(view);
-        //restoreCachedData();
+        restoreCachedData();
         setupClickListeners();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //saveToCache();
+        saveToCache();
     }
 
     /**

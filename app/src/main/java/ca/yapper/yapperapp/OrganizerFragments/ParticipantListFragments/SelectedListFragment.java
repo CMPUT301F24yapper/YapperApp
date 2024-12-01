@@ -308,30 +308,48 @@ public class SelectedListFragment extends Fragment {
      * @param onComplete Runnable executed once the move is complete.
      */
     private void moveToSelectedList(User user, Runnable onComplete) {
-
-        // Create notification with eventId
-        Notification notification = new Notification(
-                new Date(),
-                user.getDeviceId(), // Recipient's device ID
-                null, // Assuming no specific sender is set
-                "Selected for Event",
-                "You have been selected from the waiting list for event: " + eventId,
-                "Selection",
-                eventId // Include the event ID in the notification
-        );
-        notification.saveToDatabase(); // Save the notification to Firestore
-
-        OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+        OrganizerDatabase.getEventDetails(eventId, new OrganizerDatabase.OnEventDetailsFetchListener() {
             @Override
-            public void onComplete(boolean success) {
-                if (success) {
-                    onComplete.run(); // Notify that the operation was successful
-                } else {
-                    Toast.makeText(getContext(), "Failed to move user to selected list", Toast.LENGTH_SHORT).show();
+            public void onEventDetailsFetched(String eventName) {
+                if (user == null || user.getDeviceId() == null || user.getDeviceId().isEmpty()) {
+                    Toast.makeText(getContext(), "Invalid user or device ID. Cannot move to selected list.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // Create notification with event details
+                Notification notification = new Notification(
+                        new Date(),
+                        user.getDeviceId(), // Recipient's device ID
+                        null, // Assuming no specific sender is set
+                        eventName, // Use the event name as the title
+                        "You have been selected from the waiting list for the event: " + eventName,
+                        "Selection",
+                        eventId, // Include the event ID
+                        eventName // Include the event name
+                );
+                notification.saveToDatabase(); // Save the notification to Firestore
+
+                // Move the user to the selected list
+                OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+                    @Override
+                    public void onComplete(boolean success) {
+                        if (success) {
+                            onComplete.run(); // Notify that the operation was successful
+                            Toast.makeText(getContext(), user.getName() + " has been moved to the selected list.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Failed to move user to selected list. Please try again.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), "Error fetching event details: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 
 
 

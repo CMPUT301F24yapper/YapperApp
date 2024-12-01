@@ -15,7 +15,7 @@ public class qrCode {
 
     private String QRCodeValue;
     private int hashData;
-    private QRCodeWriter QRcodeManager;
+    private final QRCodeWriter QRcodeManager;
     private BitMatrix qrCode;
 
     /**

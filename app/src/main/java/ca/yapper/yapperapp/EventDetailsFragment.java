@@ -41,6 +41,7 @@ import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.OrganizerFragments.CustomNotificationFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -71,6 +72,7 @@ public class EventDetailsFragment extends Fragment {
     private final int wlSpotsLeft = -1;
     private ImageView posterImageView;
     private ImageView worldmap;
+    private Button customNotificationButton;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -129,6 +131,8 @@ public class EventDetailsFragment extends Fragment {
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
         posterImageView = view.findViewById(R.id.event_image);
+        customNotificationButton = view.findViewById(R.id.button_custom_notification);
+
         worldmap = view.findViewById(R.id.world_map);
     }
 
@@ -189,6 +193,9 @@ public class EventDetailsFragment extends Fragment {
                         posterImageView.setBackgroundResource(R.drawable.event_image); // Placeholder image
                     }
                 }
+                eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
                 eventId = event.getDocumentId();
                 finalEvent = event;
                 Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
@@ -290,6 +297,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
             editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
+            customNotificationButton.setOnClickListener(v -> handleCustomNotificationButtonClick());
         }
     }
 
@@ -362,6 +370,7 @@ public class EventDetailsFragment extends Fragment {
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
         QRCodeData.putString("0", finalEvent.getDocumentId());
+        QRCodeData.putString("0", finalEvent.getDocumentId());
 
         OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
         newFragment.setArguments(QRCodeData);
@@ -386,17 +395,17 @@ public class EventDetailsFragment extends Fragment {
      * If successful, it updates the join button to display "Unjoin" and shows a success message.
      */
     private void joinEvent() {
-        if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (geolocationEnabled && !geolocationPermitted) {
-            showGeolocationWarningDialog();
-            return;
-        }
-        Log.d("joinEvent()", "about to call EntrantDb.joinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
-        EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
-            if (getContext() == null) return;
+            if (userDeviceId == null) {
+                Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (geolocationEnabled && !geolocationPermitted) {
+                showGeolocationWarningDialog();
+                return;
+            }
+            Log.d("joinEvent()", "about to call EntrantDb.joinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+            EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+                if (getContext() == null) return;
 
             if (success) {
                 joinButton.setText("Unjoin");
@@ -472,6 +481,28 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+    /**
+     * Handles the "Custom Notification" button click.
+     * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
+     */
+    private void handleCustomNotificationButtonClick() {
+        if (finalEvent == null || finalEvent.getDocumentId() == null || finalEvent.getName() == null) {
+            Toast.makeText(getContext(), "Event details are not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CustomNotificationFragment customNotificationFragment = CustomNotificationFragment.newInstance(
+                finalEvent.getDocumentId(),
+                finalEvent.getName() // Pass event name
+        );
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, customNotificationFragment)
+                .addToBackStack(null) // Allow navigating back to EventDetailsFragment
+                .commit();
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -542,20 +573,23 @@ public class EventDetailsFragment extends Fragment {
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.VISIBLE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
             worldmap.setVisibility(View.GONE);
-            // setupButtonListeners();
+            customNotificationButton.setVisibility(View.GONE); // Hide for entrants
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
-            setupButtonListeners();
+            customNotificationButton.setVisibility(View.VISIBLE); // Show for organizers
+            setupButtonListeners(); // Ensure Organizer buttons have listeners
             worldmap.setVisibility(View.VISIBLE);
             if(eventId != null) {
                 loadUserPins(eventId);
@@ -564,10 +598,12 @@ public class EventDetailsFragment extends Fragment {
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Default hidden
         }
     }
 }
