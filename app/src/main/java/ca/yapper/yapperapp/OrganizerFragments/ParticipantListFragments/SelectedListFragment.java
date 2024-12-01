@@ -45,8 +45,6 @@ public class SelectedListFragment extends Fragment {
     private int eventCapacity;
 
     private LinearLayout emptyStateLayout;
-    private ImageView emptyImageView;
-    private TextView emptyTextView;
 
 
 
@@ -72,8 +70,6 @@ public class SelectedListFragment extends Fragment {
         redrawButton = view.findViewById(R.id.button_redraw);
 
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
-        emptyImageView = view.findViewById(R.id.emptyImageView);
-        emptyTextView = view.findViewById(R.id.emptyTextView);
 
 
         if (getArguments() != null) {

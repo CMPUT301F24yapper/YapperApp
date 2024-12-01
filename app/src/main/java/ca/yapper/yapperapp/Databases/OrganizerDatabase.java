@@ -58,11 +58,6 @@ public class OrganizerDatabase {
         void onError(String error);
     }
 
-    public interface OnOrganizerDetailsLoadedListener {
-        void onOrganizerLoaded(String organizerName);
-        void onError(String error);
-    }
-
     /**
      * Checks if the user is an admin based on their device ID.
      *

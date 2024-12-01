@@ -36,7 +36,7 @@ public class FinalListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        emptyStateContainer = view.findViewById(R.id.emptyStateContainer);
+        emptyStateContainer = view.findViewById(R.id.emptyStateLayout);
 
         finalList = new ArrayList<>();
         adapter = new UsersAdapter(finalList, getContext());
