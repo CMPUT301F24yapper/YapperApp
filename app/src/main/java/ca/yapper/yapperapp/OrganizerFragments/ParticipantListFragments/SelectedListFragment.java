@@ -1,12 +1,12 @@
 package ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +28,7 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersInEventAdapter;
@@ -49,6 +50,7 @@ public class SelectedListFragment extends Fragment {
     private int eventCapacity;
     private TextView selectedCountTextView;
     private LinearLayout emptyStateLayout;
+    private String organizerId;
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
@@ -63,6 +65,8 @@ public class SelectedListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_participants_selectedlist, container, false);
+
+        organizerId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
@@ -331,12 +335,12 @@ public class SelectedListFragment extends Fragment {
                         UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                             @Override
                             public void onUserLoaded(User user) {
-                                moveToSelectedList(user, () -> {
+                                moveToSelectedList(user, eventId, () -> {
                                     completedMoves[0]++;
                                     if (completedMoves[0] == drawCount) {
                                         refreshAllFragments();
                                     }
-                                });
+                                } );
                             }
                             @Override
                             public void onUserLoadError(String error) {
@@ -364,24 +368,34 @@ public class SelectedListFragment extends Fragment {
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      *
-     * @param user The user to be moved.
+     * @param user       The user to be moved.
+     * @param eventId
      * @param onComplete Runnable executed once the move is complete.
      */
-    private void moveToSelectedList(User user, Runnable onComplete) {
-        // Create notification with event details
-        Notification notification = new Notification(
-                new Date(),
-                user.getDeviceId(), // Recipient's device ID
-                null, // Assuming no specific sender is set
-                eventName, // Use the event name as the title
-                "You have been selected from the waiting list for the event: " + eventName,
-                "Selection",
-                eventId, // Include the event ID
-                eventName // Include the event name
-        );
-        notification.saveToDatabase(); // Save the notification to Firestore
+    private void moveToSelectedList(User user, String eventId, Runnable onComplete) {
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
+            @Override
+            public void onEventLoaded(Event event) {
+                // Create notification with event details
+                Notification notification = new Notification(
+                        new Date(),
+                        user.getDeviceId(), // Recipient's device ID
+                        organizerId,
+                        event.getName(),  // Use the event name as the title
+                        "You have been selected from the waiting list for the event: " + event.getName(),
+                        "Selection",
+                        event.getDocumentId(),
+                        event.getName()
+                );
+                notification.saveToDatabase(); // Save the notification to Firestore
+            }
+            @Override
+            public void onEventLoadError(String error) {
+                // implement error logic
+            }
+        });
 
-        OrganizerDatabase.moveUserToSelectedList(eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
+        OrganizerDatabase.moveUserToSelectedList(this.eventId, user.getDeviceId(), new OrganizerDatabase.OnOperationCompleteListener() {
           @Override
           public void onComplete(boolean success) {
             if (success) {
