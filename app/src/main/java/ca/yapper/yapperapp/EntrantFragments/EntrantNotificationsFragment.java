@@ -74,7 +74,4 @@ public class EntrantNotificationsFragment extends Fragment {
             notificationsRecyclerView.setVisibility(View.VISIBLE);
         }
     }
-
-
-
 }
