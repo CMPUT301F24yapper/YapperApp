@@ -1,6 +1,7 @@
 package ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
+import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
@@ -43,6 +45,7 @@ public class WaitingListFragment extends Fragment {
     private String eventId;
     private Button drawButton;
     private int eventCapacity;
+    private String organizerId;
 
     private LinearLayout emptyStateLayout;
     private TextView emptyTextView;
@@ -61,6 +64,8 @@ public class WaitingListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_participants_waitlist, container, false);
+
+        organizerId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -192,18 +197,29 @@ public class WaitingListFragment extends Fragment {
                         Random random = new Random();
                         int index = random.nextInt(usersWaitingList.size());
                         User selectedUser = usersWaitingList.remove(index);
-
-                        // Create notification with eventId
-                        Notification notification = new Notification(
-                                new Date(),
-                                selectedUser.getDeviceId(),
-                                null, // Assuming no specific sender is set
-                                "Selected for Event",
-                                "You have been selected from the waiting list",
-                                "Selection"
-                        );
-                        notification.setEventId(eventId); // Set the event ID
-                        notification.saveToDatabase();
+                        // load Notification
+                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
+                            @Override
+                            public void onEventLoaded(Event event) {
+                                // Create notification with event details
+                                Notification notification = new Notification(
+                                        new Date(),
+                                        selectedUser.getDeviceId(), // Recipient's device ID
+                                        organizerId,
+                                        event.getName(),  // Use the event name as the title
+                                        "You have been selected from the waiting list for the event: " + event.getName(),
+                                        "Selection",
+                                        event.getDocumentId(),
+                                        event.getName()
+                                );
+                                notification.setEventId(event.getDocumentId()); // Set the event ID
+                                notification.saveToDatabase(); // Save the notification to Firestore
+                            }
+                            @Override
+                            public void onEventLoadError(String error) {
+                                // implement error logic
+                            }
+                        });
 
                         OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
                                 success -> {
@@ -228,7 +244,6 @@ public class WaitingListFragment extends Fragment {
         });
     }
 
-
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      * Displays a confirmation message and updates the UI.
@@ -249,7 +264,6 @@ public class WaitingListFragment extends Fragment {
             }
         });
     }
-
 
     /**
      * Refreshes all fragments displaying participant lists for the event,
