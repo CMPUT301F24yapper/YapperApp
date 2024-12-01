@@ -288,5 +288,27 @@
             android:text="Join Event"
             android:textColor="@android:color/white"
             android:textSize="16sp" />
+
+        <FrameLayout
+            android:id="@+id/map_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <!-- World Map Image -->
+            <ImageView
+                android:id="@+id/world_map"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:src="@drawable/world_map"
+                android:contentDescription="World Map"
+                android:scaleType="centerCrop" />
+
+            <!-- Custom Overlay for Pins -->
+            <ca.yapper.yapperapp.WorldMapPinsOverlay
+                android:id="@+id/pins_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
+        </FrameLayout>
     </LinearLayout>
 </ScrollView>
