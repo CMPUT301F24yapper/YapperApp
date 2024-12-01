@@ -6,6 +6,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.zxing.WriterException;
 
@@ -70,14 +71,14 @@ public class EntrantDatabase {
                 .document(eventId)
                 .collection("waitingList")
                 .document(userId);
-        batch.set(eventWaitingListRef, entrantData);
+        batch.set(eventWaitingListRef, entrantData, SetOptions.merge());
 
         // Add to user's joined events
         DocumentReference userJoinedEventsRef = db.collection("Users")
                 .document(userId)
                 .collection("joinedEvents")
                 .document(eventId);
-        batch.set(userJoinedEventsRef, entrantData);
+        batch.set(userJoinedEventsRef, entrantData, SetOptions.merge());
 
         // Commit the batch
         batch.commit()

@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,21 +29,27 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.OrganizerFragments.CustomNotificationFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+
 
 /**
  * The EventDetailsFragment class displays detailed information about a specific event.
@@ -66,6 +73,8 @@ public class EventDetailsFragment extends Fragment {
     private boolean geolocationPermitted = false;
     private final int wlSpotsLeft = -1;
     private ImageView posterImageView;
+    private ImageView worldmap;
+    private Button customNotificationButton;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -124,6 +133,9 @@ public class EventDetailsFragment extends Fragment {
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
         posterImageView = view.findViewById(R.id.event_image);
+        customNotificationButton = view.findViewById(R.id.button_custom_notification);
+
+        worldmap = view.findViewById(R.id.world_map);
     }
 
     /**
@@ -144,16 +156,16 @@ public class EventDetailsFragment extends Fragment {
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
                 String organizerId = event.getOrganizerId();
                 OrganizerDatabase.loadOrganizerData(organizerId, new OrganizerDatabase.OnOrganizerDetailsLoadedListener() {
-                            @Override
-                            public void onOrganizerLoaded(String organizerName) {
-                                organizerNameTextView.setText("Organizer: " + organizerName);
-                            }
+                    @Override
+                    public void onOrganizerLoaded(String organizerName) {
+                        organizerNameTextView.setText("Organizer: " + organizerName);
+                    }
 
-                            @Override
-                            public void onError(String message) {
-                                // implement error logic here
-                            }
-                        });
+                    @Override
+                    public void onError(String message) {
+                        // implement error logic here
+                    }
+                });
 
                 if (event.getWaitListCapacity() == null) {
                     waitListTextView.setText("Not set");
@@ -186,6 +198,9 @@ public class EventDetailsFragment extends Fragment {
                 eventId = event.getDocumentId();
                 finalEvent = event;
                 Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
+                eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
 
                 // setupButtonListeners();
                 Log.i("loadEventDetails", "checkUserInList being called on event");
@@ -207,7 +222,7 @@ public class EventDetailsFragment extends Fragment {
         Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
         // OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
         OrganizerDatabase.checkUserInEvent(finalEvent.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
-        @Override
+            @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
                     setButtonState("Unjoin", R.color.unjoin_event, false);
@@ -286,6 +301,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
             editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
+            customNotificationButton.setOnClickListener(v -> handleCustomNotificationButtonClick());
         }
     }
 
@@ -357,6 +373,7 @@ public class EventDetailsFragment extends Fragment {
      */
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
+        QRCodeData.putString("0", finalEvent.getDocumentId());
         QRCodeData.putString("0", finalEvent.getDocumentId());
 
         OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
@@ -467,6 +484,28 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+    /**
+     * Handles the "Custom Notification" button click.
+     * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
+     */
+    private void handleCustomNotificationButtonClick() {
+        if (finalEvent == null || finalEvent.getDocumentId() == null || finalEvent.getName() == null) {
+            Toast.makeText(getContext(), "Event details are not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CustomNotificationFragment customNotificationFragment = CustomNotificationFragment.newInstance(
+                finalEvent.getDocumentId(),
+                finalEvent.getName() // Pass event name
+        );
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, customNotificationFragment)
+                .addToBackStack(null) // Allow navigating back to EventDetailsFragment
+                .commit();
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -478,6 +517,54 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+    private void loadUserPins(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Events").document(eventId).collection("waitingList")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<float[]> coordinates = new ArrayList<>();
+                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                        Double latitude = document.getDouble("latitude");
+                        Double longitude = document.getDouble("longitude");
+
+                        if (latitude != null && longitude != null) {
+                            // Convert latitude/longitude to pixel positions
+                            float[] pixelCoordinates = convertGeoToPixel(latitude.floatValue(), longitude.floatValue());
+                            coordinates.add(pixelCoordinates);
+                        } else {
+                            Log.e("Firestore", "Missing coordinates for user: " + document.getId());
+                        }
+                    }
+
+                    // Display all pins on the map
+                    displayPinsOnMap(coordinates);
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
+    }
+
+    private float[] convertGeoToPixel(float latitude, float longitude) {
+        // Get dimensions of the map image
+        int imageWidth = worldmap.getWidth();
+        int imageHeight = worldmap.getHeight();
+
+        // Normalize latitude and longitude to pixel positions
+        float x = (longitude + 180) / 360 * imageWidth; // Normalize longitude to [0, 360]
+        float y = (90 - latitude) / 180 * imageHeight;  // Normalize latitude to [0, 180]
+
+        return new float[]{x, y};
+    }
+
+    private void displayPinsOnMap(List<float[]> coordinates) {
+        WorldMapPinsOverlay pinsOverlay = getView().findViewById(R.id.pins_overlay);
+        if (pinsOverlay != null) {
+            pinsOverlay.setPinCoordinates(coordinates); // Pass all coordinates to overlay
+        } else {
+            Log.e("EventDetailsFragment", "Pins overlay not found!");
+        }
+    }
+
+
 
     /**
      * Sets the visibility of the UI elements based on the type of activity the user is in (Entrant or Organizer).
@@ -489,26 +576,37 @@ public class EventDetailsFragment extends Fragment {
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.VISIBLE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
-            // setupButtonListeners();
+            worldmap.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Hide for entrants
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
-            setupButtonListeners();
+            customNotificationButton.setVisibility(View.VISIBLE); // Show for organizers
+            setupButtonListeners(); // Ensure Organizer buttons have listeners
+            worldmap.setVisibility(View.VISIBLE);
+            if(eventId != null) {
+                loadUserPins(eventId);
+            }
+
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Default hidden
         }
     }
 }

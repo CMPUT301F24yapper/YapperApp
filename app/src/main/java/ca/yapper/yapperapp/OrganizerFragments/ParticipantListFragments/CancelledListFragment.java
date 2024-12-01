@@ -26,13 +26,18 @@ public class CancelledListFragment extends Fragment {
     private UsersAdapter adapter;
     private List<User> cancelledList;
     private String eventId;
+    private View emptyStateContainer;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_participants_cancellist, container, false);
+
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        emptyStateContainer = view.findViewById(R.id.emptyStateContainer);
+
         cancelledList = new ArrayList<>();
         adapter = new UsersAdapter(cancelledList, getContext());
         recyclerView.setAdapter(adapter);
@@ -72,8 +77,11 @@ public class CancelledListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
                     Log.d("CancelledListFragment", "No users found in the cancelled list.");
+                    toggleEmptyState(true);
                     return;
                 }
+
+                toggleEmptyState(false);
 
                 // Fetch User details for each user ID
                 for (String userId : userIdsList) {
@@ -105,7 +113,18 @@ public class CancelledListFragment extends Fragment {
                     Log.e("CancelledListFragment", "Error loading user IDs: " + error);
                     Toast.makeText(getContext(), "Error loading cancelled list: " + error, Toast.LENGTH_SHORT).show();
                 }
+                toggleEmptyState(true);
             }
         });
+    }
+
+    private void toggleEmptyState(boolean isEmpty) {
+        if (isEmpty) {
+            emptyStateContainer.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateContainer.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }

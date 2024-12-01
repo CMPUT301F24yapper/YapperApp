@@ -181,19 +181,23 @@ public class OrganizerDatabase {
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
                         Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
                         listener.onUserInList(true);
+                        Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
                         Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
                     }
                     else {
                         // Check selectedList only if not found in waitingList
                         Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
                         db.collection("Events").document(eventId).collection("selectedList").document(userId).get()
                                 .addOnSuccessListener(selectedListDoc -> {
                                     listener.onUserInList(selectedListDoc.exists()); // User found in selectedList or not at all
                                     Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
+                                    Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
                                 })
                                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
-                                Log.i("OrganizerDatabase", "checkUserInEvent: user not in waiting or selected list -> can join event!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: user not in waiting or selected list -> can join event!");
                     }
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
@@ -339,6 +343,7 @@ public class OrganizerDatabase {
         }).addOnFailureListener(e -> {
             Log.e("OrganizerDatabase", "Error retrieving user: " + e.getMessage());
         });
+       
     }
 
     public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
@@ -350,7 +355,7 @@ public class OrganizerDatabase {
                         int capacity = documentSnapshot.getLong("capacity").intValue();
                         Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
                         listener.onCapacityLoaded(capacity);
-                            }
+                    }
                     else {
                         Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId); }
                 })
@@ -458,12 +463,12 @@ public class OrganizerDatabase {
         // Empty implementation - no placeholder data added
         // Subcollections will be implicitly created when documents are added later
         /**Map<String, Object> placeholderData = new HashMap<>();
-        placeholderData.put("placeholder", true);
+         placeholderData.put("placeholder", true);
 
-        db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
+         db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
 
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
@@ -512,6 +517,50 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError("Error retrieving selected list count data: " + e.getMessage()));
     }
+
+
+    public static void sendNotificationToUser(String eventId, String userId, String message, OnOperationCompleteListener listener) {
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e("OrganizerDatabase", "Event ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (userId == null || userId.isEmpty()) {
+            Log.e("OrganizerDatabase", "User ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (message == null || message.isEmpty()) {
+            Log.e("OrganizerDatabase", "Message is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+
+        // Create the notification data
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("dateTimeStamp", FieldValue.serverTimestamp());
+        notificationData.put("userToId", userId);
+        notificationData.put("userFromId", null); // Assuming no specific sender
+        notificationData.put("title", "Custom Notification");
+        notificationData.put("message", message);
+        notificationData.put("notificationType", "CustomNotification");
+        notificationData.put("eventId", eventId);
+        notificationData.put("isRead", false);
+
+        // Save the notification to Firestore
+        db.collection("Notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("OrganizerDatabase", "Notification sent successfully with ID: " + documentReference.getId());
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Failed to send notification: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+
 
     public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
 
@@ -570,7 +619,7 @@ public class OrganizerDatabase {
     }
 
     public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
-
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Users").document(organizerId).get()
                 .addOnSuccessListener(document -> {
@@ -622,7 +671,7 @@ public class OrganizerDatabase {
                     throw task.getException();
                 });
     }
-  
+
     public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
 
         WriteBatch batch = db.batch();

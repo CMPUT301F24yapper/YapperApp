@@ -49,8 +49,6 @@ public class SelectedListFragment extends Fragment {
     private int eventCapacity;
     private TextView selectedCountTextView;
     private LinearLayout emptyStateLayout;
-    private ImageView emptyImageView;
-    private TextView emptyTextView;
 
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
@@ -87,8 +85,6 @@ public class SelectedListFragment extends Fragment {
         redrawButton = view.findViewById(R.id.button_redraw);
         dumpPendingButton = view.findViewById(R.id.button_dump_pending);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
-        emptyImageView = view.findViewById(R.id.emptyImageView);
-        emptyTextView = view.findViewById(R.id.emptyTextView);
 
         loadEventCapacity();
         loadSelectedList();
