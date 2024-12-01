@@ -671,4 +671,16 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
+
+    public static Task<Boolean> checkQRCodeExists(String eventId) {
+        return db.collection("Events")
+                .document(eventId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        return task.getResult().get("qrCode_hashData") != null;
+                    }
+                    return false;
+                });
+    }
 }
