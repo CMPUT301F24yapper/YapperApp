@@ -72,6 +72,12 @@ public class AdminActivityUITest {
         onView(withId(R.id.total_events)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testSearchFragmentElements() {
+        onView(withId(R.id.nav_admin_search)).perform(click());
+        onView(withId(R.id.search_bar)).check(matches(isDisplayed()));
+    }
+
 
 
 }
