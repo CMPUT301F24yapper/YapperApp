@@ -22,10 +22,11 @@
 
             <!-- Back Button and Title -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_gravity="center">
 
 
                 <TextView
@@ -33,8 +34,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Event"
-                    android:textSize="22sp"
-                    android:layout_marginStart="16dp"
+                    android:textSize="40sp"
+                    android:layout_gravity="center"
                     android:textStyle="bold" />
             </LinearLayout>
 
