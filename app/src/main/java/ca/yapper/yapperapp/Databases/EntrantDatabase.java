@@ -20,7 +20,11 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class EntrantDatabase {
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+    private static FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
+    }
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
