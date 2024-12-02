@@ -9,34 +9,59 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- Stats Cards Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/yapper_purple"
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Admin Dashboard"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="View your app statistics"
+                android:textColor="@color/white"
+                android:alpha="0.9"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Total Events Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:baselineAligned="false">
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
 
-            <!-- Total Events Card -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="4dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Total Events"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textColor="@color/yapper_purple"
                     android:textStyle="bold" />
 
@@ -45,27 +70,43 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="24sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
-            <!-- Total Organizers Card -->
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
+        </LinearLayout>
+
+        <!-- Total Facilities Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="4dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Facilities"
-                    android:textSize="14sp"
+                    android:text="Total Facilities"
+                    android:textSize="16sp"
                     android:textColor="@color/yapper_purple"
                     android:textStyle="bold" />
 
@@ -74,26 +115,43 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="24sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
 
-            <!-- Total Users Card -->
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
+        </LinearLayout>
+
+        <!-- Total Users Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="4dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Users"
-                    android:textSize="14sp"
+                    android:text="Total Users"
+                    android:textSize="16sp"
                     android:textColor="@color/yapper_purple"
                     android:textStyle="bold" />
 
@@ -102,10 +160,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="24sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
         </LinearLayout>
 
         <!-- Biggest Events Section -->
@@ -114,7 +179,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginTop="16dp"
-            android:padding="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:padding="24dp"
             android:background="@drawable/rounded_card_background"
             android:elevation="4dp">
 
