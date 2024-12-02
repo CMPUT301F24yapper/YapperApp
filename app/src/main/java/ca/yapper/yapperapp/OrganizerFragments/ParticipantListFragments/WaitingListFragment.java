@@ -191,7 +191,10 @@ public class WaitingListFragment extends Fragment {
                     Toast.makeText(getContext(), "Event capacity is full", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
                 int drawCount = Math.min(remainingSlots, usersWaitingList.size()); // Ensure draw count doesn't exceed remaining slots or waiting list size
+                List<User> notSelectedUsers = new ArrayList<>(usersWaitingList); // Keep track of all users initially
+
                 final int[] completedMoves = {0};
 
                 for (int i = 0; i < drawCount; i++) {
@@ -199,7 +202,9 @@ public class WaitingListFragment extends Fragment {
                         Random random = new Random();
                         int index = random.nextInt(usersWaitingList.size());
                         User selectedUser = usersWaitingList.remove(index);
-                        // Create notification with event details
+                        notSelectedUsers.remove(selectedUser); // Remove the selected user from the notSelectedUsers list
+
+                        // Create notification for the selected user
                         Notification notification = new Notification(
                                 new Date(),
                                 selectedUser.getDeviceId(), // Recipient's device ID
@@ -210,7 +215,6 @@ public class WaitingListFragment extends Fragment {
                                 eventId,
                                 eventName
                         );
-                        notification.setEventId(eventId); // Set the event ID
                         notification.saveToDatabase(); // Save the notification to Firestore
 
                         OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
@@ -218,6 +222,7 @@ public class WaitingListFragment extends Fragment {
                                     if (success) {
                                         completedMoves[0]++;
                                         if (completedMoves[0] == drawCount) {
+                                            sendNotificationsToUnselectedUsers(notSelectedUsers);
                                             refreshAllFragments();
                                         }
                                     } else {
@@ -227,6 +232,7 @@ public class WaitingListFragment extends Fragment {
                     }
                 }
             }
+
             @Override
             public void onError(String e) {
                 Toast.makeText(getContext(), "Failed to fetch selected list count", Toast.LENGTH_SHORT).show();
@@ -234,6 +240,26 @@ public class WaitingListFragment extends Fragment {
             }
         });
     }
+
+    private void sendNotificationsToUnselectedUsers(List<User> notSelectedUsers) {
+        for (User user : notSelectedUsers) {
+            Notification notification = new Notification(
+                    new Date(),
+                    user.getDeviceId(), // Recipient's device ID
+                    organizerId,
+                    eventName,  // Use the event name as the title
+                    "Unfortunately, you were not selected for the event: " + eventName,
+                    "Rejection",
+                    eventId,
+                    eventName
+            );
+            notification.saveToDatabase(); // Save the notification to Firestore
+        }
+
+        Toast.makeText(getContext(), "Notifications sent to unselected users.", Toast.LENGTH_SHORT).show();
+    }
+
+
 
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
