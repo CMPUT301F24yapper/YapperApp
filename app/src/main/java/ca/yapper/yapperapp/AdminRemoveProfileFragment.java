@@ -3,6 +3,7 @@ package ca.yapper.yapperapp;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,11 +24,14 @@ import ca.yapper.yapperapp.UMLClasses.User;
 
 public class AdminRemoveProfileFragment extends Fragment {
     private String userId;
-    private TextView profileName, profileEmail, profileFacility;
+    private TextView profileName, profileEmail, profilePhone, profileFacility, profileAddress;
+    private TextView adminStatus, entrantStatus, organizerStatus, deviceIdText, notificationStatus;
     private Button removeProfileButton;
     private Button removeFacilityButton;
     private Button removeProfilePictureButton;
     private ImageView profileImage;
+    private View facilitySection;
+    private TextView facilityHeader;
 
     @Nullable
     @Override
@@ -40,7 +44,6 @@ public class AdminRemoveProfileFragment extends Fragment {
 
         initializeViews(view);
         loadUserDetails();
-        loadProfileImage();
         setupButtons();
 
         return view;
@@ -49,11 +52,25 @@ public class AdminRemoveProfileFragment extends Fragment {
     private void initializeViews(View view) {
         profileName = view.findViewById(R.id.profile_name);
         profileEmail = view.findViewById(R.id.profile_email);
+        profilePhone = view.findViewById(R.id.profile_phone);
         profileFacility = view.findViewById(R.id.profile_facility);
+        profileAddress = view.findViewById(R.id.profile_address);
+        adminStatus = view.findViewById(R.id.admin_status);
+        entrantStatus = view.findViewById(R.id.entrant_status);
+        organizerStatus = view.findViewById(R.id.organizer_status);
+        deviceIdText = view.findViewById(R.id.device_id);
+        notificationStatus = view.findViewById(R.id.notification_status);
+        profileImage = view.findViewById(R.id.profile_image);
+        facilitySection = view.findViewById(R.id.facility_section);
+        facilityHeader = view.findViewById(R.id.facility_header);
+
         removeProfileButton = view.findViewById(R.id.btn_remove_profile);
         removeFacilityButton = view.findViewById(R.id.btn_remove_facility);
         removeProfilePictureButton = view.findViewById(R.id.btn_remove_profile_picture);
-        profileImage = view.findViewById(R.id.profile_image);
+
+        facilitySection.setVisibility(View.GONE);
+        facilityHeader.setVisibility(View.GONE);
+        removeFacilityButton.setVisibility(View.GONE);
     }
 
     private void loadUserDetails() {
@@ -62,28 +79,59 @@ public class AdminRemoveProfileFragment extends Fragment {
             public void onUserLoaded(User user) {
                 profileName.setText(user.getName());
                 profileEmail.setText(user.getEmail());
+                profilePhone.setText(user.getPhoneNum());
+                deviceIdText.setText(user.getDeviceId());
+
+                adminStatus.setText(user.isAdmin() ? "Yes" : "No");
+                entrantStatus.setText(user.isEntrant() ? "Yes" : "No");
+                notificationStatus.setText(user.isOptedOut() ? "Disabled" : "Enabled");
+
+                EntrantDatabase.loadProfileImage(userId, new EntrantDatabase.OnProfileImageLoadedListener() {
+                    @Override
+                    public void onProfileImageLoaded(String base64Image) {
+                        if (base64Image != null) {
+                            byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            profileImage.setImageBitmap(bitmap);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        profileImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                });
+
+                AdminDatabase.getFacilityDetails(userId, new AdminDatabase.OnFacilityDetailsLoadedListener() {
+                    @Override
+                    public void onFacilityLoaded(String facilityName, String facilityAddress) {
+                        boolean isOrganizer = !TextUtils.isEmpty(facilityName) && !TextUtils.isEmpty(facilityAddress);
+                        organizerStatus.setText(isOrganizer ? "Yes" : "No");
+
+                        if (isOrganizer) {
+                            facilitySection.setVisibility(View.VISIBLE);
+                            facilityHeader.setVisibility(View.VISIBLE);
+                            removeFacilityButton.setVisibility(View.VISIBLE);
+                            profileFacility.setText(facilityName);
+                            profileAddress.setText(facilityAddress);
+                        } else {
+                            facilitySection.setVisibility(View.GONE);
+                            facilityHeader.setVisibility(View.GONE);
+                            removeFacilityButton.setVisibility(View.GONE);
+                        }
+                    }
+                    @Override
+                    public void onError(String error) {
+                        organizerStatus.setText("No");
+                        facilitySection.setVisibility(View.GONE);
+                        facilityHeader.setVisibility(View.GONE);
+                        removeFacilityButton.setVisibility(View.GONE);
+                    }
+                });
             }
+
             @Override
             public void onUserLoadError(String error) {}
-        });
-    }
-
-    private void loadProfileImage() {
-        EntrantDatabase.loadProfileImage(userId, new EntrantDatabase.OnProfileImageLoadedListener() {
-            @Override
-            public void onProfileImageLoaded(String base64Image) {
-                if (base64Image != null) {
-                    byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    profileImage.setImageBitmap(bitmap);
-                } else {
-                    profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-                }
-            }
-            @Override
-            public void onError(String error) {
-                profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-            }
         });
     }
 
@@ -97,7 +145,6 @@ public class AdminRemoveProfileFragment extends Fragment {
         AdminDatabase.removeUser(userId).addOnSuccessListener(aVoid -> {
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
-
             Fragment searchFragment = new AdminSearchFragment();
             fm.beginTransaction()
                     .replace(R.id.fragment_container, searchFragment)
@@ -109,7 +156,6 @@ public class AdminRemoveProfileFragment extends Fragment {
         AdminDatabase.removeFacility(userId).addOnSuccessListener(aVoid -> {
             FragmentManager fm = getParentFragmentManager();
             fm.popBackStack();
-
             Fragment searchFragment = new AdminSearchFragment();
             fm.beginTransaction()
                     .replace(R.id.fragment_container, searchFragment)

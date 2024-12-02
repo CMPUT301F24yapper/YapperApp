@@ -13,8 +13,8 @@ import java.util.List;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
-    private List<Event> eventList;
-    private Context context;
+    private final List<Event> eventList;
+    private final Context context;
 
     public AdminEventAdapter(List<Event> eventList, Context context) {
         this.eventList = eventList;
@@ -38,7 +38,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         holder.itemView.setOnClickListener(v -> {
             AdminRemoveEventFragment fragment = new AdminRemoveEventFragment();
             Bundle args = new Bundle();
-            args.putString("eventId", String.valueOf(event.getQRCode().getHashData()));
+            args.putString("eventId", String.valueOf(event.getDocumentId()));
             fragment.setArguments(args);
 
             ((FragmentActivity) context).getSupportFragmentManager()

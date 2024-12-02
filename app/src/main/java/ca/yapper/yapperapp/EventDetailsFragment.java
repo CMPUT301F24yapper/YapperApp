@@ -2,10 +2,10 @@ package ca.yapper.yapperapp;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Base64;
@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,23 +26,30 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.OrganizerFragments.CustomNotificationFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+
 
 /**
  * The EventDetailsFragment class displays detailed information about a specific event.
@@ -50,7 +58,8 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 public class EventDetailsFragment extends Fragment {
 
     private String eventId;
-    private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, organizerTextView;
+    private Event finalEvent;
+    private TextView nameTextView, dateTextView, regDeadlineTextView, facilityNameTextView, facilityLocationTextView, descriptionTextView, capacityTextView, waitListTextView, organizerNameTextView;
     boolean geolocationEnabled;
     private Button joinButton; // Entrant Button:
     private Button viewParticipantsButton; // Organizer Buttons:
@@ -64,6 +73,8 @@ public class EventDetailsFragment extends Fragment {
     private boolean geolocationPermitted = false;
     private final int wlSpotsLeft = -1;
     private ImageView posterImageView;
+    private ImageView worldmap;
+    private Button customNotificationButton;
 
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
@@ -109,7 +120,7 @@ public class EventDetailsFragment extends Fragment {
     private void initializeViews(View view) {
         nameTextView = view.findViewById(R.id.event_title);
         dateTextView = view.findViewById(R.id.event_date_time);
-        organizerTextView = view.findViewById(R.id.organizer_name);
+        organizerNameTextView = view.findViewById(R.id.organizer_name);
         regDeadlineTextView = view.findViewById(R.id.registration_deadline);
         facilityNameTextView = view.findViewById(R.id.facility_name);
         facilityLocationTextView = view.findViewById(R.id.facility_location);
@@ -122,6 +133,9 @@ public class EventDetailsFragment extends Fragment {
         editEventButton = view.findViewById(R.id.button_edit_event);
         viewQRCodeButton = view.findViewById(R.id.button_view_QRCode);
         posterImageView = view.findViewById(R.id.event_image);
+        customNotificationButton = view.findViewById(R.id.button_custom_notification);
+
+        worldmap = view.findViewById(R.id.world_map);
     }
 
     /**
@@ -129,7 +143,7 @@ public class EventDetailsFragment extends Fragment {
      * If geolocation is enabled for the event, the UI is updated to show a warning about geolocation requirements.
      */
     private void loadEventDetails() {
-        Log.d("EventDebug", "Loading event with ID: " + eventId);
+        Log.d("loadEventDetails()", "Loading event with ID: " + eventId);
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
             public void onEventLoaded(Event event) {
@@ -140,7 +154,18 @@ public class EventDetailsFragment extends Fragment {
                 regDeadlineTextView.setText("Registration Deadline: " + event.getRegistrationDeadline());
                 facilityNameTextView.setText("Facility: " + event.getFacilityName());
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
-                // TO-DO: IMPLEMENT ORGANIZER GET NAME (TEXTVIEW), organizerTextView.setText("Organizer: "...)
+                String organizerId = event.getOrganizerId();
+                OrganizerDatabase.loadOrganizerData(organizerId, new OrganizerDatabase.OnOrganizerDetailsLoadedListener() {
+                    @Override
+                    public void onOrganizerLoaded(String organizerName) {
+                        organizerNameTextView.setText("Organizer: " + organizerName);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        // implement error logic here
+                    }
+                });
 
                 if (event.getWaitListCapacity() == null) {
                     waitListTextView.setText("Not set");
@@ -170,9 +195,16 @@ public class EventDetailsFragment extends Fragment {
                         posterImageView.setBackgroundResource(R.drawable.event_image); // Placeholder image
                     }
                 }
+                eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
+                eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
 
                 // setupButtonListeners();
-                checkUserInList(event);  // Check user is in waiting list first
+                Log.i("loadEventDetails", "checkUserInList being called on event");
+                checkUserInList();  // Check user is in waiting list first
 
             }
             @Override
@@ -185,15 +217,18 @@ public class EventDetailsFragment extends Fragment {
     /**
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
-    private void checkUserInList(Event event) {
-        OrganizerDatabase.checkUserInEvent(eventId, userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+    private void checkUserInList() {
+        // Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + eventId + userDeviceId);
+        Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+        // OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
+        OrganizerDatabase.checkUserInEvent(finalEvent.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
             @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
-                    setButtonState("Unjoin Event", Color.GRAY, false);
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
                 }
                 else {
-                    checkEventDates(event);  // then check event dates
+                    checkEventDates();  // then check event dates
                 }
             }
 
@@ -204,9 +239,9 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
-    private void checkEventDates(Event event) {
+    private void checkEventDates() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a", Locale.getDefault());
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         try {
             Date currentDate = new Date();
             Date regDeadlineDate = dateFormat.parse(regDeadlineTextView.getText().toString().replace("Registration Deadline: ", ""));
@@ -214,23 +249,28 @@ public class EventDetailsFragment extends Fragment {
 
             if ((regDeadlineDate != null && regDeadlineDate.before(currentDate)) ||
                     (eventDate != null && eventDate.before(currentDate))) {
-                setButtonState("Event Passed", Color.GRAY, false);
+                // setButtonState("Event Passed", Color.RED, false);
+                setButtonState("Event Passed", R.color.unjoin_event, false);
             }
             else {
-                checkWaitListCapacity(event);  // Check if waitlist capacity is full
+                checkWaitListCapacity();  // Check if waitlist capacity is full
             }
         } catch (ParseException e) {
             Log.e("EventDetailsFragment", "Date parsing error: " + e.getMessage());
         }
     }
 
-    private void checkWaitListCapacity(Event event) {
+    private void checkWaitListCapacity() {
         // check if full
-        OrganizerDatabase.getWaitingListCount(eventId, new OrganizerDatabase.OnWaitListCountLoadedListener() {
+        // OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
+        OrganizerDatabase.getWaitingListCount(finalEvent.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
             @Override
             public void onCountLoaded(int waitListCount) {
-                if (event.getWaitListCapacity() != null && (event.getWaitListCapacity() - waitListCount) <= 0) {
-                    setButtonState("Wait List Full", Color.GRAY, false);
+                if (finalEvent.getWaitListCapacity() != null
+                        && finalEvent.getWaitListCapacity() != 0
+                        && (finalEvent.getWaitListCapacity() - waitListCount) <= 0) {
+                    // setButtonState("Wait List Full", Color.GRAY, false);
+                    setButtonState("Wait List Full", R.color.unjoin_event, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
                     joinButton.setOnClickListener(v -> handleJoinButtonClick());
@@ -261,6 +301,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setOnClickListener(v -> handleViewParticipantsButtonClick());
             editEventButton.setOnClickListener(v -> handleEditEventButtonClick());
             viewQRCodeButton.setOnClickListener(v -> viewQRCodeButtonClick());
+            customNotificationButton.setOnClickListener(v -> handleCustomNotificationButtonClick());
         }
     }
 
@@ -303,7 +344,7 @@ public class EventDetailsFragment extends Fragment {
     private void handleViewParticipantsButtonClick() {
         ViewParticipantsFragment viewParticipantsFragment = new ViewParticipantsFragment();
         Bundle args = new Bundle();
-        args.putString("eventId", eventId); // Pass to ViewParticipantsFragment
+        args.putString("eventId", finalEvent.getDocumentId()); // Pass to ViewParticipantsFragment
         viewParticipantsFragment.setArguments(args);
 
         getParentFragmentManager().beginTransaction()
@@ -318,7 +359,7 @@ public class EventDetailsFragment extends Fragment {
     private void handleEditEventButtonClick() {
         OrganizerCreateEditEventFragment editEventFragment = new OrganizerCreateEditEventFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("eventId", eventId); // Pass eventId to the EditEventFragment
+        bundle.putString("eventId", finalEvent.getDocumentId()); // Pass eventId to the EditEventFragment
         editEventFragment.setArguments(bundle);
 
         getParentFragmentManager().beginTransaction()
@@ -332,7 +373,8 @@ public class EventDetailsFragment extends Fragment {
      */
     private void viewQRCodeButtonClick() {
         QRCodeData = new Bundle();
-        QRCodeData.putString("0", eventId);
+        QRCodeData.putString("0", finalEvent.getDocumentId());
+        QRCodeData.putString("0", finalEvent.getDocumentId());
 
         OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
         newFragment.setArguments(QRCodeData);
@@ -365,18 +407,15 @@ public class EventDetailsFragment extends Fragment {
                 showGeolocationWarningDialog();
                 return;
             }
-            EntrantDatabase.joinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
-                @Override
-                public void onComplete(boolean success) {
-                    if (getContext() == null) return;
+            Log.d("joinEvent()", "about to call EntrantDb.joinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+            EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+                if (getContext() == null) return;
 
-                    if (success) {
-                        joinButton.setText("Unjoin");
-                        joinButton.setBackgroundColor(Color.GRAY);
-                        Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                if (success) {
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
+                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -390,19 +429,16 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
             return;
         }
+        Log.d("unjoinEvent()", "about to call EntrantDb.unjoinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
+        EntrantDatabase.unjoinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+            if (getContext() == null) return;
 
-        EntrantDatabase.unjoinEvent(eventId, userDeviceId, new EntrantDatabase.OnOperationCompleteListener() {
-            @Override
-            public void onComplete(boolean success) {
-                if (getContext() == null) return;
-
-                if (success) {
-                    joinButton.setText("Join");
-                    joinButton.setBackgroundColor(Color.BLUE);
-                    Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                }
+            if (success) {
+                joinButton.setText("Join");
+                joinButton.setBackgroundColor(Color.BLUE);
+                Toast.makeText(getContext(), "Successfully unjoined the event.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Error unjoining the event. Please try again.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -421,7 +457,7 @@ public class EventDetailsFragment extends Fragment {
                         double latitude = location.getLatitude();
                         double longitude = location.getLongitude();
                         // Call UserDatabase to save the location
-                        UserDatabase.saveLocationToFirestore(eventId, userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
+                        UserDatabase.saveLocationToFirestore(finalEvent.getDocumentId(), userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
                             @Override
                             public void onSuccess() {
                                 Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
@@ -448,6 +484,28 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+    /**
+     * Handles the "Custom Notification" button click.
+     * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
+     */
+    private void handleCustomNotificationButtonClick() {
+        if (finalEvent == null || finalEvent.getDocumentId() == null || finalEvent.getName() == null) {
+            Toast.makeText(getContext(), "Event details are not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CustomNotificationFragment customNotificationFragment = CustomNotificationFragment.newInstance(
+                finalEvent.getDocumentId(),
+                finalEvent.getName() // Pass event name
+        );
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, customNotificationFragment)
+                .addToBackStack(null) // Allow navigating back to EventDetailsFragment
+                .commit();
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -459,6 +517,54 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+    private void loadUserPins(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Events").document(eventId).collection("waitingList")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<float[]> coordinates = new ArrayList<>();
+                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                        Double latitude = document.getDouble("latitude");
+                        Double longitude = document.getDouble("longitude");
+
+                        if (latitude != null && longitude != null) {
+                            // Convert latitude/longitude to pixel positions
+                            float[] pixelCoordinates = convertGeoToPixel(latitude.floatValue(), longitude.floatValue());
+                            coordinates.add(pixelCoordinates);
+                        } else {
+                            Log.e("Firestore", "Missing coordinates for user: " + document.getId());
+                        }
+                    }
+
+                    // Display all pins on the map
+                    displayPinsOnMap(coordinates);
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
+    }
+
+    private float[] convertGeoToPixel(float latitude, float longitude) {
+        // Get dimensions of the map image
+        int imageWidth = worldmap.getWidth();
+        int imageHeight = worldmap.getHeight();
+
+        // Normalize latitude and longitude to pixel positions
+        float x = (longitude + 180) / 360 * imageWidth; // Normalize longitude to [0, 360]
+        float y = (90 - latitude) / 180 * imageHeight;  // Normalize latitude to [0, 180]
+
+        return new float[]{x, y};
+    }
+
+    private void displayPinsOnMap(List<float[]> coordinates) {
+        WorldMapPinsOverlay pinsOverlay = getView().findViewById(R.id.pins_overlay);
+        if (pinsOverlay != null) {
+            pinsOverlay.setPinCoordinates(coordinates); // Pass all coordinates to overlay
+        } else {
+            Log.e("EventDetailsFragment", "Pins overlay not found!");
+        }
+    }
+
+
 
     /**
      * Sets the visibility of the UI elements based on the type of activity the user is in (Entrant or Organizer).
@@ -470,26 +576,37 @@ public class EventDetailsFragment extends Fragment {
         if (getActivity() instanceof EntrantActivity) {
             isInEntrantActivity = true;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.VISIBLE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
-            // setupButtonListeners();
+            worldmap.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Hide for entrants
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
             isInOrganizerActivity = true;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.VISIBLE);
             editEventButton.setVisibility(View.VISIBLE);
             viewQRCodeButton.setVisibility(View.VISIBLE);
-            setupButtonListeners();
+            customNotificationButton.setVisibility(View.VISIBLE); // Show for organizers
+            setupButtonListeners(); // Ensure Organizer buttons have listeners
+            worldmap.setVisibility(View.VISIBLE);
+            if(eventId != null) {
+                loadUserPins(eventId);
+            }
+
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;
+
             joinButton.setVisibility(View.GONE);
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            customNotificationButton.setVisibility(View.GONE); // Default hidden
         }
     }
 }

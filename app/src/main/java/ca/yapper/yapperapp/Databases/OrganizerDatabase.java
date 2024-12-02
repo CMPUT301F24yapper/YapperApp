@@ -11,11 +11,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
@@ -25,7 +28,9 @@ import ca.yapper.yapperapp.UMLClasses.Event;
  */
 public class OrganizerDatabase {
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+
 
     /**
      * Interface for dealing with user checking and associated error handling
@@ -66,6 +71,18 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
+    public interface OnOrganizerDetailsLoadedListener {
+        void onOrganizerLoaded(String organizerName);
+        void onError(String error);
+    }
+
+    /**
+     * Checks if the user is an admin based on their device ID.
+     *
+     * @param deviceId The unique device ID of the user.
+     * @return A Task that resolves to true if the user is an admin, false otherwise.
+     */
+
     /**
      * Interface for handling the result of loading an event from Firestore.
      */
@@ -99,6 +116,10 @@ public class OrganizerDatabase {
         void onError(String error);                                        // When there's an error
     }
 
+    public interface OnSelectedListLoadCountListener {
+        void onSelectedListCountLoaded(int selectedListCount);
+        void onError(String error);
+    }
 
     /**
      * Checks if the user is an admin based on their device ID.
@@ -107,7 +128,7 @@ public class OrganizerDatabase {
      * @return A Task that resolves to true if the user is an admin, false otherwise.
      */
     public static Task<Boolean> checkIfUserIsAdmin(String deviceId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
@@ -125,15 +146,36 @@ public class OrganizerDatabase {
         return tcs.getTask();
     }
 
-
     /**
      * This function loads an event from the database using the eventId
      *
      * @param eventId The unique id for the event, created from the QR code.
      * @param listener handles the outcome of the event loading operation
      */
-    public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
+    public static void getEventDetails(String eventId, OnEventDetailsFetchListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Events").document(eventId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists() && documentSnapshot.contains("name")) {
+                        listener.onEventDetailsFetched(documentSnapshot.getString("name"));
+                    } else {
+                        listener.onError("Event name not found.");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error fetching event details: " + e.getMessage()));
+    }
+
+    // Define the callback interface:
+    public interface OnEventDetailsFetchListener {
+        void onEventDetailsFetched(String eventName);
+        void onError(String errorMessage);
+    }
+
+
+
+    public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
+
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -152,6 +194,7 @@ public class OrganizerDatabase {
                                     documentSnapshot.getLong("waitListCapacity") != null ? documentSnapshot.getLong("waitListCapacity").intValue() : null,
                                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
                             );
+                            event.setDocumentId(documentSnapshot.getId());
 
                             // Check if posterBase64 exists
                             String posterBase64 = documentSnapshot.getString("posterBase64");
@@ -180,20 +223,29 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the user check
      */
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).collection("waitingList").document(userId).get()
                 .addOnSuccessListener(waitingListDoc -> {
                     if (waitingListDoc.exists()) {
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc exists!");
                         listener.onUserInList(true);
+                        Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (onUserInList(true))!");
                     }
                     else {
                         // Check selectedList only if not found in waitingList
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
+                        Log.i("OrganizerDatabase", "checkUserInEvent: waitingListDoc does NOT exist!");
                         db.collection("Events").document(eventId).collection("selectedList").document(userId).get()
                                 .addOnSuccessListener(selectedListDoc -> {
                                     listener.onUserInList(selectedListDoc.exists()); // User found in selectedList or not at all
+                                    Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
+                                    Log.i("OrganizerDatabase", "checkUserInEvent: calling listener (selectedListDoc.exists())!");
                                 })
                                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
+                        Log.i("OrganizerDatabase", "checkUserInEvent: user not in waiting or selected list -> can join event!");
                     }
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
@@ -209,7 +261,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of loading the user Ids
      */
     public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         ArrayList<String> userIdsList = new ArrayList<>();
 
@@ -230,7 +282,9 @@ public class OrganizerDatabase {
                         db.collection("Users").document(userIdRef).get()
                                 .addOnSuccessListener(userDoc -> {
                                     if (userDoc.exists()) {
-                                        String deviceId = userDoc.getString("deviceId");
+                                        // String deviceId = userDoc.getString("deviceId");
+                                        String deviceId = userIdRef;
+
                                         if (deviceId != null) {
                                             userIdsList.add(deviceId);
                                         }
@@ -246,29 +300,107 @@ public class OrganizerDatabase {
                                     }
                                 });
                     } });
-                    /**for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String userIdRef = doc.getId();
-                        db.collection("Users").document(userIdRef).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    if (userDoc.exists()) {
-                                        String deviceId = userDoc.getString("deviceId");
-                                        if (deviceId != null) {
-                                            userIdsList.add(deviceId);
-                                        }
-                                    }
+    }
 
-                                    // Call the listener only after all documents are processed
-                                    if (userIdsList.size() == queryDocumentSnapshots.size()) {
-                                        listener.onUserIdsLoaded(userIdsList);
-                                    }
-                                });
-                    }
+    public static void getInvitationStatusFromEvent(String eventId, String userId, OnStatusCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("Events")
+                .document(eventId)
+                .collection("selectedList")
+                .document(userId);
 
-                    // Handle case when there are no documents in subcollection
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        listener.onUserIdsLoaded(userIdsList);
+        userDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Boolean invitationStatus = documentSnapshot.getBoolean("invitationStatus");
+                        if (invitationStatus != null) {
+                            listener.onStatusLoaded(invitationStatus);  // True for accepted, false for rejected
+                        } else {
+                            listener.onStatusNotFound(); // Invitation status missing
+                        }
+                    } else {
+                        listener.onUserNotInList();  // User not in the selected list
                     }
-                });**/
+                })
+                .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
+    }
+
+    // Define callback interface
+    public interface OnStatusCheckListener {
+        void onStatusLoaded(boolean accepted);  // True if accepted, false if rejected
+        void onStatusNotFound();               // Field missing, default to pending
+        void onUserNotInList();                // User not in selected list
+        void onError(String error);            // Any error occurred
+    }
+
+    public static void changeUserStatusForEvent(String eventId, String userId, String status, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        // change the joinedEvents subcollection field invitationStatus
+        // Get reference to the user's document in the "Users" collection
+        DocumentReference userDocRef = db.collection("Users").document(userId);
+        CollectionReference joinedEventsRef = userDocRef.collection("joinedEvents");
+        DocumentReference eventDocRef = joinedEventsRef.document(eventId);
+
+        eventDocRef.set(new HashMap<String, Object>() {{
+                    put("invitationStatus", status);
+                }}, SetOptions.merge())  // Use SetOptions.merge() to only update the status field
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore", "Field added/updated successfully.");
+                    // Notify the listener about the success
+                    if (listener != null) {
+                        listener.onComplete(true);  // Operation was successful
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error updating field", e);
+                    // Notify the listener about the failure
+                    if (listener != null) {
+                        listener.onComplete(false);  // Operation failed
+                    }
+                });
+    }
+
+    public static void moveUserBetweenSubcollections(String eventId, String userId, String fromSubcollection, String toSubcollection) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // References to the relevant documents
+        DocumentReference fromDocRef = db.collection("Events")
+                .document(eventId)
+                .collection(fromSubcollection)
+                .document(userId);
+
+        DocumentReference toDocRef = db.collection("Events")
+                .document(eventId)
+                .collection(toSubcollection)
+                .document(userId);
+
+        // Retrieve user data from the original subcollection
+        fromDocRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                Map<String, Object> userData = documentSnapshot.getData();
+
+                // Begin batch operation
+                WriteBatch batch = db.batch();
+
+                // Add user to the new subcollection
+                batch.set(toDocRef, userData);
+
+                // Remove user from the original subcollection
+                batch.delete(fromDocRef);
+
+                // Commit the batch
+                batch.commit().addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "Successfully moved user: " + userId + " from " + fromSubcollection + " to " + toSubcollection);
+                }).addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error moving user: " + e.getMessage());
+                });
+            } else {
+                Log.e("OrganizerDatabase", "User not found in " + fromSubcollection);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("OrganizerDatabase", "Error retrieving user: " + e.getMessage());
+        });
+
     }
 
 
@@ -279,7 +411,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of loading the event capacity
      */
     public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -287,12 +419,11 @@ public class OrganizerDatabase {
                         int capacity = documentSnapshot.getLong("capacity").intValue();
                         Log.i("loadEventCapacity", "Event capacity loaded successfully: " + capacity);
                         listener.onCapacityLoaded(capacity);
-                            }
-                    else {
-                        Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId);
-                        listener.onCapacityLoaded(0); // Default if document does not exist
                     }
-                });
+                    else {
+                        Log.e("loadEventCapacity", "Document does not exist for eventId: " + eventId); }
+                })
+                .addOnFailureListener(e -> listener.onError("Error loading event: " + e.getMessage()));
     }
 
 
@@ -315,7 +446,7 @@ public class OrganizerDatabase {
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,
                                              String name, String registrationDeadline, Integer waitListCapacity,
                                              String organizerId, String posterBase64, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         try {
             // Create the Event object
@@ -404,12 +535,12 @@ public class OrganizerDatabase {
         // Empty implementation - no placeholder data added
         // Subcollections will be implicitly created when documents are added later
         /**Map<String, Object> placeholderData = new HashMap<>();
-        placeholderData.put("placeholder", true);
+         placeholderData.put("placeholder", true);
 
-        db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
-        db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
+         db.collection("Events").document(eventId).collection("waitingList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
+         db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData);**/
     }
 
 
@@ -421,7 +552,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the operation
      */
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
@@ -447,7 +578,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the operation
      */
     public static void moveUserToWaitingList(String eventId, String userId, OnOperationCompleteListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         Map<String, Object> timestamp = new HashMap<>();
         timestamp.put("timestamp", FieldValue.serverTimestamp());
 
@@ -464,22 +595,66 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
 
-
     /**
      * This function gets the total number of users in the selected list for a given event
      *
      * @param eventId The unique id for the event, created from the QR code.
      * @param listener handles the outcome of the data fetch
      */
-    public static void getSelectedListCount(String eventId, OnDataFetchListener<Integer> listener) {
+    public static void getSelectedListCount(String eventId, OnSelectedListLoadCountListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId)
                 .collection("selectedList").get()
                 .addOnSuccessListener(snapshot -> {
-                    listener.onFetch(snapshot.size());
+                    listener.onSelectedListCountLoaded(snapshot.size());
                 })
-                .addOnFailureListener(listener::onError);
+                .addOnFailureListener(e -> listener.onError("Error retrieving selected list count data: " + e.getMessage()));
     }
+
+
+    public static void sendNotificationToUser(String eventId, String userId, String message, OnOperationCompleteListener listener) {
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e("OrganizerDatabase", "Event ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (userId == null || userId.isEmpty()) {
+            Log.e("OrganizerDatabase", "User ID is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+        if (message == null || message.isEmpty()) {
+            Log.e("OrganizerDatabase", "Message is null or empty. Cannot send notification.");
+            listener.onComplete(false);
+            return;
+        }
+
+        // Create the notification data
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("dateTimeStamp", FieldValue.serverTimestamp());
+        notificationData.put("userToId", userId);
+        notificationData.put("userFromId", null); // Assuming no specific sender
+        notificationData.put("title", "Custom Notification");
+        notificationData.put("message", message);
+        notificationData.put("notificationType", "CustomNotification");
+        notificationData.put("eventId", eventId);
+        notificationData.put("isRead", false);
+
+        // Save the notification to Firestore
+        db.collection("Notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("OrganizerDatabase", "Notification sent successfully with ID: " + documentReference.getId());
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Failed to send notification: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+
 
 
     /**
@@ -489,7 +664,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the data fetch
      */
     public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         db.collection("Events").document(eventId)
                 .collection("waitingList").get()
                 .addOnSuccessListener(snapshot -> {
@@ -505,7 +680,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the event loading
      */
     public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         if (userDeviceId == null) {
             listener.onEventsLoadError("Error: Unable to get user ID");
@@ -536,7 +711,7 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the facility loading
      */
     public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -558,18 +733,176 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
     }
 
-    /**
-     * This function saves event data to the events collection in the database.
-     *
-     * @param eventId The unique id for the event, created from the QR code.
-     * @param eventData a map with event data
-     * @param listener handles the outcome of the operation
-     */
-    public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
+    public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Users").document(organizerId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Retrieve the organizerName
+                        String organizerName = document.getString("entrantName");
+
+                        // Check if the data is available
+                        if (organizerName != null) {
+                            listener.onOrganizerLoaded(organizerName); // Send the data to the listener
+                        } else {
+                            listener.onError("Organizer data not found");
+                        }
+                    } else {
+                        listener.onError("User not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error retrieving organizer data: " + e.getMessage()));
+    }
+
+    public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
+
 
         db.collection("Events").document(eventId).set(eventData)
                 .addOnSuccessListener(unused -> listener.onComplete(true))
                 .addOnFailureListener(e -> listener.onComplete(false));
+    }
+
+    public static Task<Void> updateFacilityNameForEvents(String userId, String facilityName) {
+
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityName", facilityName);
+
+        // Map<String, Object> eventUpdates = new HashMap<>();
+        // eventUpdates.put("facilityName", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), userUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
+
+    public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
+
+        WriteBatch batch = db.batch();
+
+        Map<String, Object> userUpdates = new HashMap<>();
+        userUpdates.put("facilityAddress", facilityLocation);
+
+        // Map<String, Object> eventUpdates = new HashMap<>();
+        // eventUpdates.put("facilityLocation", "[Facility changed]");
+
+        return db.collection("Users").document(userId).collection("createdEvents").get()
+                .continueWithTask(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot eventDoc : task.getResult()) {
+                            String eventId = eventDoc.getId();
+                            batch.update(db.collection("Events").document(eventId), userUpdates);
+                        }
+                        batch.update(db.collection("Users").document(userId), userUpdates);
+                        return batch.commit();
+                    }
+                    throw task.getException();
+                });
+    }
+
+    public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
+
+        db.collection("Events")
+                .document(eventId)
+                .collection("selectedList")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User removed from Selected List.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error removing user from Selected List: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+    public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
+
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e("OrganizerDatabase", "Event ID is null or empty.");
+            listener.onComplete(false);
+            return;
+        }
+        if (userId == null || userId.isEmpty()) {
+            Log.e("OrganizerDatabase", "User ID is null or empty.");
+            listener.onComplete(false);
+            return;
+        }
+
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        db.collection("Events").document(eventId).collection("finalList").document(userId)
+                .set(timestamp)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User added to final list.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error adding user to final list.", e);
+                    listener.onComplete(false);
+                });
+    }
+
+
+    public static void addUserToCancelledList(String eventId, String userId, OnOperationCompleteListener listener) {
+
+
+        // Create a timestamp for the cancelled list entry
+        Map<String, Object> timestamp = new HashMap<>();
+        timestamp.put("timestamp", FieldValue.serverTimestamp());
+
+        // Add the user to the cancelled list
+        db.collection("Events").document(eventId).collection("cancelledList").document(userId)
+                .set(timestamp)
+                .addOnSuccessListener(aVoid -> {
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    listener.onComplete(false);
+                });
+    }
+
+    public static void isPendingStatusForUser(String userId, String eventId, OnIsPendingStatusCheckedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Check the joinedEvents subcollection for the user and eventId
+        db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId)  // Make sure you have the eventId
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        boolean isPending;
+                        String invitationStatus = documentSnapshot.getString("invitationStatus");
+                        if (Objects.equals(invitationStatus, "Pending")) {
+                            isPending = true;
+                        }
+                        else {
+                            isPending = false;
+                        }
+                        listener.onStatusLoaded(isPending);
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error loading pending status check"));  // Handle errors
+    }
+
+    // Define the listener interface to handle the invitation status
+    public interface OnIsPendingStatusCheckedListener {
+        void onStatusLoaded(boolean isPending);
+        void onError(String error);
     }
 }

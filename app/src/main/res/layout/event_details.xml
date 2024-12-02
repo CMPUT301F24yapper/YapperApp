@@ -213,57 +213,102 @@
             android:textSize="18sp" />
 
         <!-- Button Layout -->
-        <FrameLayout
+        <!-- Button Layout -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center">
-
-                <!-- View Participants Button -->
-                <Button
-                    android:id="@+id/button_view_participants"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:text="View Participants"
-                    android:backgroundTint="@android:color/holo_blue_dark"
-                    android:textColor="@android:color/white" />
-
-                <!-- View QR Code Button -->
-                <Button
-                    android:id="@+id/button_view_QRCode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    android:text="View QRCode" />
-
-                <!-- Edit Event Button -->
-                <Button
-                    android:id="@+id/button_edit_event"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Edit Event"
-                    android:backgroundTint="@android:color/holo_green_dark"
-                    android:textColor="@android:color/white" />
-            </LinearLayout>
-
-            <!-- Join Button -->
+            <!-- View Participants Button -->
             <Button
-                android:id="@+id/join_button"
-                android:layout_width="wrap_content"
+                android:id="@+id/button_view_participants"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:backgroundTint="@android:color/darker_gray"
-                android:enabled="false"
-                android:text="Join Event"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
+                android:layout_weight="1"
+                android:text="View Participants"
+                android:backgroundTint="#CCCCFF"
+                android:textColor="@android:color/black"
+                android:layout_margin="4dp" />
+
+            <!-- View QR Code Button -->
+            <Button
+                android:id="@+id/button_view_QRCode"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="View QR Code"
+                android:backgroundTint="#CCCCFF"
+                android:textColor="@android:color/black"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <!-- Organizer Options Layout -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
+
+            <!-- Edit Event Button -->
+            <Button
+                android:id="@+id/button_edit_event"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Edit Event"
+                android:backgroundTint="#CCCCFF"
+                android:textColor="@android:color/black"
+                android:layout_margin="4dp" />
+
+            <!-- Custom Notification Button -->
+            <Button
+                android:id="@+id/button_custom_notification"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawableStart="@android:drawable/ic_dialog_email"
+                android:drawablePadding="8dp"
+                android:text="Custom Notification"
+                android:backgroundTint="#C3B1E1"
+                android:textColor="@android:color/black"
+                android:layout_margin="4dp" />
+        </LinearLayout>
+
+        <!-- Join Button -->
+        <Button
+            android:id="@+id/join_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@android:color/darker_gray"
+            android:enabled="false"
+            android:text="Join Event"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+        <FrameLayout
+            android:id="@+id/map_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <!-- World Map Image -->
+            <ImageView
+                android:id="@+id/world_map"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:src="@drawable/world_map"
+                android:contentDescription="World Map"
+                android:scaleType="centerCrop" />
+
+            <!-- Custom Overlay for Pins -->
+            <ca.yapper.yapperapp.WorldMapPinsOverlay
+                android:id="@+id/pins_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
         </FrameLayout>
     </LinearLayout>
 </ScrollView>

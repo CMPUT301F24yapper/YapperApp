@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.Databases.SignUpDatabase;
+
 /**
  * SignupActivity is responsible for user registration and Firebase Firestore setup.
  * It initializes Firebase, checks for existing users, and facilitates new user sign-up
@@ -28,17 +30,12 @@ import ca.yapper.yapperapp.Databases.SignUpDatabase;
  */
 public class SignupActivity extends AppCompatActivity {
 
-    // private FirebaseFirestore db;
-    // private CollectionReference usersRef;
     private String deviceId;
-    private EditText addEntrantNameEditText;
-    private EditText addEntrantPhoneEditText;
-    private EditText addEntrantEmailEditText;
+    private EditText addEntrantNameEditText, addEntrantEmailEditText, addEntrantPhoneEditText;
     private Button signupButton;
     private static final String channel_Id = "event_notifications";
     private static final String channel_Name = "event_notifications";
     private static final String channel_desc = "Notifications related to event participation";
-
 
     /**
      * Initializes the activity, sets up notifications for user roles, and checks if the user
@@ -51,7 +48,6 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.signup_page_fragment);
-        // to do: could move this notification logic into its own method (e.g. "setUpNotificationChannel")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channel_Id, channel_Name, NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(channel_desc);
@@ -64,13 +60,10 @@ public class SignupActivity extends AppCompatActivity {
             }
         }
 
-        // FirebaseApp.initializeApp(this);
-        // createFirebaseConnection();
-
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
         checkUserExists();
     }
+
     /**
      * Establishes a Firebase connection and initializes the reference to the "Users" collection.
      */
@@ -121,8 +114,14 @@ public class SignupActivity extends AppCompatActivity {
         String entrantPhone = addEntrantPhoneEditText.getText().toString();
         String entrantEmail = addEntrantEmailEditText.getText().toString();
 
-        if (entrantName.isEmpty() || entrantPhone.isEmpty() || entrantEmail.isEmpty()) {
+        if (entrantName.isEmpty() || entrantEmail.isEmpty()) {
             Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(entrantEmail).matches()) {
+            Toast.makeText(this, "Please enter a valid email address.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -135,39 +134,14 @@ public class SignupActivity extends AppCompatActivity {
                     Log.e("SignupActivity", "Error creating user", e);
                     Toast.makeText(this, "Error signing up. Please try again.", Toast.LENGTH_SHORT).show();
                 });
-        /**
-        User.createUserInDatabase(
-                deviceId,
-                entrantEmail,
-                false,   // isAdmin
-                true,           // isEntrant
-                false,         // isOrganizer
-                entrantName,
-                entrantPhone,
-                false        // isOptedOut
-        );
 
-        Notification signupNotification = new Notification(
-                new Date(),
-                "Welcome to Event Lottery!",
-                "Hello " + entrantName + ", you have successfully signed up.",
-                "Signup Success"
-        );
-        Log.d("SignupActivity", "Attempting to display signup notification");
-
-        launchEntrantActivity(); **/
     }
 
     /**
      * Displays a signup success notification.
      */
     private void showSignupSuccessNotification(String entrantName) {
-        Notification signupNotification = new Notification(
-                new Date(),
-                "Welcome to Event Lottery!",
-                "Hello " + entrantName + ", you have successfully signed up.",
-                "Signup Success"
-        );
+
         Log.d("SignupActivity", "Signup success notification displayed.");
     }
 

@@ -6,6 +6,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.zxing.WriterException;
 
@@ -106,14 +107,14 @@ public class EntrantDatabase {
                 .document(eventId)
                 .collection("waitingList")
                 .document(userId);
-        batch.set(eventWaitingListRef, entrantData);
+        batch.set(eventWaitingListRef, entrantData, SetOptions.merge());
 
         // Add to user's joined events
         DocumentReference userJoinedEventsRef = db.collection("Users")
                 .document(userId)
                 .collection("joinedEvents")
                 .document(eventId);
-        batch.set(userJoinedEventsRef, entrantData);
+        batch.set(userJoinedEventsRef, entrantData, SetOptions.merge());
 
         // Commit the batch
         batch.commit()
@@ -179,6 +180,49 @@ public class EntrantDatabase {
         });
     }
 
+    public static void addEventToRegisteredEvents(String userId, String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Reference to the user's joinedEvents subcollection
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        // Add the event with initial status
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put("timestamp", FieldValue.serverTimestamp());
+        eventData.put("invitationStatus", "Pending");  // Default status is "Pending"
+
+        eventDocRef.set(eventData)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("EntrantDatabase", "Event added to registeredEvents with Pending status.");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantDatabase", "Error adding event to registeredEvents: " + e.getMessage());
+                });
+    }
+
+    public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("invitationStatus", newStatus);
+
+        eventDocRef.update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("EntrantDatabase", "Invitation status updated to: " + newStatus);
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantDatabase", "Error updating invitation status: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
 
     /**
      * This function obtains an event by using its document id, which is the QR Code string value.
@@ -250,10 +294,11 @@ public class EntrantDatabase {
                                                 eventDoc.getString("name"),
                                                 eventDoc.getString("organizerId"),
                                                 eventDoc.getString("registrationDeadline"),
-                                                eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : 0,
+                                                eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : null,
                                                 new ArrayList<>(), new ArrayList<>(),
                                                 new ArrayList<>(), new ArrayList<>()
                                         );
+                                        event.setDocumentId(eventId);
                                         eventList.add(event);
                                     } catch (WriterException e) {
                                         Log.e("Database", "Error creating event", e);
@@ -284,6 +329,68 @@ public class EntrantDatabase {
         MISSED
     }
 
+    /**
+     * Loads a User from Firestore using the specified device ID and provides the result
+     * through the provided listener.
+     *
+     * @param userDeviceId The unique device ID of the user to be loaded.
+     * @param listener The listener to handle success or error when loading the user.
+     */
+    public static void loadUserFromDatabase(String userDeviceId, OnUserLoadedListener listener) {
+        db.collection("Users").document(userDeviceId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        try {
+                            User user = new User(
+                                    documentSnapshot.getString("deviceId"),
+                                    documentSnapshot.getString("entrantEmail"),
+                                    documentSnapshot.getBoolean("Admin"),
+                                    documentSnapshot.getBoolean("Entrant"),
+                                    documentSnapshot.getBoolean("Organizer"),
+                                    documentSnapshot.getString("entrantName"),
+                                    documentSnapshot.getString("entrantPhone"),
+                                    documentSnapshot.getBoolean("notificationsEnabled"),
+                                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+                            );
+                            listener.onUserLoaded(user);
+                        }
+                        catch (Exception e) {
+                            listener.onUserLoadError("Error creating user");
+                        }
+                    }
+                });
+    }
+
+    public static void getInvitationStatus(String userId, String eventId, OnStatusCheckListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventDocRef = db.collection("Users")
+                .document(userId)
+                .collection("joinedEvents")
+                .document(eventId);
+
+        eventDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String status = documentSnapshot.getString("invitationStatus");
+                        if (status != null) {
+                            listener.onStatusLoaded(status);
+                        } else {
+                            listener.onStatusNotFound();  // Status field missing
+                        }
+                    } else {
+                        listener.onUserNotInList();  // User not part of this event
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
+    }
+
+    // Define callback interface
+    public interface OnStatusCheckListener {
+        void onStatusLoaded(String status);  // "Pending", "Accepted", "Rejected", etc.
+        void onStatusNotFound();             // If status is missing
+        void onUserNotInList();              // If event is not in joinedEvents
+        void onError(String error);          // Error handling
+    }
 
     /**
      * Function that loads a profile image for a given user by accessing the database.
@@ -320,5 +427,4 @@ public class EntrantDatabase {
         void onFieldUpdated(Object value);
         void onError(String error);
     }
-
 }

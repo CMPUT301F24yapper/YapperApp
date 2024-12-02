@@ -18,7 +18,7 @@ import ca.yapper.yapperapp.Activities.SignupActivity;
  */
 public class SignUpDatabase {
 
-    private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
     /**
      * This function uses the device Id to check if we have the given user in the database (used by SignupActivity...)
@@ -27,7 +27,6 @@ public class SignUpDatabase {
      * @return a Task with a result that indicates if a user exists(true) or not(false).
      */
     public static Task<Boolean> checkUserExists(String deviceId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
 
         db.collection("Users").document(deviceId)

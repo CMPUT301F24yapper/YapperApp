@@ -23,8 +23,8 @@ import ca.yapper.yapperapp.UMLClasses.Event;
  */
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsViewHolder> {
 
-    private List<Event> eventList;
-    private Context context;
+    private final List<Event> eventList;
+    private final Context context;
 
 
     /**
@@ -74,7 +74,11 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
                 return;
             }
 
-            String eventId = Integer.toString(event.getQRCode().getHashData());
+
+            //EVENT ID RETRIVED
+            String eventId = event.getDocumentId();
+
+
             if (eventId == null || eventId.isEmpty()) {
                 Toast.makeText(v.getContext(), "Error: Invalid event ID", Toast.LENGTH_SHORT).show();
                 return;

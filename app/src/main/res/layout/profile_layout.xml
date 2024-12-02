@@ -28,7 +28,10 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="16dp"
                 android:contentDescription="Profile Picture"
-                android:src="@drawable/ic_profile_placeholder" />
+                android:scaleType="centerCrop"
+                android:background="@drawable/circular_image"
+                android:src="@drawable/ic_profile_placeholder"
+                android:clipToOutline="true" />/>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -231,10 +234,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Facility Name:"
+                    android:paddingEnd="8dp"
+                    android:text="Name:"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:paddingEnd="8dp" />
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/edit_facility"

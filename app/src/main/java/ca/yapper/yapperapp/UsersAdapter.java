@@ -1,6 +1,7 @@
 package ca.yapper.yapperapp;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +17,8 @@ import ca.yapper.yapperapp.UMLClasses.User;
  * This adapter binds the {@link User} data to each item view in the list, displaying user names.
  */
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHolder> {
-    private List<User> userList;
-    private Context context;
+    private final List<User> userList;
+    private final Context context;
     private TextView nameTextView;
 
 

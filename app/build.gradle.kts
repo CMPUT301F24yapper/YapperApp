@@ -59,14 +59,21 @@ dependencies {
 
     implementation(libs.firebase.storage)
 
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
+    //testImplementation(libs.junit.jupiter.api)
+    //testRuntimeOnly(libs.junit.jupiter.engine)
 
     //testImplementation("junit:junit:4.13.2")
-    testImplementation (libs.junit.jupiter.api.v501)
-    androidTestImplementation(libs.junit.v115)
-    androidTestImplementation(libs.espresso.core.v351)
+    //testImplementation (libs.junit.jupiter.api.v501)
+    //androidTestImplementation(libs.junit.v115)
+    //androidTestImplementation(libs.espresso.core.v351)
     //androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.6.1")
+
+    testImplementation ("junit:junit:4.13.2")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
+    testImplementation ("org.mockito:mockito-core:4.11.0")
+    testImplementation ("org.robolectric:robolectric:4.10.2")
+
 
 }
 

@@ -7,7 +7,9 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +23,13 @@ import ca.yapper.yapperapp.UMLClasses.User;
  * Class holding all the user class related functions that interact with the database.
  */
 public class UserDatabase {
+  
+    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
+    public interface OnUserLoadedListener {
+        void onUserLoaded(User user);
+        void onUserLoadError(String error);
+    }
 
     /**
      * Loads a User from Firestore using the specified device ID and provides the result
@@ -38,7 +46,7 @@ public class UserDatabase {
         }
 
         // Query Firestore
-        FirestoreUtils.getFirestoreInstance().collection("Users").document(userDeviceId).get()
+        db.collection("Users").document(userDeviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
@@ -70,8 +78,8 @@ public class UserDatabase {
      * @return The created User instance.
      */
     public static Task<User> createUserInDatabase(String deviceId, String email, boolean isAdmin,
-                                                   boolean isEntrant, boolean isOrganizer, String name,
-                                                   String phoneNum, boolean isOptedOut) {
+                                                  boolean isEntrant, boolean isOrganizer, String name,
+                                                  String phoneNum, boolean isOptedOut) {
         validateUserInputs(deviceId, email, name); // Step 1: Validation
 
         User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut); // Step 2: Create User Object
@@ -101,7 +109,6 @@ public class UserDatabase {
      * @return a task that adds all the missed out events then completes, otherwise it fails.
      */
     private static Task<Void> addMissedOutEventsSubcollection(String userDeviceId) {
-        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
         CollectionReference eventsRef = db.collection("Events");
         CollectionReference missedOutEventsRef = db.collection("Users").document(userDeviceId).collection("missedOutEvents");
 
@@ -177,7 +184,7 @@ public class UserDatabase {
         userData.put("Entrant", user.isEntrant());
         userData.put("Organizer", user.isOrganizer());
         userData.put("entrantName", user.getName());
-        userData.put("entrantPhone", user.getPhoneNum());
+        userData.put("entrantPhone", user.getPhoneNum().isEmpty() ? "" : user.getPhoneNum());
         userData.put("notificationsEnabled", !user.isOptedOut());
         userData.put("facilityName", "");
         userData.put("facilityAddress", "");
@@ -343,7 +350,6 @@ public class UserDatabase {
             return;
         }
 
-        FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
         Map<String, Object> locationData = new HashMap<>();
         locationData.put("latitude", latitude);
         Log.d("UserDB", "Saving latitude: " + latitude);
@@ -351,10 +357,13 @@ public class UserDatabase {
         locationData.put("longitude", longitude);
         Log.d("UserDB", "Saving longitude: " + longitude);
 
+        locationData.put("timestamp", FieldValue.serverTimestamp());
+
         db.collection("Events").document(eventId)
                 .collection("waitingList").document(userDeviceId)
-                .set(locationData)
+                .set(locationData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(e -> listener.onError("Failed to save location: " + e.getMessage()));
+
     }
 }

@@ -72,14 +72,13 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
-
     /**
      * Function for displaying a popup menu that displays different roles and sets the
      * functionality for each button press so users can switch activities using intents.
      *
      * @param view The UI element that will be used for the popup menu
      */
-    private void showProfileSwitchMenu(View view) {
+    public void showProfileSwitchMenu(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.getMenuInflater().inflate(R.menu.profile_popup_menu, popup.getMenu());
 
@@ -100,4 +99,6 @@ public class AdminActivity extends AppCompatActivity {
 
         popup.show();
     }
+
+
 }
