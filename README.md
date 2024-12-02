@@ -15,13 +15,13 @@ Our app currently does not include unit tests because: most methods do not have 
 The Unit Tests, however, are integrated with Github Actions. We will write more for our PP4 submission. In terms of UI Tests, it can be run locally.
 
 ## 5. Object-Oriented Design:
-UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/e1bbb9e3-ad15-4254-98b7-f717c8b36883)
+UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/912b9e82-ff8c-4975-bb94-7281f1569f15)
 
 ## 6. Product Backlog:
-Look to Backlog.
+Look to Backlog. 
 
 ## 7. User Interface Mockups and Storyboard Sequences:
-Our app closely follows the Figma design created during the planning phase. There have been no significant changes or deviations from the original design. Notfication Page Changes can be found here: https://www.figma.com/design/LvuX3OONMMB8AZHy7H7evs/Yapper-App?node-id=0-1
+Our app closely follows the Figma design created during the planning phase. There have been a couple of deviations from the original design. Changes can be found here: https://www.figma.com/design/LvuX3OONMMB8AZHy7H7evs/Yapper-App?node-id=0-1
 
 ## 8. Sprint Planning and Reviews:
 You can find our project planning document here: https://docs.google.com/document/d/1r3gN46TJsJ_52aZahp9-sxnLIFVKG7LOSuvvvMBYGXY/edit?tab=t.0
