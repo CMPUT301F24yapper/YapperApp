@@ -1,7 +1,7 @@
 # Yapper App
 # Project Documentation
 ## 1. Addressing Feedback:
-Our TA feedback was to better implement the testing component (more UI tests),
+Our TA feedback was to better implement the testing component (more UI tests), It is good general practice to have methods return a value for error handling and clarity, some PR & commit naming is not concise sometimes with their own names.
 
 ## 2. Code Base of Prototype:
 Look to source code in Repo.
