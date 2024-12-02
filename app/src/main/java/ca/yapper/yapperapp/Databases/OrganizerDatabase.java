@@ -162,6 +162,24 @@ public class OrganizerDatabase {
     }
 
 
+    public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
+
+        db.collection("Events")
+                .document(eventId)
+                .collection("selectedList")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User removed from Selected List.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error removing user from Selected List: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
+
     /**
      * This function obtains events from the database using the eventID
      *

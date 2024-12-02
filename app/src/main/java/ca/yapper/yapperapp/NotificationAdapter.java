@@ -2,6 +2,7 @@ package ca.yapper.yapperapp;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,6 @@ import ca.yapper.yapperapp.UMLClasses.Notification;
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notificationList;
-
     private Context context;
 
 
@@ -163,15 +163,21 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             Toast.makeText(context, "Missing Event or User ID.", Toast.LENGTH_SHORT).show();
             return;
         }
-        //confirm still works
-        OrganizerDatabase.moveUserBetweenEventSubcollections(eventId, userId, "selectedList", "cancelledList", success -> {
+
+        OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
             if (success) {
-                markNotificationAsRead(holder, notification, position);
-                Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
+                OrganizerDatabase.removeUserFromSelectedList(eventId, userId, removed -> {
+                    if (removed) {
+                        markNotificationAsRead(holder, notification, position);
+                        Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error removing from Selected List", Toast.LENGTH_SHORT).show();
+                    }
+                });
             } else {
-                Toast.makeText(context, "Error removing from Selected List to Cancelled List", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error adding to Cancelled List", Toast.LENGTH_SHORT).show();
             }
-            });
+        });
     }
 
 
