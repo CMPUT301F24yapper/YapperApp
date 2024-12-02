@@ -121,7 +121,7 @@ public class AdminDatabase {
      * assigning the information obtained, then storing the event into a list. If an obtained value
      * is invalid, then its skipped.
      *
-     * @return a task with a list of all the valid events in the database
+     * @return a database call that returns a list of events
      */
     public static Task<List<Event>> getAllEvents() {
         return db
@@ -177,7 +177,7 @@ public class AdminDatabase {
      * It does this by iterating through the users from the users collection in the database,
      * assigning the information obtained, then storing the user into a list.
      *
-     * @return a task with a list of all the users in the database
+     * @return a database reference that returns a list of all the users in the database
      */
     public static Task<List<User>> getAllUsers() {
         return db
@@ -439,11 +439,20 @@ public class AdminDatabase {
                 });
     }
 
+    /**
+     * Interface for facility detail loading methods and errors associated with it
+     */
     public interface OnFacilityDetailsLoadedListener {
         void onFacilityLoaded(String facilityName, String facilityAddress);
         void onError(String error);
     }
 
+    /**
+     * This function obtains facility details such as facility name and address from a specific organizer
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of loading the facility details
+     */
     public static void getFacilityDetails(String userId, OnFacilityDetailsLoadedListener listener) {
         db.collection("Users").document(userId)
                 .get()
@@ -455,6 +464,12 @@ public class AdminDatabase {
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
+    /**
+     * This function obtains the organizers name from their ID, by going through their profile.
+     *
+     * @param organizerId The id for the organizer, created from the device id.
+     * @param listener handles the outcome of obtaining organizer names
+     */
     public static void getOrganizerName(String organizerId, OnNameLoadedListener listener) {
         db.collection("Users")
                 .document(organizerId)
@@ -470,6 +485,9 @@ public class AdminDatabase {
                 .addOnFailureListener(e -> listener.onNameLoaded("Unknown"));
     }
 
+    /**
+     * Interface for name loading classes
+     */
     public interface OnNameLoadedListener {
         void onNameLoaded(String name);
     }

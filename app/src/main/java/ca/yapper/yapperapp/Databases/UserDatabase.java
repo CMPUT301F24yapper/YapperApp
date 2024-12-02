@@ -80,11 +80,11 @@ public class UserDatabase {
     public static Task<User> createUserInDatabase(String deviceId, String email, boolean isAdmin,
                                                   boolean isEntrant, boolean isOrganizer, String name,
                                                   String phoneNum, boolean isOptedOut) {
-        validateUserInputs(deviceId, email, name); // Step 1: Validation
+        validateUserInputs(deviceId, email, name);
 
-        User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut); // Step 2: Create User Object
+        User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut);
 
-        Map<String, Object> userData = prepareUserData(user); // Step 3: Prepare Firestore Data
+        Map<String, Object> userData = prepareUserData(user);
         // TO CHANGE LATER: MISSED OUT EVENTS BEING EVERY EVENT IN DATABASE (SETUP):
         TaskCompletionSource<User> tcs = new TaskCompletionSource<>();
         FirestoreUtils.getFirestoreInstance().collection("Users")
@@ -98,7 +98,7 @@ public class UserDatabase {
                 .addOnFailureListener(tcs::setException);
 
         return tcs.getTask();
-        // return saveUserToFirestore(deviceId, user, userData); // Step 4: Save to Firestore
+        // return saveUserToFirestore(deviceId, user, userData);
     }
 
 

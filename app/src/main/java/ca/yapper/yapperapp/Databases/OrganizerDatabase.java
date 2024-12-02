@@ -71,17 +71,13 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
+    /**
+     * Interface for handling results from loading organizer details and associated errors
+     */
     public interface OnOrganizerDetailsLoadedListener {
         void onOrganizerLoaded(String organizerName);
         void onError(String error);
     }
-
-    /**
-     * Checks if the user is an admin based on their device ID.
-     *
-     * @param deviceId The unique device ID of the user.
-     * @return A Task that resolves to true if the user is an admin, false otherwise.
-     */
 
     /**
      * Interface for handling the result of loading an event from Firestore.
@@ -166,14 +162,21 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching event details: " + e.getMessage()));
     }
 
-    // Define the callback interface:
+    /**
+     *
+     */
     public interface OnEventDetailsFetchListener {
         void onEventDetailsFetched(String eventName);
         void onError(String errorMessage);
     }
 
 
-
+    /**
+     * This function obtains events from the database using the eventID
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the user check
+     */
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
 
 

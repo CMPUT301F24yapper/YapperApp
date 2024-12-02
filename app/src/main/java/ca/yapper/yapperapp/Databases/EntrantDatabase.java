@@ -10,6 +10,7 @@ import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.zxing.WriterException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -180,6 +181,12 @@ public class EntrantDatabase {
         });
     }
 
+    /**
+     * This function adds events to an entrants registered events list
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The unique id for the event, created from the QR code.
+     */
     public static void addEventToRegisteredEvents(String userId, String eventId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -203,6 +210,14 @@ public class EntrantDatabase {
                 });
     }
 
+    /**
+     * This function updates the invitation status for a user
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param newStatus the new status of the invitation
+     * @param listener listener handles the outcome of the operation
+     */
     public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Users")
@@ -361,6 +376,13 @@ public class EntrantDatabase {
                 });
     }
 
+    /**
+     * This function obtains the invitation status for a specific user and event
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener  handles the outcome of the invitation status check
+     */
     public static void getInvitationStatus(String userId, String eventId, OnStatusCheckListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Users")
@@ -384,12 +406,14 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
-    // Define callback interface
+    /**
+     * Interface for status checking methods and errors associated with it
+     */
     public interface OnStatusCheckListener {
-        void onStatusLoaded(String status);  // "Pending", "Accepted", "Rejected", etc.
-        void onStatusNotFound();             // If status is missing
-        void onUserNotInList();              // If event is not in joinedEvents
-        void onError(String error);          // Error handling
+        void onStatusLoaded(String status);
+        void onStatusNotFound();
+        void onUserNotInList();
+        void onError(String error);
     }
 
     /**
@@ -403,7 +427,11 @@ public class EntrantDatabase {
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         String base64Image = document.getString("profileImage");
-                        listener.onProfileImageLoaded(base64Image); // Send the image to the listener
+                        try {
+                            listener.onProfileImageLoaded(base64Image); // Send the image to the listener
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     } else {
                         listener.onError("User not found");
                     }
@@ -416,7 +444,7 @@ public class EntrantDatabase {
      * Interface for loading images and associated error handling
      */
     public interface OnProfileImageLoadedListener {
-        void onProfileImageLoaded(String base64Image);
+        void onProfileImageLoaded(String base64Image) throws IOException;
         void onError(String error);
     }
 

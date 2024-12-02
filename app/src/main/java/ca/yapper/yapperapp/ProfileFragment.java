@@ -109,7 +109,13 @@ public class ProfileFragment extends Fragment {
         });
 
         changePicture.setOnClickListener(v -> openImageChooser());
-        removePicture.setOnClickListener(v -> removeProfilePicture());
+        removePicture.setOnClickListener(v -> {
+            try {
+                removeProfilePicture();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         return view;
     }
@@ -136,6 +142,16 @@ public class ProfileFragment extends Fragment {
         return Base64.encodeToString(compressedBytes, Base64.DEFAULT);
     }
 
+    private String encodeGeneratedImageToBase64(Bitmap bitmap) throws IOException {
+        // Compress the bitmap
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream); // Adjust quality as needed
+        byte[] compressedBytes = outputStream.toByteArray();
+
+        // Encode to Base64
+        return Base64.encodeToString(compressedBytes, Base64.DEFAULT);
+    }
+
     private Bitmap decodeBase64ToBitmap(String base64Image) {
         try {
             byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
@@ -146,14 +162,13 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void removeProfilePicture() {
-        updateField("profileImage", null); // Reset the Firestore field
+    private void removeProfilePicture() throws IOException {
+        Bitmap generatedIMG = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+        generateProfileImage(generatedIMG);
+        String base64GeneratedImage = encodeGeneratedImageToBase64(generatedIMG);
+        updateField("profileImage", base64GeneratedImage); // Once an img is deleted, we reset to generated again
 
-        Bitmap bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888);
-        generatedProfilePicture = bitmap;
-        generateProfileImage(generatedProfilePicture);
-
-        profileImage.setImageBitmap(generatedProfilePicture); // Reset to generated pic
+        profileImage.setImageBitmap(generatedIMG); // Reset to generated pic
         Toast.makeText(getContext(), "Profile picture removed", Toast.LENGTH_SHORT).show();
     }
 
@@ -238,21 +253,34 @@ public class ProfileFragment extends Fragment {
     private void loadProfileImage(User user) {
         EntrantDatabase.loadProfileImage(userDeviceId, new EntrantDatabase.OnProfileImageLoadedListener() {
             @Override
-            public void onProfileImageLoaded(String base64Image) {
+            public void onProfileImageLoaded(String base64Image) throws IOException {
                 Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
                 generatedProfilePicture = bitmap;
                 generateProfileImage(generatedProfilePicture);
 
                 if (base64Image != null) {
                     bitmap = decodeBase64ToBitmap(base64Image);
-                    if (bitmap != null) {
-                        profileImage.setImageBitmap(bitmap);
-                    } else {
+                    Log.d("Profile IMG", "Bitmap obtained from database");
+                }
+
+                if(bitmap != null){ // if base64img has an image
+                    if (bitmap.sameAs(generatedProfilePicture)) {
+                        // here the image we got from base64 was the generated profile pic or base64 was == null
+                        Log.d("Generated IMG","Generated Image Retrieved");
                         //profileImage.setImageResource(R.drawable.ic_profile_placeholder);
-                        profileImage.setImageBitmap(generatedProfilePicture);
+                        profileImage.setImageBitmap(bitmap);
+                        String base64GeneratedImage = encodeGeneratedImageToBase64(bitmap);
+                        updateField("profileImage", base64GeneratedImage); // Here we store generated img in database
+                    }
+                    else {
+                        Log.d("Generated IMG","Custom Image Retrieved");
+                        profileImage.setImageBitmap(bitmap);
                     }
                 } else {
                     profileImage.setImageBitmap(generatedProfilePicture);
+                    String base64GeneratedImage = encodeGeneratedImageToBase64(generatedProfilePicture);
+                    updateField("profileImage", base64GeneratedImage); // Here we store generated img in database
+
                 }
             }
 
