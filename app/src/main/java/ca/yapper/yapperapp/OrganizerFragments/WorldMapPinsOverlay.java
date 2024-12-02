@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.OrganizerFragments;
 
 import android.content.Context;
 import android.graphics.Canvas;

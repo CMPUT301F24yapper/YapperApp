@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ca.yapper.yapperapp.NotificationListener;
+import ca.yapper.yapperapp.Adapters.NotificationListener;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
 /**

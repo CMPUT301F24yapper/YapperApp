@@ -26,12 +26,12 @@ import java.util.Random;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
-import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
+import ca.yapper.yapperapp.Adapters.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
-import ca.yapper.yapperapp.UsersAdapter;
+import ca.yapper.yapperapp.Adapters.UsersAdapter;
 /**
  * WaitingListFragment displays the list of users on the waiting list for a specific event.
  * This fragment allows drawing from the waiting list to fill available slots in the selected list.

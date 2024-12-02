@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.EntrantFragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -47,6 +47,7 @@ import ca.yapper.yapperapp.Activities.OrganizerActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 /**

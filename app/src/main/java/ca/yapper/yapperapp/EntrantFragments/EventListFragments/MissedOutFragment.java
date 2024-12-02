@@ -2,7 +2,6 @@ package ca.yapper.yapperapp.EntrantFragments.EventListFragments;
 
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,15 +15,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
-import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.EventsAdapter;
+import ca.yapper.yapperapp.Adapters.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 /**

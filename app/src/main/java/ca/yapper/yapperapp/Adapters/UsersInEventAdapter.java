@@ -1,5 +1,4 @@
-package ca.yapper.yapperapp;
-import android.content.Context;
+package ca.yapper.yapperapp.Adapters;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -17,6 +16,7 @@ import java.util.List;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 /**
  * An adapter class for displaying a list of users in a {@link RecyclerView}.

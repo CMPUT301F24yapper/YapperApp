@@ -16,18 +16,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.EventsAdapter;
+import ca.yapper.yapperapp.Adapters.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
-import ca.yapper.yapperapp.UMLClasses.User;
+
 /**
  * OrganizerHomeFragment displays a list of events created by the organizer.
  * The fragment retrieves events from Firestore and displays them in a RecyclerView,

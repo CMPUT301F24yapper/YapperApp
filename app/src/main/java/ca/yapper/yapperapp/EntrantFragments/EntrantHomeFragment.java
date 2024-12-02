@@ -14,7 +14,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.ViewPagerAdapter;
+import ca.yapper.yapperapp.Adapters.ViewPagerAdapter;
 /**
  * EntrantHomeFragment serves as the main home view for Entrants, displaying different
  * categories of events in tabs: Registered Events, Joined Events, and Missed Out events.

@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.AdminFragments;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,10 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 /**

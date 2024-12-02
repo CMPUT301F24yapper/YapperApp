@@ -18,7 +18,7 @@ import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
-import ca.yapper.yapperapp.UsersAdapter;
+import ca.yapper.yapperapp.Adapters.UsersAdapter;
 
 
 /**

@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,7 +15,9 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
+import ca.yapper.yapperapp.AdminFragments.AdminRemoveProfileFragment;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 /**

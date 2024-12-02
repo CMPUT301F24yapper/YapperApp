@@ -17,14 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.TaskCompletionSource;
-import com.google.android.gms.tasks.Tasks;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,12 +27,12 @@ import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.NotificationsDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
-import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
+import ca.yapper.yapperapp.Adapters.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.UMLClasses.User;
-import ca.yapper.yapperapp.UsersInEventAdapter;
+import ca.yapper.yapperapp.Adapters.UsersInEventAdapter;
 
 /**
  * SelectedListFragment displays the list of users selected to participate in a specific event.
