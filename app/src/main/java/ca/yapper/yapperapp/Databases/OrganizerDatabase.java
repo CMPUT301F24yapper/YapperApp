@@ -673,7 +673,7 @@ public class OrganizerDatabase {
     public static void isPendingStatusForUser(String userId, String eventId, OnIsPendingStatusCheckedListener listener) {
         // Check the joinedEvents subcollection for the user and eventId
         db.collection("Events")
-                .document(userId)
+                .document(eventId)
                 .collection("selectedList")
                 .document(userId)  // Make sure you have the eventId
                 .get()

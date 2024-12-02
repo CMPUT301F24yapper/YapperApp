@@ -17,8 +17,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +47,6 @@ import ca.yapper.yapperapp.UsersInEventAdapter;
 public class SelectedListFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    //private UsersAdapter adapter;
     private UsersInEventAdapter adapter;
     private List<User> selectedList;
     private String eventId;
@@ -96,10 +101,9 @@ public class SelectedListFragment extends Fragment {
         loadSelectedList();
 
         // Redraw Applicant Button
-        redrawButton.setOnClickListener(v -> redrawApplicant());
-
+        // redrawButton.setOnClickListener(v -> redrawApplicant());
         // Dump Pending Applicant Button
-        dumpPendingButton.setOnClickListener(v -> dumpPendingApplicant());
+        // dumpPendingButton.setOnClickListener(v -> dumpPendingApplicant());
         return view;
     }
 
@@ -187,96 +191,74 @@ public class SelectedListFragment extends Fragment {
             redrawButton.setVisibility(View.VISIBLE);
             // redrawButton.setOnClickListener(v -> redrawApplicant());
         } else {
-            redrawButton.setVisibility(View.GONE); }
-
-        // Check if there are any "Pending" users in the selected list
-        boolean hasPending = false;
-
-        // Track how many users have been checked
-        AtomicInteger checkedUsersCount = new AtomicInteger(0);
-
-        String userStatus;
-        for (User user : selectedList) {
-            OrganizerDatabase.isPendingStatusForUser(user.getDeviceId(), eventId, new OrganizerDatabase.OnIsPendingStatusCheckedListener() {
-                @Override
-                public void onStatusLoaded(boolean isPending) {
-                    if (isPending) {
-                        updatePendingUI(isPending);
-                        return;  // make sure this returns out of outer for loop!
-                    }
-                    // Increment the count of checked users
-                    if (checkedUsersCount.incrementAndGet() == selectedList.size()) {
-                        // All users have been checked, update UI
-                        updatePendingUI(isPending);
-                    }
-                }
-                @Override
-                public void onError(String error) {
-                    Log.e("SelectedListFragment", "Error checking status for user: " + user.getDeviceId() + " - " + error);
-                    }
-                });
-        }
-    }
-
-    private void updatePendingUI(boolean hasPending) {
-        // Show the Dump Pending Applicant button if there are pending users
-        if (hasPending) {
-            dumpPendingButton.setVisibility(View.VISIBLE);
-            dumpPendingButton.setEnabled(true);
-        } else {
-            dumpPendingButton.setVisibility(View.GONE);
-            dumpPendingButton.setEnabled(false);
-        }
-
-        // Show the Redraw button if there are seats left in the selected list
-        if (selectedList.size() < eventCapacity) {
-            redrawButton.setVisibility(View.VISIBLE);
-            redrawButton.setEnabled(true);
-        } else {
             redrawButton.setVisibility(View.GONE);
-            redrawButton.setEnabled(false);
         }
+        // Redraw Applicant Button
+        redrawButton.setOnClickListener(v -> redrawApplicant());
+
+        // Dump Pending Applicant Button
+        dumpPendingButton.setOnClickListener(v -> dumpPendingApplicant());
+
     }
 
     private void dumpPendingApplicant() {
-        // Disable the button to prevent multiple clicks while processing
+        Log.i("SelectedListFragment", "dumpPendingApplicant being called");
         dumpPendingButton.setEnabled(false);
-        AtomicInteger processedCount = new AtomicInteger(0);
-        List<User> pendingUsers = new ArrayList<>();
 
+        List<User> pendingUsers = new ArrayList<>();
+        List<Task<Void>> tasks = new ArrayList<>();
+
+        // List to track users to remove from the selected list
+        List<User> usersToRemove = new ArrayList<>();
+
+
+        // Loop through the selected list to check for pending users
         for (User user : selectedList) {
+
             OrganizerDatabase.isPendingStatusForUser(user.getDeviceId(), eventId, new OrganizerDatabase.OnIsPendingStatusCheckedListener() {
                 @Override
                 public void onStatusLoaded(boolean isPending) {
                     if (isPending) {
-                        pendingUsers.add(user);
-                    }
-                    if (processedCount.incrementAndGet() == selectedList.size()) {
-                        movePendingUsersToCancelledList(pendingUsers);
+                        // Add user to removal list
+                        usersToRemove.add(user);
+                        moveUserToCancelledList(user.getDeviceId());
+                        sendCancelledNotif(user.getDeviceId());
+                        updateInvitationStatus(user.getDeviceId());
                     }
                 }
 
                 @Override
                 public void onError(String error) {
-                    Log.e("DumpPending", "Error checking user: " + user.getDeviceId());
-                    if (processedCount.incrementAndGet() == selectedList.size()) {
-                        movePendingUsersToCancelledList(pendingUsers);
-                    }
+                    // implement error logic
                 }
             });
+        }
+
+        // After all async operations finish, update the RecyclerView
+        // (Make sure to check that all tasks are completed before notifying RecyclerView)
+        if (usersToRemove.size() > 0) {
+            for (User user : usersToRemove) {
+                selectedList.remove(user);
+            }
+            adapter.notifyDataSetChanged(); // Notify adapter to update RecyclerView
+            selectedCountTextView.setText("Selected Count: " + selectedList.size());  // Update selected count
         }
     }
 
     private void movePendingUsersToCancelledList(List<User> pendingUsers) {
+        Log.i("SelectedListFragment", "All user statuses checked. Moving pending users.");
         for (User user : pendingUsers) {
-            moveUserToCancelledList(user);
+            moveUserToCancelledList(user.getDeviceId());
+           // selectedList.notifyDataSetChanged();
             moveUserBetweenUserSubcollections(user.getDeviceId(), eventId, "registeredEvents", "missedOutEvents");
         }
+        // refreshList();
         if (pendingUsers.isEmpty()) {
             dumpPendingButton.setVisibility(View.GONE);
         } else {
             dumpPendingButton.setEnabled(true);
         }
+        Log.i("refreshing all fragments", "refreshAllFragments()");
         refreshAllFragments();
     }
 
@@ -334,10 +316,6 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
-    /**
-     * Draws multiple users from the waiting list if the selected list has space remaining,
-     * moving users from the waiting list to the selected list in Firestore.
-     */
     private void drawFromWaitingList() {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
@@ -348,21 +326,27 @@ public class SelectedListFragment extends Fragment {
                 }
 
                 int remainingSlots = eventCapacity - selectedList.size();
-                // int availableUsers = userIdsList.size();
-                List<String> selectedUserIds = new ArrayList<>();
-                List<String> remainingUserIds = new ArrayList<>(userIdsList);
+                if (remainingSlots <= 0) {
+                    Toast.makeText(getContext(), "Event is already at capacity.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                // int drawCount = Math.min(remainingSlots, availableUsers);
-                // final int[] completedMoves = {0};
-                // List<String> waitingUserIds = new ArrayList<>(userIdsList);
+                // Shuffle the waiting list to ensure random selection
+                Collections.shuffle(userIdsList);
 
-                for (int i = 0; i < Math.min(remainingSlots, userIdsList.size()); i++) {
-                    String userId = remainingUserIds.remove(0);
-                    selectedUserIds.add(userId);
+                // Determine the number of users to draw
+                int drawCount = Math.min(remainingSlots, userIdsList.size());
+
+                // Separate selected and remaining users
+                List<String> selectedUserIds = new ArrayList<>(userIdsList.subList(0, drawCount));
+                List<String> remainingUserIds = new ArrayList<>(userIdsList.subList(drawCount, userIdsList.size()));
+
+                // Move selected users to selected list
+                for (String userId : selectedUserIds) {
                     UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
                         @Override
                         public void onUserLoaded(User user) {
-                            moveUserToSelectedList(user);
+                            moveUserToSelectedList(user); // Move user to selected list
                         }
 
                         @Override
@@ -371,33 +355,11 @@ public class SelectedListFragment extends Fragment {
                         }
                     });
                 }
-                notifyNotSelectedUsers(remainingUserIds);  // Notify those not selected
-            }
-                /**for (int i = 0; i < drawCount; i++) {
-                    if (!waitingUserIds.isEmpty()) {
-                        Random random = new Random();
-                        int index = random.nextInt(waitingUserIds.size());
-                        String userId = waitingUserIds.get(index);
-                        waitingUserIds.remove(index);
 
-                        UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
-                            @Override
-                            public void onUserLoaded(User user) {
-                                moveToSelectedList(user, eventId, () -> {
-                                    completedMoves[0]++;
-                                    if (completedMoves[0] == drawCount) {
-                                        refreshAllFragments();
-                                    }
-                                } );
-                            }
-                            @Override
-                            public void onUserLoadError(String error) {
-                                completedMoves[0]++;
-                            }
-                        });
-                    }
-                }
-            }**/
+                // Notify users not selected
+                notifyNotSelectedUsers(remainingUserIds);
+            }
+
             @Override
             public void onError(String error) {
                 Toast.makeText(getContext(), "Error loading waiting list: " + error, Toast.LENGTH_SHORT).show();
@@ -415,7 +377,7 @@ public class SelectedListFragment extends Fragment {
      * Moves a user from the waiting list to the selected list in Firestore.
      *
      * @param user       The user to be moved.
-     * @param onComplete Runnable executed once the move is complete.
+     * // @param onComplete Runnable executed once the move is complete.
      */
     private void moveUserToSelectedList(User user) {
         Notification inviteNotification = new Notification(
@@ -438,10 +400,11 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
-    private void moveUserToCancelledList(User user) {
+    private void sendCancelledNotif(String userDeviceId) {
         Notification cancelNotification = new Notification(
                 new Date(),
-                user.getDeviceId(),
+                // userDeviceId.getDeviceId(),
+                userDeviceId,
                 organizerId,
                 eventName,
                 "You have been removed from the event: " + eventId,
@@ -449,15 +412,37 @@ public class SelectedListFragment extends Fragment {
                 eventId,
                 eventName
         );
-        NotificationsDatabase.sendNotificationToUser(user.getDeviceId(), cancelNotification);
-        OrganizerDatabase.moveUserBetweenEventSubcollections(eventId, user.getDeviceId(), "selectedList", "cancelledList", new OrganizerDatabase.OnOperationCompleteListener() {
-            @Override
-            public void onComplete(boolean success) {
-                selectedList.remove(user);  // Remove from selected list
-                adapter.notifyDataSetChanged();
-                selectedCountTextView.setText("Selected Count: " + selectedList.size());  // Update selected count
-                // TO-DO: update their status...
+        NotificationsDatabase.sendNotificationToUser(userDeviceId, cancelNotification);
+    }
+
+    private void moveUserToCancelledList(String userDeviceId) {
+
+        // Now, move the user from selectedList to cancelledList
+        OrganizerDatabase.moveUserBetweenEventSubcollections(eventId, userDeviceId, "selectedList", "cancelledList", moveSuccess -> {
+            if (moveSuccess) {
+                // Successfully moved to cancelledList
+                // Removed user from selectedList and notify adapter
+               // for (int i = 0; i < selectedList.size(); i++) {
+                    //User user = selectedList.get(i);
+                   // if (user.getDeviceId().equals(userDeviceId)) {
+                    //    selectedList.remove(i);
+                    //    adapter.notifyItemRemoved(i);
+                    //    break;
+                 //   }
+              //  }
+             //   selectedCountTextView.setText("Selected Count: " + selectedList.size());  // Update selected count
+                loadSelectedList();
+            } else {
+                // Handle any failure during the move operation
+                Log.e("moveUserToCancelledList", "Failed to move user to cancelled list");
             }
+        });
+    }
+
+    private void updateInvitationStatus(String userDeviceId) {
+    // Update the invitationStatus for the user in the selectedList subcollection to "Rejected"
+        OrganizerDatabase.updateInvitationStatus(userDeviceId, eventId, "Rejected", success -> {
+            //implement success logic
         });
     }
 
