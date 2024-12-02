@@ -256,7 +256,6 @@ public class WaitingListFragment extends Fragment {
             notification.saveToDatabase(); // Save the notification to Firestore
         }
 
-        Toast.makeText(getContext(), "Notifications sent to unselected users.", Toast.LENGTH_SHORT).show();
     }
 
 

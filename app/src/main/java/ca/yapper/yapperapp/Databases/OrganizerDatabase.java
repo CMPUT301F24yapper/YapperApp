@@ -121,6 +121,24 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
+
+    public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
+
+        db.collection("Events")
+                .document(eventId)
+                .collection("selectedList")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("OrganizerDatabase", "User removed from Selected List.");
+                    listener.onComplete(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerDatabase", "Error removing user from Selected List: " + e.getMessage());
+                    listener.onComplete(false);
+                });
+    }
+
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
