@@ -9,8 +9,7 @@ Look to source code in Repo.
 ## 3. Code Documentation:
 
 ## 4. Test Cases:
-Our app currently does not include unit tests because: most methods do not have return variables, making them unsuitable for unit testing, & many methods are tightly integrated with Firestore, which requires interaction with a live database.
-The Unit Tests, however, are integrated with Github Actions. We will write more for our PP4 submission. In terms of UI Tests, it can be run locally.
+Our app includes unit tests, integrated with GitHub Actions, using Mockito to mock dependencies for isolated testing. We also perform UI tests with Espresso, which can be run locally on an emulator. To ensure consistent UI test results, animations must be switched off through the Developer Options in the Android emulator.
 
 ## 5. Object-Oriented Design:
 UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/01760e36-bd5d-4c13-b936-9b3d89171d41)
