@@ -79,6 +79,14 @@ public class NotificationsDatabase {
                 .update("isRead", true);
     }
 
+    public static void sendNotificationToUser(String userId, Notification notification) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Users").document(userId)
+                .collection("Notifications").add(notification)
+                .addOnSuccessListener(documentReference -> Log.d("NotificationsDB", "Notification sent successfully."))
+                .addOnFailureListener(e -> Log.e("NotificationsDB", "Error sending notification", e));
+    }
+
     public static void startNotificationListener(String deviceId, NotificationListener.NotificationCallback callback) {
         Log.d(TAG, "Starting Firestore notification listener for device: " + deviceId);
 

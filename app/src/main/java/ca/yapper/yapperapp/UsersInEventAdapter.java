@@ -1,5 +1,8 @@
 package ca.yapper.yapperapp;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 /**
  * An adapter class for displaying a list of users in a {@link RecyclerView}.
@@ -23,7 +27,6 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
     // private final Context context;
     private String eventId;  // Event context for which statuses are being loaded
     private TextView nameTextView;
-
 
     /**
      * Constructs a new {@code UsersAdapter} with the specified list of users and context.
@@ -61,8 +64,27 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
         User user = userList.get(position);
         holder.userNameTextView.setText(user.getName());
 
+        // Load profile image
+        EntrantDatabase.loadProfileImage(user.getDeviceId(), new EntrantDatabase.OnProfileImageLoadedListener() {
+            @Override
+            public void onProfileImageLoaded(String base64Image) {
+                if (base64Image != null) {
+                    byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    holder.profileImageView.setImageBitmap(bitmap);
+                } else {
+                    holder.profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            }
+            @Override
+            public void onError(String error) {
+                Log.e("onError in UsersInEventAdapter", "Error loading profile image");
+                holder.profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+            }
+        });
+
         // Fetch invitation status from Firestore dynamically
-        EntrantDatabase.getInvitationStatus(user.getDeviceId(), eventId, new EntrantDatabase.OnStatusCheckListener() {
+        OrganizerDatabase.getInvitationStatus(user.getDeviceId(), eventId, new OrganizerDatabase.OnUserStatusCheckListener() {
             @Override
             public void onStatusLoaded(String status) {
                 updateStatusIcon(holder.statusIcon, status);
@@ -118,6 +140,8 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
         TextView userNameTextView;
         ImageView statusIcon;
+        ImageView profileImageView; // Profile image view
+
         /**
          * Constructs a new {@code UsersViewHolder} with the given item view.
          *
@@ -127,6 +151,7 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
             super(itemView);
             userNameTextView = itemView.findViewById(R.id.entrant_name);
             statusIcon = itemView.findViewById(R.id.status_icon);
+            profileImageView = itemView.findViewById(R.id.profile_image); // Initialize profile image view
         }
     }
 }

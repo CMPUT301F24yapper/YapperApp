@@ -20,7 +20,11 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class EntrantDatabase {
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+    private static FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
+    }
 
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
@@ -147,18 +151,18 @@ public class EntrantDatabase {
         // Add the event with initial status
         Map<String, Object> eventData = new HashMap<>();
         eventData.put("timestamp", FieldValue.serverTimestamp());
-        eventData.put("invitationStatus", "Pending");  // Default status is "Pending"
+        // eventData.put("invitationStatus", "Pending");  // Default status is "Pending"
 
         eventDocRef.set(eventData)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("EntrantDatabase", "Event added to registeredEvents with Pending status.");
+                    Log.d("EntrantDatabase", "Event added to registeredEvents.");
                 })
                 .addOnFailureListener(e -> {
                     Log.e("EntrantDatabase", "Error adding event to registeredEvents: " + e.getMessage());
                 });
     }
 
-    public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
+   /** public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Users")
                 .document(userId)
@@ -177,7 +181,7 @@ public class EntrantDatabase {
                     Log.e("EntrantDatabase", "Error updating invitation status: " + e.getMessage());
                     listener.onComplete(false);
                 });
-    }
+    } **/
 
     public static void getEventByQRCode(String documentId, OnEventFoundListener listener) {
         db.collection("Events").document(documentId).get()
@@ -340,6 +344,46 @@ public class EntrantDatabase {
                     }
                 })
                 .addOnFailureListener(e -> listener.onError("Error retrieving image: " + e.getMessage()));
+    }
+
+    public static void moveUserBetweenUserSubcollections(String eventId, String userId, String fromSubcollection, String toSubcollection, EntrantDatabase.OnOperationCompleteListener listener) {
+        // References to the relevant documents
+        DocumentReference fromDocRef = db.collection("Users")
+                .document(userId)
+                .collection(fromSubcollection)
+                .document(eventId);
+
+        DocumentReference toDocRef = db.collection("Users")
+                .document(userId)
+                .collection(toSubcollection)
+                .document(eventId);
+
+        // Retrieve user data from the original subcollection
+        fromDocRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                Map<String, Object> userData = documentSnapshot.getData();
+
+                // Begin batch operation
+                WriteBatch batch = db.batch();
+
+                // Add user to the new subcollection
+                batch.set(toDocRef, userData);
+
+                // Remove user from the original subcollection
+                batch.delete(fromDocRef);
+
+                // Commit the batch
+                batch.commit().addOnSuccessListener(aVoid -> {
+                    Log.d("EntrantDatabase", "Successfully moved user: " + userId + " from " + fromSubcollection + " to " + toSubcollection);
+                }).addOnFailureListener(e -> {
+                    Log.e("EntrantDatabase", "Error moving user: " + e.getMessage());
+                });
+            } else {
+                Log.e("EntrantDatabase", "User not found in " + fromSubcollection);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("EntrantDatabase", "Error retrieving user: " + e.getMessage());
+        });
     }
 
     // Define an interface to handle the result when the profile image is loaded
