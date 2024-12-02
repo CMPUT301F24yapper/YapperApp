@@ -75,5 +75,21 @@ public class OrganizerActivityUITest {
         onView(withId(R.id.my_events_title)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testNavigateToCreateEditEventPage() {
+        // Navigate to Create/Edit Event Page
+        onView(withId(R.id.nav_organizer_createevent)).perform(click());
 
+        // Verify the Create/Edit Event Page title is displayed
+        onView(withId(R.id.new_event_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void testNavigateToProfilePage() {
+        // Navigate to Profile Page
+        onView(withId(R.id.nav_organizer_profile)).perform(click());
+
+        // Verify the profile image is displayed
+        onView(withId(R.id.profile_image)).check(matches(isDisplayed()));
+    }
 }
