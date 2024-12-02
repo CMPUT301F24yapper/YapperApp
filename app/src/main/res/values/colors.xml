@@ -6,4 +6,7 @@
     <color name="yapper_purple_dark">#5A2176</color>
     <color name="yapper_background">#FDE3FD</color>
     <color name="unjoin_event">#EF5B5B</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface">#000000</color>
+    <color name="background">#F5F5F5</color>
 </resources>
