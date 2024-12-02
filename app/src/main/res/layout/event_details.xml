@@ -293,7 +293,7 @@
             android:id="@+id/map_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="20dp">
 
             <!-- World Map Image -->
             <ImageView
@@ -302,7 +302,8 @@
                 android:layout_height="250dp"
                 android:src="@drawable/world_map"
                 android:contentDescription="World Map"
-                android:scaleType="centerCrop" />
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"/>
 
             <!-- Custom Overlay for Pins -->
             <ca.yapper.yapperapp.WorldMapPinsOverlay
