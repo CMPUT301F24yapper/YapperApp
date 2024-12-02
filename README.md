@@ -7,6 +7,8 @@ Our TA feedback was to better implement the testing component (more UI tests),
 Look to source code in Repo.
 
 ## 3. Code Documentation:
+Source Code contains comments at the top of each method.
+Generated Javadocs File: [Javadocs](https://drive.google.com/drive/u/4/folders/1Qoqg7wmWQTU7dWtox3jd7IVcYeWaUrmn)
 
 ## 4. Test Cases:
 Our app currently does not include unit tests because: most methods do not have return variables, making them unsuitable for unit testing, & many methods are tightly integrated with Firestore, which requires interaction with a live database.
