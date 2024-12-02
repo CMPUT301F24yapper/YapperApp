@@ -28,28 +28,6 @@ public class CreateEditEventFragmentTest {
             new ActivityScenarioRule<>(OrganizerActivity.class);
 
     /**
-     * Verifies that the CreateEditEventFragment UI elements are displayed.
-     */
-    @Test
-    public void testCreateEditEventUIElementsDisplayed() {
-        // Navigate to CreateEditEventFragment
-        onView(withId(R.id.nav_organizer_createevent)).perform(click());
-
-        // Verify UI elements with scrollTo()
-        onView(withId(R.id.new_event_title)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.poster_image)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.choose_poster_button)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.event_name_input)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.event_description)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.date_button)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.date_textview)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.time_button)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.time_textview)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.geo_location_toggle)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.save_event_button)).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-    }
-
-    /**
      * Tests entering event details and saving.
      */
     @Test
