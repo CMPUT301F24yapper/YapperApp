@@ -235,7 +235,7 @@ public class SelectedListFragment extends Fragment {
                 public void onStatusLoaded(boolean isPending) {
                     if (isPending) {
                         usersToRemove.add(user);
-                        moveUserToCancelledList(user.getDeviceId());
+                        // oveUserToCancelledList(user.getDeviceId());
                         sendCancelledNotif(user.getDeviceId());
                         updateInvitationStatus(user.getDeviceId());
                     }
