@@ -170,4 +170,16 @@ public class NotificationsDatabase {
             listenerRegistration = null;
         }
     }
+
+    public static Task<Boolean> areNotificationsEnabled(String deviceId) {
+        return FirebaseFirestore.getInstance()
+                .collection("Users")
+                .document(deviceId)
+                .get()
+                .continueWith(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) return false;
+                    DocumentSnapshot document = task.getResult();
+                    return document.exists() && Boolean.TRUE.equals(document.getBoolean("notificationsEnabled"));
+                });
+    }
 }

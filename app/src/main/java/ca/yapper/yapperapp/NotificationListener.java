@@ -58,10 +58,6 @@ public class NotificationListener {
         });
     }
 
-    public void stopListening() {
-        NotificationsDatabase.stopNotificationListener();
-    }
-
     /**
      * This function displays a notification
      *
@@ -70,17 +66,21 @@ public class NotificationListener {
      */
     @SuppressLint("MissingPermission")
     private void showNotification(String title, String message) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.baseline_notifications_24)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationsDatabase.areNotificationsEnabled(deviceId).addOnCompleteListener(task -> {
+            if (task.isSuccessful() && Boolean.TRUE.equals(task.getResult())) {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.baseline_notifications_24)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        int notificationId = (int) System.currentTimeMillis();
-        notificationManager.notify(notificationId, builder.build());
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                int notificationId = (int) System.currentTimeMillis();
+                notificationManager.notify(notificationId, builder.build());
+            }
+        });
     }
-    
+
     public interface NotificationCallback {
         void onNotification(String title, String message);
     }
