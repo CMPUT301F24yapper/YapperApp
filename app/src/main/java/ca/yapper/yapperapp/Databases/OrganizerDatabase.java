@@ -362,28 +362,16 @@ public class OrganizerDatabase {
      * @param listener handles the outcome of the operation
      */
     public static void changeUserStatusForEvent(String eventId, String userId, String status, OnOperationCompleteListener listener) {
-        // change the joinedEvents subcollection field invitationStatus
-        // Get reference to the user's document in the "Users" collection
-        DocumentReference userDocRef = db.collection("Users").document(userId);
-        CollectionReference joinedEventsRef = userDocRef.collection("joinedEvents");
-        DocumentReference eventDocRef = joinedEventsRef.document(eventId);
-
-        eventDocRef.set(new HashMap<String, Object>() {{
-                    put("invitationStatus", status);
-                }}, SetOptions.merge())  // Use SetOptions.merge() to only update the status field
+        db.collection("Events").document(eventId)
+                .collection("selectedList").document(userId)
+                .update("invitationStatus", status) // Ensure this matches your Firestore schema.
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("Firestore", "Field added/updated successfully.");
-                    // Notify the listener about the success
-                    if (listener != null) {
-                        listener.onComplete(true);  // Operation was successful
-                    }
+                    Log.i("FirestoreUpdate", "Successfully updated status for user: " + userId);
+                    listener.onComplete(true);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error updating field", e);
-                    // Notify the listener about the failure
-                    if (listener != null) {
-                        listener.onComplete(false);  // Operation failed
-                    }
+                    Log.e("FirestoreUpdateError", "Failed to update status for user: " + userId, e);
+                    listener.onComplete(false);
                 });
     }
 

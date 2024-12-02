@@ -81,7 +81,6 @@ public class EventDetailsFragment extends Fragment {
     private ImageView worldmap;
     private Button customNotificationButton;
 
-
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
      * It also sets visibility for buttons based on the activity (Entrant or Organizer).
@@ -239,7 +238,8 @@ public class EventDetailsFragment extends Fragment {
             @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
-                    setButtonState("Unjoin", R.color.unjoin_event, false);
+                    setButtonState("Unjoin", R.color.unjoin_event, true);
+                    joinButton.setOnClickListener(v -> handleJoinButtonClick());
                 }
                 else {
                     checkEventDates();  // then check event dates
@@ -267,7 +267,6 @@ public class EventDetailsFragment extends Fragment {
 
             if ((regDeadlineDate != null && regDeadlineDate.before(currentDate)) ||
                     (eventDate != null && eventDate.before(currentDate))) {
-                // setButtonState("Event Passed", Color.RED, false);
                 setButtonState("Event Passed", R.color.unjoin_event, false);
             }
             else {
@@ -292,7 +291,6 @@ public class EventDetailsFragment extends Fragment {
                 if (finalEvent.getWaitListCapacity() != null
                         && finalEvent.getWaitListCapacity() != 0
                         && (finalEvent.getWaitListCapacity() - waitListCount) <= 0) {
-                    // setButtonState("Wait List Full", Color.GRAY, false);
                     setButtonState("Wait List Full", R.color.unjoin_event, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
@@ -466,7 +464,7 @@ public class EventDetailsFragment extends Fragment {
             if (getContext() == null) return;
 
             if (success) {
-                setButtonState("Unjoin", R.color.unjoin_event, false);
+                setButtonState("Unjoin", R.color.unjoin_event, true);
                 Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
@@ -498,7 +496,6 @@ public class EventDetailsFragment extends Fragment {
             }
         });
     }
-
 
     /**
      * This function obtains the users location(coordinates) after requesting permission from them.
