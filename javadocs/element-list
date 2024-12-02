@@ -1,0 +1,11 @@
+ca.yapper.yapperapp
+ca.yapper.yapperapp.Activities
+ca.yapper.yapperapp.Adapters
+ca.yapper.yapperapp.AdminFragments
+ca.yapper.yapperapp.AdminFragments.SearchFragments
+ca.yapper.yapperapp.Databases
+ca.yapper.yapperapp.EntrantFragments
+ca.yapper.yapperapp.EntrantFragments.EventListFragments
+ca.yapper.yapperapp.OrganizerFragments
+ca.yapper.yapperapp.OrganizerFragments.ParticipantListFragments
+ca.yapper.yapperapp.UMLClasses
