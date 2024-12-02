@@ -733,7 +733,6 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
-}
 
     public static Task<Boolean> checkQRCodeExists(String eventId) {
         return db.collection("Events")
