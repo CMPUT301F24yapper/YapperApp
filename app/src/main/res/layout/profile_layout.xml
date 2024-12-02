@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:clipToPadding="false"
+    android:paddingBottom="8dp">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -32,7 +34,9 @@
                     android:layout_height="match_parent"
                     android:contentDescription="Profile Picture"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_profile_placeholder" />
+                    android:src="@drawable/ic_profile_placeholder"
+                    android:background="@drawable/circular_image"
+                    android:clipToOutline="true" />
             </FrameLayout>
 
             <LinearLayout
@@ -65,6 +69,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginTop="-24dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginHorizontal="16dp"
             android:padding="16dp"
             android:background="@drawable/rounded_card_background"
@@ -121,6 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
             android:orientation="vertical"
             android:padding="16dp"
             android:background="@drawable/rounded_card_background"
