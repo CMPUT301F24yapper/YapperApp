@@ -23,8 +23,12 @@ import ca.yapper.yapperapp.UMLClasses.User;
  * Class holding all the user class related functions that interact with the database.
  */
 public class UserDatabase {
-  
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    private static FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
+    }
 
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
@@ -84,8 +88,8 @@ public class UserDatabase {
 
         User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut);
 
-        Map<String, Object> userData = prepareUserData(user);
-        // TO CHANGE LATER: MISSED OUT EVENTS BEING EVERY EVENT IN DATABASE (SETUP):
+        Map<String, Object> userData = prepareUserData(user); // Step 3: Prepare Firestore Data
+
         TaskCompletionSource<User> tcs = new TaskCompletionSource<>();
         FirestoreUtils.getFirestoreInstance().collection("Users")
                 .document(deviceId)
@@ -96,9 +100,7 @@ public class UserDatabase {
                             .addOnFailureListener(tcs::setException);
                 })
                 .addOnFailureListener(tcs::setException);
-
         return tcs.getTask();
-        // return saveUserToFirestore(deviceId, user, userData);
     }
 
 
@@ -128,7 +130,6 @@ public class UserDatabase {
         });
     }
 
-
     /**
      * This function provides user input validation, for the device id, email and name.
      *
@@ -136,7 +137,7 @@ public class UserDatabase {
      * @param email The user profile email
      * @param name The user profile name
      */
-    private static void validateUserInputs(String deviceId, String email, String name) {
+    public static void validateUserInputs(String deviceId, String email, String name) {
         if (deviceId == null || deviceId.isEmpty()) {
             throw new IllegalArgumentException("Device ID cannot be null or empty");
         }
@@ -147,7 +148,6 @@ public class UserDatabase {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
     }
-
 
     /**
      * This function creates a user object using the given data.
@@ -163,12 +163,11 @@ public class UserDatabase {
      *                   recieve any notifications)
      * @return a new user object created from the given data
      */
-    private static User createUserObject(String deviceId, String email, boolean isAdmin, boolean isEntrant,
-                                         boolean isOrganizer, String name, String phoneNum, boolean isOptedOut) {
+    public static User createUserObject(String deviceId, String email, boolean isAdmin, boolean isEntrant,
+                                        boolean isOrganizer, String name, String phoneNum, boolean isOptedOut) {
         return new User(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum,
                 isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
-
 
     /**
      * This function obtains user data from a user object and converts it into a map of the data
@@ -176,7 +175,7 @@ public class UserDatabase {
      * @param user a user object
      * @return a map of the users data
      */
-    private static Map<String, Object> prepareUserData(User user) {
+    public static Map<String, Object> prepareUserData(User user) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("deviceId", user.getDeviceId());
         userData.put("entrantEmail", user.getEmail());
@@ -191,7 +190,6 @@ public class UserDatabase {
 
         return userData;
     }
-
 
     /**
      * This function takes user data and saves it to the FireStore database
@@ -216,7 +214,6 @@ public class UserDatabase {
                 });
         return tcs.getTask();
     }
-
 
     /**
      * This function updates a given field in the users document in the database.
@@ -256,7 +253,6 @@ public class UserDatabase {
                 .addOnFailureListener(e -> listener.onError("Error updating field: " + e.getMessage()));  // Update failed
     }
 
-
     /**
      * This function is for validating a field value
      *
@@ -264,7 +260,7 @@ public class UserDatabase {
      * @param value the value we are validating
      * @return returns true if the value in the field is valid
      */
-    private static boolean validateFieldValue(String field, Object value) {
+    public static boolean validateFieldValue(String field, Object value) {
         switch (field) {
             case "entrantEmail":
                 return value instanceof String && isValidEmail((String) value);
@@ -279,17 +275,15 @@ public class UserDatabase {
         }
     }
 
-
     /**
      * Checks if the given email is valid
      *
      * @param email the users email
      * @return true if email is a valid format
      */
-    private static boolean isValidEmail(String email) {
+    public static boolean isValidEmail(String email) {
         return email != null && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
     }
-
 
     /**
      * Checks if the given phone is valid
@@ -297,10 +291,9 @@ public class UserDatabase {
      * @param phone the users phone number
      * @return true if phone is a valid format
      */
-    private static boolean isValidPhone(String phone) {
+    public static boolean isValidPhone(String phone) {
         return phone != null && phone.matches("^\\+?[0-9]{7,15}$");
     }
-
 
     /**
      * Checks if the users profile fields are valid
@@ -314,7 +307,6 @@ public class UserDatabase {
         return validFields.contains(field);
     }
 
-
     /**
      * Checks if a user is an admin based on their device ID.
      *
@@ -325,7 +317,6 @@ public class UserDatabase {
         return FirestoreUtils.checkDocumentField("Users", deviceId, "Admin");
     }
 
-
     /**
      * Interface for location saving success and errors associated with it
      */
@@ -333,7 +324,6 @@ public class UserDatabase {
         void onSuccess();
         void onError(String error);
     }
-
 
     /**
      * This function saves the users location to the database, for a given event.

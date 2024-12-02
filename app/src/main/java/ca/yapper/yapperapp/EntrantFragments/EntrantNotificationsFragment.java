@@ -27,7 +27,7 @@ public class EntrantNotificationsFragment extends Fragment {
 
     private RecyclerView notificationsRecyclerView;
     private NotificationAdapter notificationAdapter;
-    private List<Notification> notificationList;
+    public List<Notification> notificationList;
     private String userDeviceId;
     private TextView noNotificationsText;
 
@@ -89,12 +89,10 @@ public class EntrantNotificationsFragment extends Fragment {
             }
         });
     }
-
-
     /**
      * This function updates the UI depending on if a user has notifications or not
      */
-    private void toggleEmptyState() {
+    public void toggleEmptyState() {
         View noNotificationsLayout = getView().findViewById(R.id.no_notifications_layout);
 
         if (notificationList.isEmpty()) {
@@ -105,7 +103,4 @@ public class EntrantNotificationsFragment extends Fragment {
             notificationsRecyclerView.setVisibility(View.VISIBLE);
         }
     }
-
-
-
 }

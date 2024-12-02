@@ -43,6 +43,7 @@ public class WaitingListFragment extends Fragment {
     private UsersAdapter adapter;
     private List<User> usersWaitingList;
     private String eventId;
+    private String eventName;
     private Button drawButton;
     private int eventCapacity;
     private String organizerId;
@@ -83,7 +84,8 @@ public class WaitingListFragment extends Fragment {
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
-            loadEventCapacity();
+            loadEventDetails();
+            //loadEventCapacity();
             loadWaitingList();
         }
 
@@ -95,17 +97,19 @@ public class WaitingListFragment extends Fragment {
     /**
      * Loads the capacity of the event from Firestore, setting the maximum number of participants allowed.
      */
-    private void loadEventCapacity() {
-        OrganizerDatabase.loadEventCapacity(eventId, new OrganizerDatabase.OnEventCapLoadedListener() {
-            @Override
-            public void onCapacityLoaded(int capacity) {
-                eventCapacity = capacity;
-            }
 
+    private void loadEventDetails() {
+        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(getContext(), "Error loading capacity: " + errorMessage, Toast.LENGTH_SHORT).show();    }
-    });
+            public void onEventLoaded(Event event) {
+                eventName = event.getName();
+                eventCapacity = event.getCapacity();
+            }
+            @Override
+            public void onEventLoadError(String message) {
+                // implement error logic
+            }
+        });
     }
 
 
@@ -143,7 +147,6 @@ public class WaitingListFragment extends Fragment {
                             usersWaitingList.add(user);
                             adapter.notifyDataSetChanged();
                         }
-
                         @Override
                         public void onUserLoadError(String error) {
                             if (getContext() == null) return;
@@ -178,7 +181,6 @@ public class WaitingListFragment extends Fragment {
      * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
      */
     private void drawMultipleApplicants() {
-        loadEventCapacity(); // Ensure eventCapacity is updated
         Log.e("draw multiple applicants", "eventCapacity: " + eventCapacity);
         OrganizerDatabase.getSelectedListCount(eventId, new OrganizerDatabase.OnSelectedListLoadCountListener() {
             @Override
@@ -198,29 +200,19 @@ public class WaitingListFragment extends Fragment {
                         Random random = new Random();
                         int index = random.nextInt(usersWaitingList.size());
                         User selectedUser = usersWaitingList.remove(index);
-                        // load Notification
-                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
-                            @Override
-                            public void onEventLoaded(Event event) {
-                                // Create notification with event details
-                                Notification notification = new Notification(
-                                        new Date(),
-                                        selectedUser.getDeviceId(), // Recipient's device ID
-                                        organizerId,
-                                        event.getName(),  // Use the event name as the title
-                                        "You have been selected from the waiting list for the event: " + event.getName(),
-                                        "Selection",
-                                        event.getDocumentId(),
-                                        event.getName()
-                                );
-                                notification.setEventId(event.getDocumentId()); // Set the event ID
-                                notification.saveToDatabase(); // Save the notification to Firestore
-                            }
-                            @Override
-                            public void onEventLoadError(String error) {
-                                // implement error logic
-                            }
-                        });
+                        // Create notification with event details
+                        Notification notification = new Notification(
+                                new Date(),
+                                selectedUser.getDeviceId(), // Recipient's device ID
+                                organizerId,
+                                eventName,  // Use the event name as the title
+                                "You have been selected from the waiting list for the event: " + eventName,
+                                "Selection",
+                                eventId,
+                                eventName
+                        );
+                        notification.setEventId(eventId); // Set the event ID
+                        notification.saveToDatabase(); // Save the notification to Firestore
 
                         OrganizerDatabase.moveUserToSelectedList(eventId, selectedUser.getDeviceId(),
                                 success -> {
@@ -236,7 +228,6 @@ public class WaitingListFragment extends Fragment {
                     }
                 }
             }
-
             @Override
             public void onError(String e) {
                 Toast.makeText(getContext(), "Failed to fetch selected list count", Toast.LENGTH_SHORT).show();

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Locale;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
 /**
@@ -164,21 +163,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             Toast.makeText(context, "Missing Event or User ID.", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        OrganizerDatabase.addUserToCancelledList(eventId, userId, success -> {
+        //confirm still works
+        OrganizerDatabase.moveUserBetweenEventSubcollections(eventId, userId, "selectedList", "cancelledList", success -> {
             if (success) {
-                OrganizerDatabase.removeUserFromSelectedList(eventId, userId, removed -> {
-                    if (removed) {
-                        markNotificationAsRead(holder, notification, position);
-                        Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context, "Error removing from Selected List", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                markNotificationAsRead(holder, notification, position);
+                Toast.makeText(context, "Rejected and added to Cancelled List", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(context, "Error adding to Cancelled List", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error removing from Selected List to Cancelled List", Toast.LENGTH_SHORT).show();
             }
-        });
+            });
     }
 
 

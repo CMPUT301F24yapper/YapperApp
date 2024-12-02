@@ -10,10 +10,32 @@
         android:id="@+id/qr_code_view"
         android:layout_width="212dp"
         android:layout_height="223dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="128dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.19999999"
         tools:srcCompat="@tools:sample/avatars" />
+
+
+    <Button
+        android:id="@+id/share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="32dp"
+        android:text="Share QR Code"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/qr_code_view" />
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="Save QR Code"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/qr_code_view" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

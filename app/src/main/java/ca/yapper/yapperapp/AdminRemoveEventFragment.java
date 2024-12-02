@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -122,8 +124,7 @@ public class AdminRemoveEventFragment extends Fragment {
     private void setupButtons() {
         removeEventButton.setOnClickListener(v -> handleEventDeletion());
         removeQRDataButton.setOnClickListener(v -> handleQRDataRemoval());
-        changePicture.setOnClickListener(v -> handleChangePicture());
-        removePicture.setOnClickListener(v -> handleRemovePicture());
+        removePicture.setOnClickListener(v -> handlePosterRemoval());
     }
 
 
@@ -142,19 +143,24 @@ public class AdminRemoveEventFragment extends Fragment {
     }
 
     private void handleQRDataRemoval() {
-//        AdminDatabase.removeQRCodeData(eventId).addOnSuccessListener(aVoid -> {
-//            // Optionally show a success message
-//        });
+        AdminDatabase.removeQRCodeData(eventId)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "QR code data removed successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to remove QR code data", Toast.LENGTH_SHORT).show();
+                });
     }
 
-    private void handleChangePicture() {
-        // Similar to profile picture change
-        // This would typically open an image picker
-    }
 
-    private void handleRemovePicture() {
-//        AdminDatabase.removeEventImage(eventId).addOnSuccessListener(aVoid -> {
-//            eventImage.setImageResource(R.drawable.event_image);
-//        });
+    private void handlePosterRemoval() {
+        AdminDatabase.removeEventPoster(eventId)
+                .addOnSuccessListener(aVoid -> {
+                    eventImage.setImageResource(R.drawable.event_image);
+                    Toast.makeText(getContext(), "Event poster removed successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to remove event poster", Toast.LENGTH_SHORT).show();
+                });
     }
 }

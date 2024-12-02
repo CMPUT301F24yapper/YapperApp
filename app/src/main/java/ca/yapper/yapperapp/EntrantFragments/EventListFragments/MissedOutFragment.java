@@ -42,7 +42,6 @@ public class MissedOutFragment extends Fragment {
     private TextView emptyTextView;
     private ImageView emptyImageView;
 
-
     /**
      * Inflates the fragment layout and initializes Firestore, RecyclerView, and adapter components.
      * Loads the user's missed events from Firestore.
@@ -63,7 +62,6 @@ public class MissedOutFragment extends Fragment {
         eventList = new ArrayList<>();
         adapter = new EventsAdapter(eventList, getContext());
         recyclerView.setAdapter(adapter);
-        // db = FirebaseFirestore.getInstance();
 
         emptyTextView = view.findViewById(R.id.emptyTextView);
         emptyImageView = view.findViewById(R.id.emptyImageView);
@@ -73,65 +71,12 @@ public class MissedOutFragment extends Fragment {
         return view;
     }
 
-
-    /**
-     * Loads the user's missed events from the "missedOutEvents" subcollection in Firestore.
-     * Updates the RecyclerView adapter with the retrieved events.
-     */
-    /** private void loadEventsFromFirebase() {
-        if (userDeviceId == null) {
-            Toast.makeText(getContext(), "Error: Unable to get user ID", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        db.collection("Users")
-                .document(userDeviceId)
-                .collection("missedOutEvents")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventList.clear();
-
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No missed events found", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventId = document.getId();
-
-                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
-                            @Override
-                            public void onEventLoaded(Event event) {
-                                if (getContext() == null) return;
-                                eventList.add(event);
-                                adapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onEventLoadError(String error) {
-                                if (getContext() == null) return;
-                                Log.e("MissedEvents", "Error loading event " + eventId + ": " + error);
-                            }
-                        });
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(),
-                                "Error loading missed events: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }**/
-
-
     /**
      * This function is used to see events for the 3rd tab at the top of the entrant home page, along with change the
      * page depending on if the page is empty or not.
      */
     private void loadEventsFromFirebaseDebug() {
         EntrantDatabase.loadEventsList(userDeviceId, EntrantDatabase.EventListType.MISSED, new EntrantDatabase.OnEventsLoadedListener() {
-
                     /**
                      * This function updates the UI to display/remove messages for empty pages
                      * @param events a list of events
@@ -160,57 +105,5 @@ public class MissedOutFragment extends Fragment {
                         Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
                     }
                 });
-            /**db.collection("Events")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    eventList.clear();
-
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        // Show empty state views
-                        recyclerView.setVisibility(View.GONE);
-                        emptyTextView.setVisibility(View.VISIBLE);
-                        emptyImageView.setVisibility(View.VISIBLE);
-                        return;
-                    }
-
-                    // Hide empty state views and show the RecyclerView
-                    recyclerView.setVisibility(View.VISIBLE);
-                    emptyTextView.setVisibility(View.GONE);
-                    emptyImageView.setVisibility(View.GONE);
-
-
-                    // PREVIOUS CODE
-                    if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(getContext(), "No events found", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    //*********************************
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        String eventId = document.getId();
-
-                        OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
-                            @Override
-                            public void onEventLoaded(Event event) {
-                                if (getContext() == null) return;
-                                eventList.add(event);
-                                adapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onEventLoadError(String error) {
-                                if (getContext() == null) return;
-                                Log.e("AllEvents", "Error loading event " + eventId + ": " + error);
-                            }
-                        });
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(),
-                                "Error loading events: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }**/
     }
 }

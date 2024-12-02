@@ -57,7 +57,6 @@ public class JoinedEventsFragment extends Fragment {
         emptyTextView = view.findViewById(R.id.emptyTextView);
         emptyImageView = view.findViewById(R.id.emptyImageView);
 
-
         loadEvents();
 
         return view;
