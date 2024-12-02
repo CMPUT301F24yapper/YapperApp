@@ -20,8 +20,15 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
-  
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    private static FirebaseFirestore db;
+
+    private static FirebaseFirestore getDb() {
+        if (db == null) {
+            db = FirestoreUtils.getFirestoreInstance();
+        }
+        return db;
+    }
 
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
@@ -118,7 +125,7 @@ public class UserDatabase {
     }
 
 
-    private static void validateUserInputs(String deviceId, String email, String name) {
+    public static void validateUserInputs(String deviceId, String email, String name) {
         if (deviceId == null || deviceId.isEmpty()) {
             throw new IllegalArgumentException("Device ID cannot be null or empty");
         }
@@ -133,8 +140,8 @@ public class UserDatabase {
     /**
      * Creates a User object based on the provided details.
      */
-    private static User createUserObject(String deviceId, String email, boolean isAdmin, boolean isEntrant,
-                                         boolean isOrganizer, String name, String phoneNum, boolean isOptedOut) {
+    public static User createUserObject(String deviceId, String email, boolean isAdmin, boolean isEntrant,
+                                        boolean isOrganizer, String name, String phoneNum, boolean isOptedOut) {
         return new User(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum,
                 isOptedOut, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
@@ -142,7 +149,7 @@ public class UserDatabase {
     /**
      * Prepares a Map of user data for Firestore.
      */
-    private static Map<String, Object> prepareUserData(User user) {
+    public static Map<String, Object> prepareUserData(User user) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("deviceId", user.getDeviceId());
         userData.put("entrantEmail", user.getEmail());
@@ -207,7 +214,7 @@ public class UserDatabase {
                 .addOnFailureListener(e -> listener.onError("Error updating field: " + e.getMessage()));  // Update failed
     }
 
-    private static boolean validateFieldValue(String field, Object value) {
+    public static boolean validateFieldValue(String field, Object value) {
         switch (field) {
             case "entrantEmail":
                 return value instanceof String && isValidEmail((String) value);
@@ -222,11 +229,11 @@ public class UserDatabase {
         }
     }
 
-    private static boolean isValidEmail(String email) {
+    public static boolean isValidEmail(String email) {
         return email != null && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
     }
 
-    private static boolean isValidPhone(String phone) {
+    public static boolean isValidPhone(String phone) {
         return phone != null && phone.matches("^\\+?[0-9]{7,15}$");
     }
 
