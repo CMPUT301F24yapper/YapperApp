@@ -2,9 +2,11 @@ package ca.yapper.yapperapp;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
@@ -78,6 +80,10 @@ public class AdminActivityUITest {
         onView(withId(R.id.search_bar)).check(matches(isDisplayed()));
     }
 
-
-
+    @Test
+    public void testLongPressOnProfileNavigation() {
+        onView(withId(R.id.nav_admin_profile)).perform(longClick());
+        onView(withText("Switch to Entrant")).check(matches(isDisplayed()));
+        onView(withText("Switch to Organizer")).check(matches(isDisplayed()));
+    }
 }
