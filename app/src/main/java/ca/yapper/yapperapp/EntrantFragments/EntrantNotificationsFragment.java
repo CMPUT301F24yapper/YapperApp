@@ -20,6 +20,9 @@ import ca.yapper.yapperapp.NotificationAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
+/**
+ * Fragment that displays the notification page for the entrant
+ */
 public class EntrantNotificationsFragment extends Fragment {
 
     private RecyclerView notificationsRecyclerView;
@@ -28,6 +31,15 @@ public class EntrantNotificationsFragment extends Fragment {
     private String userDeviceId;
     private TextView noNotificationsText;
 
+    /**
+     *
+     * Inflates the fragments layout, sets up views, and starts showing the users notifications
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,8 +59,17 @@ public class EntrantNotificationsFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function updates the UI for the notifications page, depending on if the user has any notifications
+     */
     private void loadNotifications() {
         NotificationsDatabase.loadNotifications(userDeviceId, new NotificationsDatabase.OnNotificationsLoadedListener() {
+            /**
+             * This function updates the UI when given notifications
+             *
+             * @param notifications a list of the users notifications
+             */
             @Override
             public void onNotificationsLoaded(List<Notification> notifications) {
                 notificationList.clear();
@@ -57,12 +78,20 @@ public class EntrantNotificationsFragment extends Fragment {
                 toggleEmptyState();
             }
 
+            /**
+             * This function prints an error message in the log
+             *
+             * @param error a given error message
+             */
             @Override
             public void onError(String error) {
                 Log.e("NotificationsError", error);
             }
         });
     }
+    /**
+     * This function updates the UI depending on if a user has notifications or not
+     */
     public void toggleEmptyState() {
         View noNotificationsLayout = getView().findViewById(R.id.no_notifications_layout);
 

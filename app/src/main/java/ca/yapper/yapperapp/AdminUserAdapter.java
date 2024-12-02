@@ -18,15 +18,34 @@ import java.util.List;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * This is the adapter for the users page that admins can browse
+ */
 public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.UserViewHolder> {
     private final List<User> userList;
     private final Context context;
 
+
+    /**
+     * This is the constructor for the adapter
+     *
+     * @param userList a list of users
+     * @param context environmental data from the phone system
+     */
     public AdminUserAdapter(List<User> userList, Context context) {
         this.userList = userList;
         this.context = context;
     }
 
+
+    /**
+     * This function inflates a layout and creates a new view for a user
+     *
+     * @param parent The parent view group for the new view
+     * @param viewType The view type
+     *
+     * @return the new view
+     */
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -34,6 +53,13 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.User
         return new UserViewHolder(view);
     }
 
+
+    /**
+     * This function changes the fragment depending on what user item in the list was clicked
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param position index of item in list
+     */
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
@@ -74,11 +100,21 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.User
         });
     }
 
+
+    /**
+     * Returns the size of the list that displays the events
+     *
+     * @return size of the user list
+     */
     @Override
     public int getItemCount() {
         return userList.size();
     }
 
+
+    /**
+     * ViewHolder used for the user data
+     */
     static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView profileName;
         ImageView profileImage;

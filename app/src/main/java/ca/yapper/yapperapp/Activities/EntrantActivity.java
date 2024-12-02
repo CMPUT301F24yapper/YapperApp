@@ -33,6 +33,7 @@ public class EntrantActivity extends AppCompatActivity {
     //private CollectionReference usersRef;
     private String deviceId;
 
+
     /**
      * Initializes the activity, setting up the layout and the BottomNavigationView for navigating
      * between different sections: Home, QR Scanner, Notifications, and Profile.

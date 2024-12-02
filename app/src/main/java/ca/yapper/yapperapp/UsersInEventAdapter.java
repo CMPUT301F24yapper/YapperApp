@@ -28,6 +28,7 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
     private String eventId;  // Event context for which statuses are being loaded
     private TextView nameTextView;
 
+
     /**
      * Constructs a new {@code UsersAdapter} with the specified list of users and context.
      *
@@ -38,6 +39,8 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
         this.userList = userList;
         this.eventId = eventId;
     }
+
+
     /**
      * Creates a new {@link UsersViewHolder} for the specified {@code ViewGroup}.
      *
@@ -52,6 +55,7 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
                 .inflate(R.layout.event_participants_item, parent, false);
         return new UsersInEventAdapter.UsersViewHolder(view);
     }
+
 
     /**
      * Binds the user data to the provided {@link UsersViewHolder}.
@@ -108,6 +112,13 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
         });
     }
 
+
+    /**
+     * This function updates user icons for displaying pending status'
+     *
+     * @param statusIcon an icon displaying user status
+     * @param status the status of the user
+     */
     private void updateStatusIcon(ImageView statusIcon, String status) {
         if ("Accepted".equalsIgnoreCase(status)) {
             statusIcon.setImageResource(R.drawable.ic_check_circle);  // Green checkmark
@@ -125,6 +136,7 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
         }
     }
 
+
     /**
      * Returns the total number of users in the list.
      *
@@ -134,6 +146,8 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
     public int getItemCount() {
         return userList.size();
     }
+
+
     /**
      * A {@link RecyclerView.ViewHolder} that holds the views for each user item.
      */

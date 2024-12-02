@@ -12,15 +12,34 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
+/**
+ * This is the adapter for the event page that admins can browse
+ */
 public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
     private final List<Event> eventList;
     private final Context context;
 
+
+    /**
+     * This is the constructor for the adapter
+     *
+     * @param eventList an event list for the adapter
+     * @param context environmental data from the system
+     */
     public AdminEventAdapter(List<Event> eventList, Context context) {
         this.eventList = eventList;
         this.context = context;
     }
 
+
+    /**
+     * This function inflates a layout and creates a new view for an event
+     *
+     * @param parent The parent view group for the new view
+     * @param viewType The view type
+     *
+     * @return the new view
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -28,6 +47,13 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         return new EventViewHolder(view);
     }
 
+
+    /**
+     * This function changes the fragment depending on what event item in the list was clicked
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param position index of item in list
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventList.get(position);
@@ -49,11 +75,21 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         });
     }
 
+
+    /**
+     * Returns the size of the list that displays the events
+     *
+     * @return size of the event list
+     */
     @Override
     public int getItemCount() {
         return eventList.size();
     }
 
+
+    /**
+     * ViewHolder used for the event data
+     */
     static class EventViewHolder extends RecyclerView.ViewHolder {
         TextView eventTitle;
         TextView eventDate;

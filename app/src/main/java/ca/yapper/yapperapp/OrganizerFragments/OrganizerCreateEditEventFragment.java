@@ -153,6 +153,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
      */
 
     //---------------------------------------Initialization--------------------------------------------------------
+
+    /**
+     * This function initializes the UI elements to create an event
+     *
+     * @param view the parent view
+     */
     private void initializeFields(View view) {
         eventNameEditText = view.findViewById(R.id.event_name_input);
         eventDescriptionEditText = view.findViewById(R.id.event_description);
@@ -184,6 +190,11 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 //--------------------------------------IMage-----------------------------------------------------------
 
+    /**
+     * This function sets up the button that allows users to upload a custom poster for their event
+     *
+     * @param view the parent view
+     */
     private void setupChoosePosterButton(View view) {
         Button choosePosterButton = view.findViewById(R.id.choose_poster_button);
         choosePosterButton.setOnClickListener(v -> {
@@ -199,6 +210,14 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+    /**
+     * This function deals with the result from an activity
+     *
+     * @param requestCode The integer request code
+     * @param resultCode The integer result code
+     * @param data An Intent
+     *
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -211,6 +230,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         }
     }
 
+    /**
+     * This function converts a poster to a bitmap and compresses, then stores it.
+     *
+     * @param posterUri Value of the poster to be stored
+     * @param listener handles the outcome of the operation
+     */
     private void uploadPosterImageAsBase64(Uri posterUri, OnOperationCompleteListener listener) {
         if (posterUri == null) {
             listener.onComplete(true); // No image to upload, continue saving other data
@@ -227,7 +252,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             byte[] byteArray = outputStream.toByteArray();
 
             // Convert to Base64
-            viewModel.posterImageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT); // Save Base64 in ViewModel
+            viewModel.posterImageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
             listener.onComplete(true);
         } catch (Exception e) {
@@ -238,6 +263,11 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
 
     //------------------------------------Time Picker----------------------------------------------------------
+
+
+    /**
+     * This function displays the pop up for a user to pick a date
+     */
     private void openDatePicker() {
         Calendar calendar = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
@@ -250,11 +280,15 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
-        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis()); // Disable past dates
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         datePickerDialog.show();
 
     }
 
+
+    /**
+     * This function displays the pop up for a user to pick a time
+     */
     private void openTimePicker() {
         Calendar calendar = Calendar.getInstance();
         new TimePickerDialog(getContext(),
@@ -270,6 +304,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         ).show();
     }
 
+
+    /**
+     * This function displays the pop up for a user to pick a deadline
+     */
     private void openRegDeadlinePicker() {
         Calendar calendar = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
@@ -288,6 +326,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
     //------------------------------------DataBase Operation-------------------------------------------------
 
+
+    /**
+     * This function obtains the details for an event, and updates UI values
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     */
     private void loadEventDetails(String eventId) {
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
@@ -296,7 +340,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 if (!TextUtils.isEmpty(regDeadline)) {
                     regDeadlineTextView.setText(regDeadline);
                 } else {
-                    regDeadlineTextView.setText(""); // Clear the field if no deadline
+                    regDeadlineTextView.setText("");
                 }
 
                 eventNameEditText.setText(event.getName());
@@ -317,24 +361,24 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 if (dateTime != null && dateTime.contains(" ")) {
                     try {
                         String[] dateTimeParts = dateTime.split(" ");
-                        selectedDate = dateTimeParts[0]; // Extract date
-                        selectedTime = dateTimeParts[1]; // Extract time
+                        selectedDate = dateTimeParts[0];
+                        selectedTime = dateTimeParts[1];
 
-                        dateTextView.setText(selectedDate); // Populate UI
-                        timeTextView.setText(selectedTime); // Populate UI
+                        dateTextView.setText(selectedDate);
+                        timeTextView.setText(selectedTime);
                     } catch (Exception e) {
                         selectedDate = null;
                         selectedTime = null;
-                        dateTextView.setText(""); // Clear field
-                        timeTextView.setText(""); // Clear field
+                        dateTextView.setText("");
+                        timeTextView.setText("");
                         Log.e("EventDetailsFragment", "Failed to parse date and time: " + e.getMessage());
                     }
                 } else {
                     Log.w("EventDetailsFragment", "dateTime is null or not formatted correctly.");
                     selectedDate = null;
                     selectedTime = null;
-                    dateTextView.setText(""); // Clear field
-                    timeTextView.setText(""); // Clear field
+                    dateTextView.setText("");
+                    timeTextView.setText("");
                 }
 
                 // Load the poster image
@@ -354,6 +398,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function saves an event based on what is happening to it, or it updates the event.
+     */
     private void saveOrUpdateEvent() {
         saveEventButton.setEnabled(false);
 
@@ -386,6 +434,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function contains the event saving process
+     */
     private void processEventSave() {
         if (!validateInputs()) {
             return;
@@ -445,6 +497,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function creates an event in the database with all the relevant information
+     */
     private void createEvent() {
         if (!validateInputs()) return;
 
@@ -495,6 +551,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function changes the fragment to the home fragment
+     */
     private void navigateToHome() {
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new OrganizerHomeFragment())
@@ -502,6 +562,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
 
+    /**
+     * This function prompts the user for facility details in the situation where they are missing required fields
+     */
     private void promptAddFacilityDetails() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Missing Facility Details")
@@ -523,6 +586,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
 
+    /**
+     * This function updates event details in the database
+     */
     private void updateEvent() {
         if (!validateInputs()) return;
 
@@ -564,7 +630,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         });
     }
 
-    // Helper to validate input fields
+
+    /**
+     * This function validates certain event inputs, including name, date, deadline, and capacity
+     *
+     * @return true if all fields are valid
+     */
     private boolean validateInputs() {
         if (TextUtils.isEmpty(eventNameEditText.getText())) {
             showToast("Event name is required.");
@@ -585,7 +656,14 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         return true;
     }
 
-    // Helper to validate dates
+
+    /**
+     * This function does extra validation on the date and registration deadline for the event
+     *
+     * @param dateTime event date
+     * @param regDeadline registration deadline
+     * @return true if all checks passed
+     */
     private boolean validateDates(String dateTime, String regDeadline) {
         try {
             SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
@@ -617,16 +695,27 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         return true;
     }
 
-    // Helper to parse optional integers
     private Integer parseOptionalInt(String input) {
         return TextUtils.isEmpty(input) ? null : Integer.parseInt(input);
     }
 
-    // Helper to show Toast messages
+    /**
+     * This function shows messages on the screen using Toast
+     *
+     * @param message a given message
+     */
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * This function allows users to upload images as posters to events
+     *
+     * @param posterUri the value for the poster
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the operation
+     */
     private void uploadPosterImage(Uri posterUri, String eventId, OnOperationCompleteListener listener) {
         if (posterUri == null) {
             listener.onComplete(true); // No image to upload, continue saving other data
@@ -648,12 +737,20 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 });
     }
 
+    /**
+     * Obtains an event id with the database
+     *
+     * @return generated event id
+     */
     private String generateEventId() {
         return FirebaseFirestore.getInstance().collection("Events").document().getId();
     }
 
 //----------------------------------------------------- Cache------------------------------------------
 
+    /**
+     * This function obtains cached data and updates the UI elements with it
+     */
     private void restoreCachedData() {
         if (viewModel.eventName != null) eventNameEditText.setText(viewModel.eventName);
         if (viewModel.eventDescription != null) eventDescriptionEditText.setText(viewModel.eventDescription);
@@ -688,6 +785,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function obtains data from the UI elements and stores it in the view model
+     */
     private void saveToCache() {
         viewModel.eventName = eventNameEditText.getText().toString();
         viewModel.eventDescription = eventDescriptionEditText.getText().toString();

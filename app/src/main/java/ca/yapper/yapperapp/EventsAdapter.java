@@ -37,6 +37,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventsView
         this.eventList = eventList;
         this.context = context;
     }
+
+
     /**
      * Creates a new {@link EventsViewHolder} by inflating the event item layout.
      * This method is called when a new view holder is needed for the RecyclerView.

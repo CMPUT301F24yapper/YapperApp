@@ -82,6 +82,10 @@ public class OrganizerQRCodeViewFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function allows organizers to share QR Codes across apps.
+     */
     private void shareQRCode() {
         try {
             // Save bitmap to cache directory
@@ -110,6 +114,9 @@ public class OrganizerQRCodeViewFragment extends Fragment {
         }
     }
 
+    /**
+     * This function allows organizers to save QR code images to their phones gallery.
+     */
     private void saveQRCodeToGallery() {
         OutputStream fos;
         try {

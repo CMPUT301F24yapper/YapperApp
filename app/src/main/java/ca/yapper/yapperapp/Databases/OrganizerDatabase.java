@@ -23,29 +23,47 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 
+/**
+ * Class holding all the organizer related functions that interact with the database.
+ */
 public class OrganizerDatabase {
 
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
+    /**
+     * Interface for dealing with user checking and associated error handling
+     */
     public interface OnUserCheckListener {
         void onUserInList(boolean inList);
         void onError(String error);
     }
 
+    /**
+     * Interface for loading wait list counts and associated errors
+     */
     public interface OnWaitListCountLoadedListener {
         void onCountLoaded(int waitListCount);
         void onError(String errorMessage);
     }
 
+    /**
+     * Interface for completing operations associated error handling
+     */
     public interface OnOperationCompleteListener {
         void onComplete(boolean success);
     }
 
+    /**
+     * Interface for handling results from loading event capacities and associated error handling
+     */
     public interface OnEventCapLoadedListener {
         void onCapacityLoaded(int capacity);
         void onError(String errorMessage);
     }
 
+    /**
+     * Interface for handling results from loading organizer details and associated errors
+     */
     public interface OnOrganizerDetailsLoadedListener {
         void onOrganizerLoaded(String organizerName);
         void onError(String error);
@@ -59,26 +77,39 @@ public class OrganizerDatabase {
         void onEventLoadError(String error);
     }
 
+    /**
+     * Interface for handling results from loading user Ids and associated error handling
+     */
     public interface OnUserIdsLoadedListener {
         void onUserIdsLoaded(ArrayList<String> userIdsList);
 
         void onError(String error);
     }
 
+    /**
+     * Interface for handling results from loading events and associated error handling
+     */
     public interface OnEventsLoadedListener {
         void onEventsLoaded(List<String> eventIds);
         void onEventsLoadError(String error);
     }
 
+    /**
+     * Interface for handling results from loading facility data and associated error handling
+     */
     public interface OnFacilityDataLoadedListener {
         void onFacilityDataLoaded(String facilityName, String location);  // When the data is successfully loaded
         void onError(String error);                                        // When there's an error
     }
 
+    /**
+     * Interface for handling results from getting the count from the selected list and associated error handling
+     */
     public interface OnSelectedListLoadCountListener {
         void onSelectedListCountLoaded(int selectedListCount);
         void onError(String error);
     }
+
 
     /**
      * Checks if the user is an admin based on their device ID.
@@ -103,6 +134,13 @@ public class OrganizerDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * This function obtains an event from the database using the eventId
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the event loading operation
+     */
     public static void getEventDetails(String eventId, OnEventDetailsFetchListener listener) {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -115,12 +153,21 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching event details: " + e.getMessage()));
     }
 
-    // Define the callback interface:
+    /**
+     * Interface for handling results from fetching event details and associated error handling
+     */
     public interface OnEventDetailsFetchListener {
         void onEventDetailsFetched(String eventName);
         void onError(String errorMessage);
     }
 
+
+    /**
+     * This function obtains events from the database using the eventID
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the user check
+     */
     public static void loadEventFromDatabase(String eventId, OnEventLoadedListener listener) {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -158,6 +205,15 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onEventLoadError("Error loading event: " + e.getMessage()));
     }
 
+
+    /**
+     * This function checks if a user is in an events selected or waiting list, by iterating through
+     * both lists.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the user check
+     */
     public static void checkUserInEvent(String eventId, String userId, OnUserCheckListener listener) {
 
 
@@ -187,6 +243,15 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
+
+    /**
+     * This function gets users from a given subcollection and obtains their device IDs from the
+     * users collection, then adds them to a device Id list.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param subcollectionName name of the specified subcollection we want to load user from
+     * @param listener handles the outcome of loading the user Ids
+     */
     public static void loadUserIdsFromSubcollection(String eventId, String subcollectionName, OnUserIdsLoadedListener listener) {
 
         ArrayList<String> userIdsList = new ArrayList<>();
@@ -228,6 +293,14 @@ public class OrganizerDatabase {
                     } });
     }
 
+
+    /**
+     * This function obtains the status of the event invitations for a given user, for a specific event
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the status check
+     */
     public static void getInvitationStatusFromEvent(String eventId, String userId, OnStatusCheckListener listener) {
         DocumentReference userDocRef = db.collection("Events")
                 .document(eventId)
@@ -250,14 +323,26 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
-    // Define callback interface
+
+    /**
+     * Interface for methods related to status' and errors associated with it
+     */
     public interface OnStatusCheckListener {
-        void onStatusLoaded(boolean accepted);  // True if accepted, false if rejected
-        void onStatusNotFound();               // Field missing, default to pending
-        void onUserNotInList();                // User not in selected list
-        void onError(String error);            // Any error occurred
+        void onStatusLoaded(boolean accepted);
+        void onStatusNotFound();
+        void onUserNotInList();
+        void onError(String error);
     }
 
+
+    /**
+     * This function changes the given users status in the joined events lists for a given event  [UNUSED]
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param status the users status in the event
+     * @param listener handles the outcome of the operation
+     */
     public static void changeUserStatusForEvent(String eventId, String userId, String status, OnOperationCompleteListener listener) {
         // change the joinedEvents subcollection field invitationStatus
         // Get reference to the user's document in the "Users" collection
@@ -284,8 +369,16 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function moves a user between two given subcollections
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param fromSubcollection a string representing the starter sub collection that the user was in
+     * @param toSubcollection a string representing the goal sub collection to move user to
+     */
     public static void moveUserBetweenEventSubcollections(String eventId, String userId, String fromSubcollection, String toSubcollection, OnOperationCompleteListener listener) {
-        // References to the relevant documents
         DocumentReference fromDocRef = db.collection("Events")
                 .document(eventId)
                 .collection(fromSubcollection)
@@ -296,21 +389,16 @@ public class OrganizerDatabase {
                 .collection(toSubcollection)
                 .document(userId);
 
-        // Retrieve user data from the original subcollection
         fromDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 Map<String, Object> userData = documentSnapshot.getData();
 
-                // Begin batch operation
                 WriteBatch batch = db.batch();
 
-                // Add user to the new subcollection
                 batch.set(toDocRef, userData);
 
-                // Remove user from the original subcollection
                 batch.delete(fromDocRef);
 
-                // Commit the batch
                 batch.commit().addOnSuccessListener(aVoid -> {
                     Log.d("OrganizerDatabase", "Successfully moved user: " + userId + " from " + fromSubcollection + " to " + toSubcollection);
                 }).addOnFailureListener(e -> {
@@ -324,6 +412,13 @@ public class OrganizerDatabase {
         });
     }
 
+
+    /**
+     * This function obtains the event capacity for a given event.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of loading the event capacity
+     */
     public static void loadEventCapacity(String eventId, OnEventCapLoadedListener listener) {
         db.collection("Events").document(eventId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -338,8 +433,9 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading event: " + e.getMessage()));
     }
 
+
     /**
-     * Creates and saves a new event in Firestore with the provided details.
+     * This function creates and saves a new event in Firestore with the provided details.
      *
      * @param capacity The maximum number of attendees.
      * @param dateTime The event date and time.
@@ -351,7 +447,6 @@ public class OrganizerDatabase {
      * @param registrationDeadline The registration deadline for the event.
      * @param waitListCapacity Capacity of the waiting list.
      * @param organizerId The ID of the organizer creating the event.
-     * @return The created Event instance.
      */
     public static void createEventInDatabase(int capacity, String dateTime, String description,
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,
@@ -406,6 +501,13 @@ public class OrganizerDatabase {
         }
     }
 
+
+    /**
+     * This function adds a given event to each users "Missed Out" events collection.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @return a task that return complete when all users have had the event added to the sub collection. Otherwise fails.
+     */
     private static Task<Void> addEventToAllUsersMissedOut(String eventId) {
         CollectionReference usersRef = db.collection("Users");
 
@@ -424,7 +526,15 @@ public class OrganizerDatabase {
             }
         });
     }
-    //is this redundant?
+
+
+    /**
+     * This function moves a given user from an events waiting list to its selected list.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the operation
+     */
     public static void moveUserToSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
         Map<String, Object> details = new HashMap<>();
         details.put("timestamp", FieldValue.serverTimestamp());
@@ -443,6 +553,13 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
 
+
+    /**
+     * This function gets the total number of users in the selected list for a given event
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the data fetch
+     */
     public static void getSelectedListCount(String eventId, OnSelectedListLoadCountListener listener) {
         db.collection("Events").document(eventId)
                 .collection("selectedList").get()
@@ -452,6 +569,15 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving selected list count data: " + e.getMessage()));
     }
 
+
+    /**
+     * This function sends notifications to a user with custom strings
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param message The message to send to the user
+     * @param listener handles the outcome of the operation
+     */
     public static void sendNotificationToUser(String eventId, String userId, String userFromId, String message, OnOperationCompleteListener listener) {
         if (eventId == null || eventId.isEmpty()) {
             Log.e("OrganizerDatabase", "Event ID is null or empty. Cannot send notification.");
@@ -493,6 +619,13 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function gets the total number of users in the waiting list for a given event
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the data fetch
+     */
     public static void getWaitingListCount(String eventId, OnWaitListCountLoadedListener listener) {
         db.collection("Events").document(eventId)
                 .collection("waitingList").get()
@@ -501,6 +634,13 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError("Error retrieving wait list count data: " + e.getMessage()));    }
 
+
+    /**
+     * This function loads all of a users created events.
+     *
+     * @param userDeviceId The device ID of the user.
+     * @param listener handles the outcome of the event loading
+     */
     public static void loadCreatedEvents(String userDeviceId, OnEventsLoadedListener listener) {
         if (userDeviceId == null) {
             listener.onEventsLoadError("Error: Unable to get user ID");
@@ -523,6 +663,13 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This functions loads a given users facility name and location.
+     *
+     * @param deviceId The Id for users device.
+     * @param listener handles the outcome of the facility loading
+     */
     public static void loadFacilityData(String deviceId, final OnFacilityDataLoadedListener listener) {
         db.collection("Users").document(deviceId).get()
                 .addOnSuccessListener(document -> {
@@ -544,6 +691,13 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving facility data: " + e.getMessage()));
     }
 
+
+    /**
+     * This function loads the organizers data, which is the organizers name from their profile.
+     *
+     * @param organizerId The id for the organizer.
+     * @param listener handles the outcome of loading the organizer details
+     */
     public static void loadOrganizerData(String organizerId, OnOrganizerDetailsLoadedListener listener) {
         db.collection("Users").document(organizerId).get()
                 .addOnSuccessListener(document -> {
@@ -564,12 +718,28 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving organizer data: " + e.getMessage()));
     }
 
+
+    /**
+     * This function saves the event details to the database
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param eventData Event data is a map that contains various details regarding the given event
+     * @param listener handles the outcome of the operation
+     */
     public static void saveEventData(String eventId, Map<String, Object> eventData, OnOperationCompleteListener listener) {
         db.collection("Events").document(eventId).set(eventData)
                 .addOnSuccessListener(unused -> listener.onComplete(true))
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
 
+
+    /**
+     * This function individually updates the facility name for each event attached to the given facility
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param facilityName The name of the facility attached to an organizer
+     * @return this returns a task that succeeds if the operation was a success
+     */
     public static Task<Void> updateFacilityNameForEvents(String userId, String facilityName) {
         WriteBatch batch = db.batch();
 
@@ -590,6 +760,14 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function updates the facility address for each event attached to the facility
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param facilityLocation This is a string representing the facilities location
+     * @return this returns a task that succeeds if the operation was a success
+     */
     public static Task<Void> updateFacilityAddressForEvents(String userId, String facilityLocation) {
         WriteBatch batch = db.batch();
 
@@ -610,6 +788,14 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function adds users to the final list for a given event
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the operation
+     */
     public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
         if (eventId == null || eventId.isEmpty()) {
             Log.e("OrganizerDatabase", "Event ID is null or empty.");
@@ -636,7 +822,15 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
-    // redundant(?):
+
+
+    /**
+     * This function adds users to the cancelled list for a given event
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the operation
+     */
     public static void addUserToCancelledList(String eventId, String userId, OnOperationCompleteListener listener) {
         // Create a timestamp for the cancelled list entry
         Map<String, Object> timestamp = new HashMap<>();
@@ -653,6 +847,14 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function checks if a users status is pending for a specific event.
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param listener handles the outcome of the pending status check
+     */
     public static void isPendingStatusForUser(String userId, String eventId, OnIsPendingStatusCheckedListener listener) {
         // Check the joinedEvents subcollection for the user and eventId
         db.collection("Events")
@@ -676,20 +878,34 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading pending status check"));  // Handle errors
     }
 
-    // Define the listener interface to handle the invitation status
+
+    /**
+     * Interface for methods related to checking if status' are pending and errors associated with it
+     */
     public interface OnIsPendingStatusCheckedListener {
         void onStatusLoaded(boolean isPending);
         void onError(String error);
     }
 
-    // Define callback interface
+    /**
+     * Interface for methods related to checking user status' and errors associated with it
+     */
     public interface OnUserStatusCheckListener {
-        void onStatusLoaded(String status);  // "Pending", "Accepted", "Rejected", etc.
-        void onStatusNotFound();             // If status is missing
-        void onUserNotInList();              // If event is not in joinedEvents
-        void onError(String error);          // Error handling
+        void onStatusLoaded(String status);
+        void onStatusNotFound();
+        void onUserNotInList();
+        void onError(String error);
     }
 
+
+    /**
+     * This function updates the status for an invitation to a new one
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The id for the event
+     * @param newStatus The new invitation status
+     * @param listener handles the outcome of the operation
+     */
     public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Events")
@@ -711,6 +927,14 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function gets the invitation status for the specified user in a given event.
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The id for the event
+     * @param listener handles the outcome of the user status check
+     */
     public static void getInvitationStatus(String userId, String eventId, OnUserStatusCheckListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Events")
@@ -734,6 +958,13 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
+
+    /**
+     * This function checks if a given event has a QR Code
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that returns true if the QR code exists for a given event
+     */
     public static Task<Boolean> checkQRCodeExists(String eventId) {
         return db.collection("Events")
                 .document(eventId)

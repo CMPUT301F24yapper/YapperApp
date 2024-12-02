@@ -47,6 +47,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
         return new UsersAdapter.UsersViewHolder(view);
     }
 
+
     /**
      * Binds the user data to the provided {@link UsersViewHolder}.
      *
@@ -60,6 +61,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
 
     }
 
+
     /**
      * Returns the total number of users in the list.
      *
@@ -69,11 +71,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
     public int getItemCount() {
         return userList.size();
     }
+
+
     /**
      * A {@link RecyclerView.ViewHolder} that holds the views for each user item.
      */
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
         TextView userNameTextView;
+
+
         /**
          * Constructs a new {@code UsersViewHolder} with the given item view.
          *
