@@ -59,7 +59,10 @@ public class AdminActivityUITest {
         onView(withId(R.id.profile_image)).check(matches(isDisplayed()));
     }
 
-
+    @Test
+    public void testBottomNavigationDisplayed() {
+        onView(withId(R.id.bottom_navigation)).check(matches(isDisplayed()));
+    }
 
 
 }
