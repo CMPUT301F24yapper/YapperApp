@@ -49,6 +49,9 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * This is the fragment which displays the users profile and all the functionality for it
+ */
 public class ProfileFragment extends Fragment {
 
     private DocumentReference userRef;
@@ -71,6 +74,16 @@ public class ProfileFragment extends Fragment {
     private boolean isUpdatingField = false;
     private Bitmap generatedProfilePicture;
 
+    /**
+     *
+     * Inflates the fragment layout, obtains the users device id, initializes views, changes UI elements based on
+     * role, populates the UI elements with the relevant information, and sets up profile images.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -120,6 +133,10 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function launches an intent which allows them to choose images
+     */
     private void openImageChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -127,6 +144,14 @@ public class ProfileFragment extends Fragment {
         imagePickerLauncher.launch(intent);
     }
 
+
+    /**
+     * This function compresses a given image, in order to be more efficient with storage in the database
+     *
+     * @param imageUri the image value
+     * @return a compressed JPEG image
+     * @throws IOException
+     */
     private String encodeImageToBase64(Uri imageUri) throws IOException {
         // Load the image as a bitmap
         InputStream inputStream = getContext().getContentResolver().openInputStream(imageUri);
@@ -142,6 +167,15 @@ public class ProfileFragment extends Fragment {
         return Base64.encodeToString(compressedBytes, Base64.DEFAULT);
     }
 
+
+    /**
+     * This function compresses a given generated image, in order to be more efficient with storage in the database
+     * We use a different image format in order to avoid issues with colors and compression loss.
+     *
+     * @param bitmap a given bitmap for an image
+     * @return a compressed generated PNG image
+     * @throws IOException for encoding errors
+     */
     private String encodeGeneratedImageToBase64(Bitmap bitmap) throws IOException {
         // Compress the bitmap
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -152,6 +186,13 @@ public class ProfileFragment extends Fragment {
         return Base64.encodeToString(compressedBytes, Base64.DEFAULT);
     }
 
+
+    /**
+     * This function takes a compressed image and uncompressed it.
+     *
+     * @param base64Image a compressed image
+     * @return an uncompressed image
+     */
     private Bitmap decodeBase64ToBitmap(String base64Image) {
         try {
             byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
@@ -162,6 +203,12 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function removes a profile picture a replaces it with a default deterministically generated profile picture
+     *
+     * @throws IOException for image generation and encoding errors
+     */
     private void removeProfilePicture() throws IOException {
         Bitmap generatedIMG = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
         generateProfileImage(generatedIMG);
@@ -172,6 +219,12 @@ public class ProfileFragment extends Fragment {
         Toast.makeText(getContext(), "Profile picture removed", Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * Initializes references to UI elements
+     *
+     * @param view the parent view
+     */
     private void initializeViews(View view) {
         nameEditText = view.findViewById(R.id.edit_name);
         emailEditText = view.findViewById(R.id.edit_email);
@@ -187,6 +240,10 @@ public class ProfileFragment extends Fragment {
         removePicture = view.findViewById(R.id.remove_picture);
     }
 
+
+    /**
+     * This function changes the visibility of UI elements based on the users role
+     */
     private void setVisibilityBasedOnActivity() {
         if (getActivity() instanceof EntrantActivity) {
             notificationsSection.setVisibility(View.VISIBLE);
@@ -200,6 +257,10 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function obtains the users data from the database and updates the UI accordingly
+     */
     private void loadUserData() {
         UserDatabase.loadUserFromDatabase(userDeviceId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
@@ -233,6 +294,10 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function obtains the facility data from the database and updates the UI accordingly
+     */
     private void loadFacilityData(User user) {
         OrganizerDatabase.loadFacilityData(userDeviceId, new OrganizerDatabase.OnFacilityDataLoadedListener() {
             @Override
@@ -250,6 +315,11 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function obtains the profile image from the database and updates the UI accordingly
+     * If a user doesn't have a profile picture then one is generated and stored.
+     */
     private void loadProfileImage(User user) {
         EntrantDatabase.loadProfileImage(userDeviceId, new EntrantDatabase.OnProfileImageLoadedListener() {
             @Override
@@ -291,6 +361,13 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function creates profile picture from the users initials by taking the first
+     * character of each word in their profile name.
+     *
+     * @param bitmap a blank bitmap that will be drawn on
+     */
     private void generateProfileImage(Bitmap bitmap){
         Canvas imageName = new Canvas(bitmap);
         Paint textStyle = new Paint();
@@ -326,6 +403,10 @@ public class ProfileFragment extends Fragment {
         imageName.drawText(initials,imageName.getWidth() / 2, (imageName.getHeight() / 2) - ((fontMetrics.ascent + fontMetrics.descent) / 2), textStyle);
     }
 
+
+    /**
+     * This function sets up listeners to detect when a text input of the users profile changes.
+     */
     private void setupTextChangeListeners() {
         nameEditText.addTextChangedListener(createTextWatcher("entrantName"));
         emailEditText.addTextChangedListener(createTextWatcher("entrantEmail"));
@@ -337,6 +418,13 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function creates a listener that attempts to detect changes for a given field in the users profile
+     *
+     * @param field a given text field
+     * @return a watcher for the given field
+     */
     private TextWatcher createTextWatcher(final String field) {
         return new TextWatcher() {
             @Override
@@ -370,6 +458,13 @@ public class ProfileFragment extends Fragment {
         };
     }
 
+    
+    /**
+     * This function updates a field for the users profile in the database.
+     *
+     * @param field a given field for a profile in the database
+     * @param value a new value for the given field to be changed to
+     */
     private void updateField(String field, Object value) {
         UserDatabase.updateUserField(userDeviceId, field, value, new EntrantDatabase.OnFieldUpdateListener() {
             @Override

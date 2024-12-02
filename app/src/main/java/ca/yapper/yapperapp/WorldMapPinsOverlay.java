@@ -30,6 +30,7 @@ public class WorldMapPinsOverlay extends View {
         pinPaint.setStyle(Paint.Style.FILL);
     }
 
+
     /**
      * This function updates the list of coordinates and redraws the map with the new coordinates
      *
@@ -40,6 +41,7 @@ public class WorldMapPinsOverlay extends View {
         pinCoordinates.addAll(coordinates);
         invalidate(); // Redraw the view
     }
+
 
     /**
      * This function draws the user coordinates on a given canvas

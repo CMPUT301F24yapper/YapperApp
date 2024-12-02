@@ -76,6 +76,7 @@ public class EventDetailsFragment extends Fragment {
     private ImageView worldmap;
     private Button customNotificationButton;
 
+
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
      * It also sets visibility for buttons based on the activity (Entrant or Organizer).
@@ -112,6 +113,7 @@ public class EventDetailsFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Initializes all the UI elements (TextViews, Buttons) from the fragment layout.
      *
@@ -137,6 +139,7 @@ public class EventDetailsFragment extends Fragment {
 
         worldmap = view.findViewById(R.id.world_map);
     }
+
 
     /**
      * Loads the details of the event from the Firestore database and populates the corresponding UI elements.
@@ -214,6 +217,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
@@ -239,6 +243,9 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+    /**
+     * This function checks if events registration dates or event dates have passed
+     */
     private void checkEventDates() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
@@ -260,6 +267,11 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function checks if the event waiting list capacity is full or if the event is still joinable.
+     * The function then updates the join event button accordingly.
+     */
     private void checkWaitListCapacity() {
         // check if full
         // OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
@@ -443,6 +455,9 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+    /**
+     * This function obtains the users location(coordinates) after requesting permission from them.
+     */
     @SuppressLint("MissingPermission")
     private void getUserLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -476,6 +491,9 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * This function checks if location permissions have been given, and asked for them if not.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
@@ -484,6 +502,7 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+
     /**
      * Handles the "Custom Notification" button click.
      * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
@@ -505,8 +524,14 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
-
-
+    /**
+     * This function deals with a given permission request
+     *
+     * @param requestCode The request code. A tag.
+     * @param permissions The requested permissions
+     * @param grantResults value indicating if permission has been granted or not
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1001) {
@@ -517,6 +542,12 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+
+    /**
+     * This function Obtains a given events coordinates and displays them on a map for the organizer
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     */
     private void loadUserPins(String eventId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -543,6 +574,13 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
     }
 
+    /**
+     * This function converts user coordinates to a pixel value
+     *
+     * @param latitude the latitude of the user location
+     * @param longitude the longitude of the user location
+     * @return a coordinate converted to a pixel location
+     */
     private float[] convertGeoToPixel(float latitude, float longitude) {
         // Get dimensions of the map image
         int imageWidth = worldmap.getWidth();
@@ -555,6 +593,11 @@ public class EventDetailsFragment extends Fragment {
         return new float[]{x, y};
     }
 
+    /**
+     * This function updates the map to display the pins which are user coordinates
+     *
+     * @param coordinates a list of user coordinates
+     */
     private void displayPinsOnMap(List<float[]> coordinates) {
         WorldMapPinsOverlay pinsOverlay = getView().findViewById(R.id.pins_overlay);
         if (pinsOverlay != null) {
