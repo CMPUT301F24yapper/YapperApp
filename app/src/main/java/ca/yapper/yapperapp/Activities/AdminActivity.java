@@ -2,6 +2,7 @@ package ca.yapper.yapperapp.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import ca.yapper.yapperapp.AdminFragments.AdminHomeFragment;
 import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
+import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
@@ -17,6 +19,9 @@ public class AdminActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NotificationListener notificationListener = new NotificationListener(this);
+        notificationListener.startListening();
+        Log.d("MainActivity", "NotificationListener initialized and started");
         setContentView(R.layout.admin_activity_layout);
         setupBottomNavigation();
 

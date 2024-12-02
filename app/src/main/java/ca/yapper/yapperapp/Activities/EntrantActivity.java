@@ -5,6 +5,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -17,6 +18,7 @@ import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
+import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.ProfileFragment;
 import ca.yapper.yapperapp.R;
 /**
@@ -41,6 +43,9 @@ public class EntrantActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NotificationListener notificationListener = new NotificationListener(this);
+        notificationListener.startListening();
+        Log.d("MainActivity", "NotificationListener initialized and started");
         setContentView(R.layout.entrant_activity_layout);
 
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);

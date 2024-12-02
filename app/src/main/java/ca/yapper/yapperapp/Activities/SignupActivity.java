@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Date;
 
 import ca.yapper.yapperapp.Databases.UserDatabase;
+import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.Databases.SignUpDatabase;
@@ -46,6 +47,9 @@ public class SignupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NotificationListener notificationListener = new NotificationListener(this);
+        notificationListener.startListening();
+        Log.d("MainActivity", "NotificationListener initialized and started");
         EdgeToEdge.enable(this);
         setContentView(R.layout.signup_page_fragment);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -4,6 +4,8 @@ import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -12,10 +14,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
 public class NotificationsDatabase {
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    private static final String TAG = "NotificationsDatabase";
+    private static ListenerRegistration listenerRegistration;
+    private static Date lastNotificationTime;
 
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);
@@ -70,5 +77,48 @@ public class NotificationsDatabase {
     public static Task<Void> markNotificationAsRead(String notificationId) {
         return db.collection("Notifications").document(notificationId)
                 .update("isRead", true);
+    }
+
+    public static void startNotificationListener(String deviceId, NotificationListener.NotificationCallback callback) {
+        Log.d(TAG, "Starting Firestore notification listener for device: " + deviceId);
+
+        lastNotificationTime = new Date();
+
+        listenerRegistration = db.collection("Notifications")
+                .whereEqualTo("userToId", deviceId)
+                .whereEqualTo("isRead", false)
+                .addSnapshotListener((QuerySnapshot snapshots, FirebaseFirestoreException e) -> {
+                    if (e != null) {
+                        Log.e(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    if (snapshots == null) {
+                        Log.d(TAG, "Snapshot is null");
+                        return;
+                    }
+
+                    snapshots.getDocumentChanges().forEach(change -> {
+                        if (change.getType().equals(com.google.firebase.firestore.DocumentChange.Type.ADDED)) {
+                            Date documentDate = change.getDocument().getDate("dateTimeStamp");
+                            if (documentDate != null && documentDate.after(lastNotificationTime)) {
+                                String message = change.getDocument().getString("message");
+                                String title = change.getDocument().getString("title");
+                                Log.d(TAG, "New notification - Title: " + title + ", Message: " + message);
+                                if (message != null) {
+                                    callback.onNotification(title, message);
+                                }
+                            }
+                        }
+                    });
+                });
+    }
+
+    public static void stopNotificationListener() {
+        Log.d(TAG, "Stopping Firestore notification listener");
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+            listenerRegistration = null;
+        }
     }
 }
