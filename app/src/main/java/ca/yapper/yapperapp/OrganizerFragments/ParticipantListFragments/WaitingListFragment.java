@@ -242,6 +242,12 @@ public class WaitingListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function sends a notification to users who were not selected from the draw.
+     *
+     * @param notSelectedUsers list of users not on the selected list
+     */
     private void sendNotificationsToUnselectedUsers(List<User> notSelectedUsers) {
         for (User user : notSelectedUsers) {
             Notification notification = new Notification(

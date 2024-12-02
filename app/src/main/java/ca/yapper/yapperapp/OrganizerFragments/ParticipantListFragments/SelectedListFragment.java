@@ -435,7 +435,7 @@ public class SelectedListFragment extends Fragment {
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      *
-     * @param user       The user to be moved.
+     * @param user The user to be moved.
      * // @param onComplete Runnable executed once the move is complete.
      */
     private void moveUserToSelectedList(User user) {

@@ -516,6 +516,12 @@ public class EntrantDatabase {
         void onError(String error);
     }
 
+    /**
+     * This function obtains all the events for which a given user is in the final list for
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of loading the events
+     */
     public static void loadRegisteredEventsFromFinalLists(String userId, OnEventsLoadedListener listener) {
         db.collection("Events")
                 .get()
@@ -531,7 +537,6 @@ public class EntrantDatabase {
                     for (DocumentSnapshot eventDoc : queryDocumentSnapshots) {
                         String eventId = eventDoc.getId();
 
-                        // Check if user exists in finalList
                         eventDoc.getReference()
                                 .collection("finalList")
                                 .document(userId)

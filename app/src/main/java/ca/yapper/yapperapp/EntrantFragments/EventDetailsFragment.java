@@ -544,6 +544,12 @@ public class EventDetailsFragment extends Fragment {
         }, Looper.getMainLooper());
     }
 
+    /**
+     * This functions stores the users location in the database
+     *
+     * @param latitude the latitude of the users coordinates
+     * @param longitude the longitude of the users coordinates
+     */
     private void saveUserLocation(double latitude, double longitude) {
         UserDatabase.saveLocationToFirestore(
                 finalEvent.getDocumentId(),

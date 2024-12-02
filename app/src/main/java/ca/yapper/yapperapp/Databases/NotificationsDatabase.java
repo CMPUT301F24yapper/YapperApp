@@ -171,6 +171,12 @@ public class NotificationsDatabase {
         }
     }
 
+    /**
+     * This function checks if a given users notifications are enabled
+     *
+     * @param deviceId The device ID of the user.
+     * @return true if the document exists and if notifications are enabled
+     */
     public static Task<Boolean> areNotificationsEnabled(String deviceId) {
         return FirebaseFirestore.getInstance()
                 .collection("Users")
