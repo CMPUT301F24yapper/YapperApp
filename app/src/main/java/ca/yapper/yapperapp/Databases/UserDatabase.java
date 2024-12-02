@@ -85,7 +85,7 @@ public class UserDatabase {
         User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut); // Step 2: Create User Object
 
         Map<String, Object> userData = prepareUserData(user); // Step 3: Prepare Firestore Data
-        // TO CHANGE LATER: MISSED OUT EVENTS BEING EVERY EVENT IN DATABASE (SETUP):
+
         TaskCompletionSource<User> tcs = new TaskCompletionSource<>();
         FirestoreUtils.getFirestoreInstance().collection("Users")
                 .document(deviceId)
@@ -96,9 +96,7 @@ public class UserDatabase {
                             .addOnFailureListener(tcs::setException);
                 })
                 .addOnFailureListener(tcs::setException);
-
         return tcs.getTask();
-        // return saveUserToFirestore(deviceId, user, userData); // Step 4: Save to Firestore
     }
 
     private static Task<Void> addMissedOutEventsSubcollection(String userDeviceId) {

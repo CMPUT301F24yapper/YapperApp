@@ -45,7 +45,6 @@ public class JoinedEventsFragment extends Fragment {
         emptyTextView = view.findViewById(R.id.emptyTextView);
         emptyImageView = view.findViewById(R.id.emptyImageView);
 
-
         loadEvents();
 
         return view;
@@ -70,7 +69,6 @@ public class JoinedEventsFragment extends Fragment {
                     emptyImageView.setVisibility(View.GONE);
                 }
             }
-
             @Override
             public void onError(String error) {
                 if (getContext() == null) return;
