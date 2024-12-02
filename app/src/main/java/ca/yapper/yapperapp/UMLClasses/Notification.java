@@ -57,8 +57,6 @@ public class Notification {
     }
 
 
-
-
     /**
      * Saves the notification to Firestore under the "Notifications" collection.
      */
