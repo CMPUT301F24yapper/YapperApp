@@ -7,67 +7,64 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- Header Section -->
+    <!-- Purple Section containing both header and tabs -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/yapper_purple"
-        android:orientation="vertical"
-        android:paddingTop="32dp"
-        android:paddingBottom="32dp">
+        android:orientation="vertical">
 
-        <TextView
+        <!-- Header Content -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Custom Notification"
-            android:textColor="@color/white"
-            android:textSize="24sp"
-            android:gravity="center"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
 
-        <TextView
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Custom Notification"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:gravity="center"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Send notifications to your event attendees"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:alpha="0.9"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Tab Layout -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/notificationTabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Send notifications to your event attendees"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:alpha="0.9"
-            android:textSize="14sp" />
+            app:tabTextColor="#FFFFFF"
+            app:tabSelectedTextColor="#FFFFFF"
+            app:tabIndicatorColor="#FFFFFF"
+            android:background="@color/yapper_purple"/>
     </LinearLayout>
 
-    <!-- Content Section -->
+    <!-- Rest of content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:layout_marginTop="-32dp">
-
-        <!-- Tab Layout in Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="-24dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp">
-
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/notificationTabLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:tabTextColor="@color/yapper_purple"
-                app:tabSelectedTextColor="@color/yapper_purple"
-                app:tabIndicatorColor="@color/yapper_purple"
-                android:background="@color/white"/>
-        </com.google.android.material.card.MaterialCardView>
+        android:padding="16dp">
 
         <!-- Text Input Field in Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
 
@@ -101,6 +98,5 @@
             android:padding="16dp"
             app:cornerRadius="16dp"
             android:backgroundTint="@color/yapper_purple"/>
-
     </LinearLayout>
 </LinearLayout>
