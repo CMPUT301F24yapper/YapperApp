@@ -48,7 +48,6 @@ public class OrganizerActivityUITest {
     /**
      * Test: Create/Edit Event Page - Enter event name and save.
      */
-
     @Test
     public void testEnterEventNameAndSave() {
         onView(withId(R.id.nav_organizer_createevent)).perform(click());
@@ -92,4 +91,11 @@ public class OrganizerActivityUITest {
         // Verify the profile image is displayed
         onView(withId(R.id.profile_image)).check(matches(isDisplayed()));
     }
+
+    @Test
+    public void testAppLaunchDefaultPage() {
+        onView(withId(R.id.my_events_title)).check(matches(isDisplayed()));
+    }
+
+
 }
