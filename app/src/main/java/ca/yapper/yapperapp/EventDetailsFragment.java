@@ -179,10 +179,15 @@ public class EventDetailsFragment extends Fragment {
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
                     TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                    if (geoLocationRequired != null) {
                         geoLocationRequired.setVisibility(View.VISIBLE);
-                    }
+
+
                 }
+                else{
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    geoLocationRequired.setVisibility(View.GONE);
+                }
+
 
                 String posterBase64 = event.getPosterBase64();
                 if (posterBase64 != null && !posterBase64.isEmpty()) {
