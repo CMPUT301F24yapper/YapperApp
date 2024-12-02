@@ -105,6 +105,12 @@ public class NotificationsDatabase {
                 .update("isRead", true);
     }
 
+    /**
+     * This function sends a notification to a user by adding it in the database
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param notification a given notification
+     */
     public static void sendNotificationToUser(String userId, Notification notification) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userId)
@@ -113,6 +119,12 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> Log.e("NotificationsDB", "Error sending notification", e));
     }
 
+    /**
+     * This function initializes a listener checking for newly read notification
+     *
+     * @param deviceId The Id for users device.
+     * @param callback handles the notifications we get
+     */
     public static void startNotificationListener(String deviceId, NotificationListener.NotificationCallback callback) {
         Log.d(TAG, "Starting Firestore notification listener for device: " + deviceId);
 
@@ -148,6 +160,9 @@ public class NotificationsDatabase {
                 });
     }
 
+    /**
+     * This function removes the notification listener
+     */
     public static void stopNotificationListener() {
         Log.d(TAG, "Stopping Firestore notification listener");
         if (listenerRegistration != null) {

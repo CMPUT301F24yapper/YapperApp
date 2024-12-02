@@ -185,6 +185,7 @@ public class EntrantDatabase {
         });
     }
 
+
     /**
      * This function adds events to an entrants registered events list
      *
@@ -214,6 +215,7 @@ public class EntrantDatabase {
                 });
     }
 
+
     /**
      * This function updates the invitation status for a user
      *
@@ -242,6 +244,7 @@ public class EntrantDatabase {
                     listener.onComplete(false);
                 });
     } **/
+
 
     /**
      * This function obtains an event by using its document id, which is the QR Code string value.
@@ -348,6 +351,7 @@ public class EntrantDatabase {
         MISSED
     }
 
+
     /**
      * Loads a User from Firestore using the specified device ID and provides the result
      * through the provided listener.
@@ -380,6 +384,7 @@ public class EntrantDatabase {
                 });
     }
 
+
     /**
      * This function obtains the invitation status for a specific user and event
      *
@@ -410,6 +415,7 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
+
     /**
      * Interface for status checking methods and errors associated with it
      */
@@ -419,6 +425,7 @@ public class EntrantDatabase {
         void onUserNotInList();
         void onError(String error);
     }
+
 
     /**
      * Function that loads a profile image for a given user by accessing the database.
@@ -443,6 +450,16 @@ public class EntrantDatabase {
                 .addOnFailureListener(e -> listener.onError("Error retrieving image: " + e.getMessage()));
     }
 
+
+    /**
+     * This function moves a given user between two of an events subcollection.
+     *
+     * @param eventId The id for the event
+     * @param userId The id for the user, created from the device id.
+     * @param fromSubcollection subcollection user was originally in
+     * @param toSubcollection subcollection to move user to
+     * @param listener handles the outcome of the database operation
+     */
     public static void moveUserBetweenUserSubcollections(String eventId, String userId, String fromSubcollection, String toSubcollection, EntrantDatabase.OnOperationCompleteListener listener) {
         // References to the relevant documents
         DocumentReference fromDocRef = db.collection("Users")

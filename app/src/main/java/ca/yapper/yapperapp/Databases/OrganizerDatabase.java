@@ -110,6 +110,7 @@ public class OrganizerDatabase {
         void onError(String error);
     }
 
+
     /**
      * Checks if the user is an admin based on their device ID.
      *
@@ -132,6 +133,7 @@ public class OrganizerDatabase {
 
         return tcs.getTask();
     }
+
 
     /**
      * This function obtains an event from the database using the eventId
@@ -158,6 +160,7 @@ public class OrganizerDatabase {
         void onEventDetailsFetched(String eventName);
         void onError(String errorMessage);
     }
+
 
     /**
      * This function obtains events from the database using the eventID
@@ -202,6 +205,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onEventLoadError("Error loading event: " + e.getMessage()));
     }
 
+
     /**
      * This function checks if a user is in an events selected or waiting list, by iterating through
      * both lists.
@@ -238,6 +242,7 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
+
 
     /**
      * This function gets users from a given subcollection and obtains their device IDs from the
@@ -288,6 +293,7 @@ public class OrganizerDatabase {
                     } });
     }
 
+
     /**
      * This function obtains the status of the event invitations for a given user, for a specific event
      *
@@ -317,6 +323,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
+
     /**
      * Interface for methods related to status' and errors associated with it
      */
@@ -326,6 +333,7 @@ public class OrganizerDatabase {
         void onUserNotInList();
         void onError(String error);
     }
+
 
     /**
      * This function changes the given users status in the joined events lists for a given event  [UNUSED]
@@ -360,6 +368,7 @@ public class OrganizerDatabase {
                     }
                 });
     }
+
 
     /**
      * This function moves a user between two given subcollections
@@ -403,6 +412,7 @@ public class OrganizerDatabase {
         });
     }
 
+
     /**
      * This function obtains the event capacity for a given event.
      *
@@ -422,6 +432,7 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError("Error loading event: " + e.getMessage()));
     }
+
 
     /**
      * This function creates and saves a new event in Firestore with the provided details.
@@ -517,6 +528,7 @@ public class OrganizerDatabase {
         });
     }
 
+
     /**
      * This function moves a given user from an events waiting list to its selected list.
      *
@@ -542,6 +554,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onComplete(false));
     }
 
+
     /**
      * This function gets the total number of users in the selected list for a given event
      *
@@ -556,6 +569,7 @@ public class OrganizerDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError("Error retrieving selected list count data: " + e.getMessage()));
     }
+
 
     /**
      * This function sends notifications to a user with custom strings
@@ -605,6 +619,7 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
+
 
     /**
      * This function gets the total number of users in the waiting list for a given event
@@ -774,6 +789,7 @@ public class OrganizerDatabase {
                 });
     }
 
+
     /**
      * This function adds users to the final list for a given event
      *
@@ -808,6 +824,7 @@ public class OrganizerDatabase {
                 });
     }
 
+
     /**
      * This function adds users to the cancelled list for a given event
      *
@@ -830,6 +847,7 @@ public class OrganizerDatabase {
                     listener.onComplete(false);
                 });
     }
+
 
     /**
      * This function checks if a users status is pending for a specific event.
@@ -861,6 +879,7 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading pending status check"));  // Handle errors
     }
 
+
     /**
      * Interface for methods related to checking if status' are pending and errors associated with it
      */
@@ -869,14 +888,25 @@ public class OrganizerDatabase {
         void onError(String error);
     }
 
-    // Define callback interface
+    /**
+     * Interface for methods related to checking user status' and errors associated with it
+     */
     public interface OnUserStatusCheckListener {
-        void onStatusLoaded(String status);  // "Pending", "Accepted", "Rejected", etc.
-        void onStatusNotFound();             // If status is missing
-        void onUserNotInList();              // If event is not in joinedEvents
-        void onError(String error);          // Error handling
+        void onStatusLoaded(String status);
+        void onStatusNotFound();
+        void onUserNotInList();
+        void onError(String error);
     }
 
+
+    /**
+     * This function updates the status for an invitation to a new one
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The id for the event
+     * @param newStatus The new invitation status
+     * @param listener handles the outcome of the operation
+     */
     public static void updateInvitationStatus(String userId, String eventId, String newStatus, OnOperationCompleteListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Events")
@@ -898,6 +928,14 @@ public class OrganizerDatabase {
                 });
     }
 
+
+    /**
+     * This function gets the invitation status for the specified user in a given event.
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The id for the event
+     * @param listener handles the outcome of the user status check
+     */
     public static void getInvitationStatus(String userId, String eventId, OnUserStatusCheckListener listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference eventDocRef = db.collection("Events")
@@ -921,6 +959,13 @@ public class OrganizerDatabase {
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
     }
 
+
+    /**
+     * This function checks if a given event has a QR Code
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that returns true if the QR code exists for a given event
+     */
     public static Task<Boolean> checkQRCodeExists(String eventId) {
         return db.collection("Events")
                 .document(eventId)

@@ -74,6 +74,7 @@ public class ProfileFragment extends Fragment {
     private boolean isUpdatingField = false;
     private Bitmap generatedProfilePicture;
 
+
     /**
      *
      * Inflates the fragment layout, obtains the users device id, initializes views, changes UI elements based on
@@ -337,7 +338,6 @@ public class ProfileFragment extends Fragment {
                     if (bitmap.sameAs(generatedProfilePicture)) {
                         // here the image we got from base64 was the generated profile pic or base64 was == null
                         Log.d("Generated IMG","Generated Image Retrieved");
-                        //profileImage.setImageResource(R.drawable.ic_profile_placeholder);
                         profileImage.setImageBitmap(bitmap);
                         String base64GeneratedImage = encodeGeneratedImageToBase64(bitmap);
                         updateField("profileImage", base64GeneratedImage); // Here we store generated img in database

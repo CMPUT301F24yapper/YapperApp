@@ -142,6 +142,9 @@ public class AdminRemoveEventFragment extends Fragment {
         });
     }
 
+    /**
+     * This function handles removing QR code data from the database
+     */
     private void handleQRDataRemoval() {
         AdminDatabase.removeQRCodeData(eventId)
                 .addOnSuccessListener(aVoid -> {
@@ -152,7 +155,9 @@ public class AdminRemoveEventFragment extends Fragment {
                 });
     }
 
-
+    /**
+     * This function handles removing posters from the database
+     */
     private void handlePosterRemoval() {
         AdminDatabase.removeEventPoster(eventId)
                 .addOnSuccessListener(aVoid -> {

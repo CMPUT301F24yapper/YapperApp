@@ -35,6 +35,7 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private Bundle eventData;
     private BarcodeCallback scanningResult;
 
+
     /**
      *
      * Inflates the fragments layout, sets up views, sets up camera permissions and starts the QR Code scanner

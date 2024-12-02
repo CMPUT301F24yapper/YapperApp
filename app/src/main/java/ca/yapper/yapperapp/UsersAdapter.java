@@ -47,6 +47,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UsersViewHol
         return new UsersAdapter.UsersViewHolder(view);
     }
 
+
     /**
      * Binds the user data to the provided {@link UsersViewHolder}.
      *

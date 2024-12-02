@@ -13,6 +13,9 @@ import androidx.core.app.NotificationManagerCompat;
 
 import ca.yapper.yapperapp.Databases.NotificationsDatabase;
 
+/**
+ * This is a class for notification listeners
+ */
 public class NotificationListener {
     private static final String TAG = "NotificationListener";
     private static final String CHANNEL_ID = "yapper_notifications";
@@ -20,12 +23,20 @@ public class NotificationListener {
     private final Context context;
     private final String deviceId;
 
+    /**
+     * The constructor for notification listeners
+     *
+     * @param context the environmental data from the phone
+     */
     public NotificationListener(Context context) {
         this.context = context;
         this.deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         createNotificationChannel();
     }
 
+    /**
+     * This function creates a notification channel, for displaying notifications
+     */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -38,6 +49,9 @@ public class NotificationListener {
         }
     }
 
+    /**
+     * This function starts a notification listener for a user
+     */
     public void startListening() {
         NotificationsDatabase.startNotificationListener(deviceId, (title, message) -> {
             showNotification(title != null ? title : "YapperApp", message);
@@ -48,6 +62,12 @@ public class NotificationListener {
         NotificationsDatabase.stopNotificationListener();
     }
 
+    /**
+     * This function displays a notification
+     *
+     * @param title The title for a notification
+     * @param message The message for a notification
+     */
     @SuppressLint("MissingPermission")
     private void showNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
@@ -60,7 +80,7 @@ public class NotificationListener {
         int notificationId = (int) System.currentTimeMillis();
         notificationManager.notify(notificationId, builder.build());
     }
-
+    
     public interface NotificationCallback {
         void onNotification(String title, String message);
     }

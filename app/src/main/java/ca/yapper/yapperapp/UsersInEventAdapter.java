@@ -28,6 +28,7 @@ public class UsersInEventAdapter extends RecyclerView.Adapter<UsersInEventAdapte
     private String eventId;  // Event context for which statuses are being loaded
     private TextView nameTextView;
 
+
     /**
      * Constructs a new {@code UsersAdapter} with the specified list of users and context.
      *

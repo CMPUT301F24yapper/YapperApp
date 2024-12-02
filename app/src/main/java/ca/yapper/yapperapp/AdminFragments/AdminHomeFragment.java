@@ -48,6 +48,7 @@ public class AdminHomeFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Function that attaches UI elements with variables for ease of access and modification
      *
@@ -59,6 +60,7 @@ public class AdminHomeFragment extends Fragment {
         totalUsersText = view.findViewById(R.id.users);
         eventsListContainer = view.findViewById(R.id.events_list_container);
     }
+
 
     /**
      * Function that sets the specified UI elements to statistics obtained from the database
@@ -72,6 +74,7 @@ public class AdminHomeFragment extends Fragment {
             totalUsersText.setText(String.valueOf(stats.get("totalUsers")));
         });
     }
+
 
     /**
      * Function that organizes all the events by total users and then displays a list with the

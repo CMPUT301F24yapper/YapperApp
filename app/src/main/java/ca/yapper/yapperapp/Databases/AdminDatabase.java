@@ -30,6 +30,7 @@ public class AdminDatabase {
         db = firestore;
     }
 
+
     /**
      * This function obtains statistics from the database(used in the admin home page).
      * The statistics gathered are the total number of events, users and organizers/facilities.
@@ -445,6 +446,7 @@ public class AdminDatabase {
                 });
     }
 
+
     /**
      * Interface for facility detail loading methods and errors associated with it
      */
@@ -452,6 +454,7 @@ public class AdminDatabase {
         void onFacilityLoaded(String facilityName, String facilityAddress);
         void onError(String error);
     }
+
 
     /**
      * This function obtains facility details such as facility name and address from a specific organizer
@@ -469,6 +472,7 @@ public class AdminDatabase {
                 })
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
+
 
     /**
      * This function obtains the organizers name from their ID, by going through their profile.
@@ -491,6 +495,7 @@ public class AdminDatabase {
                 .addOnFailureListener(e -> listener.onNameLoaded("Unknown"));
     }
 
+
     /**
      * Interface for name loading classes
      */
@@ -498,6 +503,13 @@ public class AdminDatabase {
         void onNameLoaded(String name);
     }
 
+
+    /**
+     * This function removes QR Code data from a given event.
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that removes the QR Code data on success, otherwise failure
+     */
     public static Task<Void> removeQRCodeData(String eventId) {
         return db.collection("Events")
                 .document(eventId)
@@ -507,6 +519,13 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * This function removes the event poster from a given event.
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that removes the event poster on success, otherwise failure
+     */
     public static Task<Void> removeEventPoster(String eventId) {
         return db.collection("Events")
                 .document(eventId)

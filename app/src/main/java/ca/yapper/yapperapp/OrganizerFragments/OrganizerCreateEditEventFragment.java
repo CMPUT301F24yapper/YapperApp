@@ -695,12 +695,15 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         return true;
     }
 
-    // Helper to parse optional integers
     private Integer parseOptionalInt(String input) {
         return TextUtils.isEmpty(input) ? null : Integer.parseInt(input);
     }
 
-    // Helper to show Toast messages
+    /**
+     * This function shows messages on the screen using Toast
+     *
+     * @param message a given message
+     */
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }

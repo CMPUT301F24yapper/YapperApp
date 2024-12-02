@@ -77,6 +77,7 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+
     /**
      * Function for displaying a popup menu that displays different roles and sets the
      * functionality for each button press so users can switch activities using intents.

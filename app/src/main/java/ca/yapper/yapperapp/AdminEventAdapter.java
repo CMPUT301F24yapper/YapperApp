@@ -21,7 +21,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
 
     /**
-     *
+     * This is the constructor for the adapter
      *
      * @param eventList an event list for the adapter
      * @param context environmental data from the system

@@ -58,6 +58,7 @@ public class SelectedListFragment extends Fragment {
     private LinearLayout emptyStateLayout;
     private String organizerId;
 
+
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
      * and loads the selected list for the specified event. Sets up a redraw button for re-selection.
@@ -107,6 +108,7 @@ public class SelectedListFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Loads the capacity of the event from Firestore, setting the maximum number of selected participants.
      */
@@ -123,6 +125,7 @@ public class SelectedListFragment extends Fragment {
             }
         });
     }
+
 
     /**
      * Refreshes the selected list by reloading data from Firestore and updating the RecyclerView.
@@ -207,6 +210,11 @@ public class SelectedListFragment extends Fragment {
 
     }
 
+
+    /**
+     * This function dumps pending applicants by moving users from the selected list to the cancelled list,
+     * as well as sending a cancelled notification and updating the users invitation status.
+     */
     private void dumpPendingApplicant() {
         Log.i("SelectedListFragment", "dumpPendingApplicant being called");
         dumpPendingButton.setEnabled(false);
@@ -249,6 +257,13 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function check if the given list is empty, and if not, then it removes all the users in it
+     * from the selected list and updates UI elements accordingly.
+     *
+     * @param usersToRemove a list of users to remove
+     */
     private void onAllPendingChecksCompleted(List<User> usersToRemove) {
         if (getActivity() == null) return;
         getActivity().runOnUiThread(() -> {
@@ -265,6 +280,12 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function moves pending users to the cancelled list
+     *
+     * @param pendingUsers a list of users who still haven't accepted their invitations
+     */
     private void movePendingUsersToCancelledList(List<User> pendingUsers) {
         Log.i("SelectedListFragment", "All user statuses checked. Moving pending users.");
         for (User user : pendingUsers) {
@@ -282,6 +303,15 @@ public class SelectedListFragment extends Fragment {
         refreshAllFragments();
     }
 
+
+    /**
+     * This function moves a given user between two of an events subcollections
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param eventId The id for the event
+     * @param subcollectionFrom The subcollection the user is coming from
+     * @param subcollectionTo The subcollection the user is going to move to
+     */
     private void moveUserBetweenUserSubcollections(String userId, String eventId, String subcollectionFrom, String subcollectionTo) {
         EntrantDatabase.moveUserBetweenUserSubcollections(userId, eventId, subcollectionFrom, subcollectionTo, new EntrantDatabase.OnOperationCompleteListener() {
             @Override
@@ -295,7 +325,7 @@ public class SelectedListFragment extends Fragment {
     /**'
      * This function moves a user to the final list
      *
-     * @param user a give user
+     * @param user a given user
      */
     private void moveUserToFinalList(User user) {
         OrganizerDatabase.moveUserBetweenEventSubcollections(eventId, user.getDeviceId(), "selectedList", "finalList", new OrganizerDatabase.OnOperationCompleteListener() {
@@ -306,6 +336,12 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function shows the empty state layout for a recycler view
+     *
+     * @param isEmpty indicator of an empty state
+     */
     private void showEmptyState(boolean isEmpty) {
         if (isEmpty) {
             emptyStateLayout.setVisibility(View.VISIBLE);
@@ -316,6 +352,7 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
     /**
      * Loads the selected list from the "selectedList" subcollection of the event document in Firestore.
      * Updates the RecyclerView adapter with the retrieved users.
@@ -323,6 +360,7 @@ public class SelectedListFragment extends Fragment {
     private void loadSelectedList() {
         refreshList();
     }
+
 
     /**
      * Allows re-selection of participants by randomly choosing from the waiting list and moving users to the selected list,
@@ -342,6 +380,11 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function draws random users from the waiting list. It will draw enough to fill the remaining
+     * spots in the selected list.
+     */
     private void drawFromWaitingList() {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
             @Override
@@ -393,6 +436,7 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      *
@@ -420,6 +464,11 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function sends cancelled notifications to a given user
+     * @param userDeviceId The device ID of the user.
+     */
     private void sendCancelledNotif(String userDeviceId) {
         Notification cancelNotification = new Notification(
                 new Date(),
@@ -435,6 +484,11 @@ public class SelectedListFragment extends Fragment {
         NotificationsDatabase.sendNotificationToUser(userDeviceId, cancelNotification);
     }
 
+    /**
+     * This function moves a user from the selected list to the cancelled list of an event.
+     *
+     * @param userDeviceId The device ID of the user.
+     */
     private void moveUserToCancelledList(String userDeviceId) {
 
         // Now, move the user from selectedList to cancelledList
@@ -459,12 +513,19 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function updates a users invitation status
+     *
+     * @param userDeviceId The device ID of the user.
+     */
     private void updateInvitationStatus(String userDeviceId) {
     // Update the invitationStatus for the user in the selectedList subcollection to "Rejected"
         OrganizerDatabase.updateInvitationStatus(userDeviceId, eventId, "Rejected", success -> {
             //implement success logic
         });
     }
+
 
     /**
      * Refreshes all fragments displaying participant lists for the event,
@@ -478,6 +539,12 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function sends notifications to users who were not selected from the draw.
+     *
+     * @param remainingUserIds a list of remaining user Ids
+     */
     private void notifyNotSelectedUsers(List<String> remainingUserIds) {
         for (String userId : remainingUserIds) {
             Notification notification = new Notification(

@@ -248,6 +248,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * This function checks if events registration dates or event dates have passed
      */
@@ -300,6 +301,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Sets up button listeners based on the activity type (Entrant or Organizer).
      *
@@ -322,6 +324,7 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
     /**
      * Handles the join button click. If the user clicks "Join", it checks if geolocation is required.
      * If geolocation is required, it prompts the user to confirm. If not, it proceeds to join the event.
@@ -343,6 +346,7 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
     /**
      * Sets the state of the join button (text and background color).
      *
@@ -354,6 +358,7 @@ public class EventDetailsFragment extends Fragment {
         joinButton.setBackgroundColor(color);
         joinButton.setEnabled(enabled);
     }
+
 
     /**
      * Handles the "View Participants" button click. Opens a new fragment to display the list of participants.
@@ -370,6 +375,7 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
+
     /**
      * Handles the "Edit Event" button click. (This feature is currently to be implemented.)
      */
@@ -385,10 +391,10 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
+
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
      */
-
     private void viewQRCodeButtonClick() {
         OrganizerDatabase.checkQRCodeExists(eventId).addOnSuccessListener(exists -> {
             if (!exists) {
@@ -407,6 +413,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Shows a dialog to warn the user that geolocation is required for this event.
      * If the user confirms, the event will be joined.
@@ -419,6 +426,7 @@ public class EventDetailsFragment extends Fragment {
                 .create()
                 .show();
     }
+
 
     /**
      * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
@@ -446,6 +454,7 @@ public class EventDetailsFragment extends Fragment {
             });
         }
 
+
     /**
      * Unjoins the user from the event. It removes the user from both the event's waiting list and their list of joined events.
      * If successful, it updates the join button to display "Join" and shows a success message.
@@ -468,6 +477,7 @@ public class EventDetailsFragment extends Fragment {
             }
         });
     }
+
 
     /**
      * This function obtains the users location(coordinates) after requesting permission from them.
@@ -505,6 +515,7 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+
     /**
      * This function checks if location permissions have been given, and asked for them if not.
      */
@@ -516,6 +527,7 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+
 
     /**
      * Handles the "Custom Notification" button click.
@@ -538,6 +550,7 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
+
     /**
      * This function deals with a given permission request
      *
@@ -556,6 +569,7 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+
 
     /**
      * This function Obtains a given events coordinates and displays them on a map for the organizer
@@ -588,6 +602,7 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
     }
 
+
     /**
      * This function converts user coordinates to a pixel value
      *
@@ -606,6 +621,7 @@ public class EventDetailsFragment extends Fragment {
 
         return new float[]{x, y};
     }
+
 
     /**
      * This function updates the map to display the pins which are user coordinates
