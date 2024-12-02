@@ -10,8 +10,8 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import ca.yapper.yapperapp.AdminFragments.AdminHomeFragment;
 import ca.yapper.yapperapp.AdminFragments.AdminSearchFragment;
-import ca.yapper.yapperapp.NotificationListener;
-import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.Adapters.NotificationListener;
+import ca.yapper.yapperapp.EntrantFragments.ProfileFragment;
 import ca.yapper.yapperapp.R;
 
 /**

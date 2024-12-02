@@ -306,7 +306,7 @@
                 android:adjustViewBounds="true"/>
 
             <!-- Custom Overlay for Pins -->
-            <ca.yapper.yapperapp.WorldMapPinsOverlay
+            <ca.yapper.yapperapp.OrganizerFragments.WorldMapPinsOverlay
                 android:id="@+id/pins_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="250dp" />

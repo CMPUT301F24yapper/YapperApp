@@ -18,8 +18,8 @@ import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.EntrantFragments.EntrantHomeFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantNotificationsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EntrantQRCodeScannerFragment;
-import ca.yapper.yapperapp.NotificationListener;
-import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.Adapters.NotificationListener;
+import ca.yapper.yapperapp.EntrantFragments.ProfileFragment;
 import ca.yapper.yapperapp.R;
 /**
  * EntrantActivity is the main activity for the Entrant user role.

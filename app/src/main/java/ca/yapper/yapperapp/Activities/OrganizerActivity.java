@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
@@ -15,10 +14,10 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.NotificationListener;
+import ca.yapper.yapperapp.Adapters.NotificationListener;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
-import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.EntrantFragments.ProfileFragment;
 import ca.yapper.yapperapp.R;
 /**
  * OrganizerActivity is the main activity for the Organizer user role.

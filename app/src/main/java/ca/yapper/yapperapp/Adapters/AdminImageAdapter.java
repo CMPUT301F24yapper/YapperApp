@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import ca.yapper.yapperapp.Databases.AdminDatabase;
+import ca.yapper.yapperapp.R;
 
 /**
  * This is the adapter for the images page that admins can browse

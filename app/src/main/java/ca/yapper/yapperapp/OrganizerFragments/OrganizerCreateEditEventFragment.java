@@ -46,7 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
-import ca.yapper.yapperapp.ProfileFragment;
+import ca.yapper.yapperapp.EntrantFragments.ProfileFragment;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 

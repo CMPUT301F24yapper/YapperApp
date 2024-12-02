@@ -1,17 +1,17 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Adapters;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import ca.yapper.yapperapp.Databases.NotificationsDatabase;
+import ca.yapper.yapperapp.R;
 
 /**
  * This is a class for notification listeners
@@ -58,10 +58,6 @@ public class NotificationListener {
         });
     }
 
-    public void stopListening() {
-        NotificationsDatabase.stopNotificationListener();
-    }
-
     /**
      * This function displays a notification
      *
@@ -70,17 +66,21 @@ public class NotificationListener {
      */
     @SuppressLint("MissingPermission")
     private void showNotification(String title, String message) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.baseline_notifications_24)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationsDatabase.areNotificationsEnabled(deviceId).addOnCompleteListener(task -> {
+            if (task.isSuccessful() && Boolean.TRUE.equals(task.getResult())) {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.baseline_notifications_24)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        int notificationId = (int) System.currentTimeMillis();
-        notificationManager.notify(notificationId, builder.build());
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                int notificationId = (int) System.currentTimeMillis();
+                notificationManager.notify(notificationId, builder.build());
+            }
+        });
     }
-    
+
     public interface NotificationCallback {
         void onNotification(String title, String message);
     }

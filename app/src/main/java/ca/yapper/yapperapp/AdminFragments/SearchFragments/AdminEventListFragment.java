@@ -16,7 +16,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.LinearLayout;
 
-import ca.yapper.yapperapp.AdminEventAdapter;
+import ca.yapper.yapperapp.Adapters.AdminEventAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.Databases.AdminDatabase;

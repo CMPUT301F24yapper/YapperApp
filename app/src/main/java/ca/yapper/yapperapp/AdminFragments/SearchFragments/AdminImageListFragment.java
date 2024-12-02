@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
-import ca.yapper.yapperapp.AdminImageAdapter;
+import ca.yapper.yapperapp.Adapters.AdminImageAdapter;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.R;
 

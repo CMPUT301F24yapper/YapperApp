@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.EntrantFragments;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +27,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -51,6 +49,8 @@ import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.OrganizerFragments.CustomNotificationFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
+import ca.yapper.yapperapp.OrganizerFragments.WorldMapPinsOverlay;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
@@ -248,7 +248,7 @@ public class EventDetailsFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
+                ///Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 import ca.yapper.yapperapp.Databases.NotificationsDatabase;
-import ca.yapper.yapperapp.NotificationAdapter;
+import ca.yapper.yapperapp.Adapters.NotificationAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 

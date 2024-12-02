@@ -11,7 +11,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import ca.yapper.yapperapp.EventParticipantsViewPagerAdapter;
+import ca.yapper.yapperapp.Adapters.EventParticipantsViewPagerAdapter;
 import ca.yapper.yapperapp.R;
 /**
  * ViewParticipantsFragment displays tabs for viewing different participant lists

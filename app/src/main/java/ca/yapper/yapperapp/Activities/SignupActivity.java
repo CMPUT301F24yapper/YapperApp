@@ -16,12 +16,9 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 
-import java.util.Date;
-
 import ca.yapper.yapperapp.Databases.UserDatabase;
-import ca.yapper.yapperapp.NotificationListener;
+import ca.yapper.yapperapp.Adapters.NotificationListener;
 import ca.yapper.yapperapp.R;
-import ca.yapper.yapperapp.UMLClasses.Notification;
 import ca.yapper.yapperapp.Databases.SignUpDatabase;
 
 /**

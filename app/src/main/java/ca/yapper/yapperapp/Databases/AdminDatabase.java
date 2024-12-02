@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
-import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
+import ca.yapper.yapperapp.Adapters.AdminImageAdapter.ImageData;
 
 /**
  * Class holding all the admin related functions that interact with the database.

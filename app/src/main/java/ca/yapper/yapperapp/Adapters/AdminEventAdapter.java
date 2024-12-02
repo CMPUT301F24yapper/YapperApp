@@ -1,4 +1,4 @@
-package ca.yapper.yapperapp;
+package ca.yapper.yapperapp.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
+
+import ca.yapper.yapperapp.AdminFragments.AdminRemoveEventFragment;
+import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
 /**
