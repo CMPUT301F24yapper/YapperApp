@@ -91,12 +91,15 @@ public class AdminActivity extends AppCompatActivity {
         popup.getMenu().findItem(R.id.switch_to_admin).setVisible(false);
 
         popup.setOnMenuItemClickListener(item -> {
+            Intent intent = null;
             if (item.getItemId() == R.id.switch_to_entrant) {
-                startActivity(new Intent(this, EntrantActivity.class));
-                finish();
-                return true;
+                intent = new Intent(this, EntrantActivity.class);
             } else if (item.getItemId() == R.id.switch_to_organizer) {
-                startActivity(new Intent(this, OrganizerActivity.class));
+              intent = new Intent(this, OrganizerActivity.class);
+            }
+            if (intent != null) {
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;
             }
