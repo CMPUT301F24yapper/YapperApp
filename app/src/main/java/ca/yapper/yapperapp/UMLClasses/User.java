@@ -23,7 +23,6 @@ public class User {
     private ArrayList<String> missedOutEvents;
     private ArrayList<String> createdEvents;
 
-
     /**
      * Constructs a new User with the specified attributes.
      *

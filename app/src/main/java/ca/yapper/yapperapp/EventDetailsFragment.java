@@ -2,6 +2,7 @@ package ca.yapper.yapperapp;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,12 +26,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import ca.yapper.yapperapp.Activities.EntrantActivity;
@@ -42,6 +49,7 @@ import ca.yapper.yapperapp.OrganizerFragments.ViewParticipantsFragment;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerQRCodeViewFragment;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+
 
 /**
  * The EventDetailsFragment class displays detailed information about a specific event.
@@ -65,6 +73,7 @@ public class EventDetailsFragment extends Fragment {
     private boolean geolocationPermitted = false;
     private final int wlSpotsLeft = -1;
     private ImageView posterImageView;
+    private ImageView worldmap;
     private Button customNotificationButton;
 
     /**
@@ -126,6 +135,7 @@ public class EventDetailsFragment extends Fragment {
         posterImageView = view.findViewById(R.id.event_image);
         customNotificationButton = view.findViewById(R.id.button_custom_notification);
 
+        worldmap = view.findViewById(R.id.world_map);
     }
 
     /**
@@ -146,16 +156,16 @@ public class EventDetailsFragment extends Fragment {
                 facilityLocationTextView.setText("Location: " + event.getFacilityLocation());
                 String organizerId = event.getOrganizerId();
                 OrganizerDatabase.loadOrganizerData(organizerId, new OrganizerDatabase.OnOrganizerDetailsLoadedListener() {
-                            @Override
-                            public void onOrganizerLoaded(String organizerName) {
-                                organizerNameTextView.setText("Organizer: " + organizerName);
-                            }
+                    @Override
+                    public void onOrganizerLoaded(String organizerName) {
+                        organizerNameTextView.setText("Organizer: " + organizerName);
+                    }
 
-                            @Override
-                            public void onError(String message) {
-                                // implement error logic here
-                            }
-                        });
+                    @Override
+                    public void onError(String message) {
+                        // implement error logic here
+                    }
+                });
 
                 if (event.getWaitListCapacity() == null) {
                     waitListTextView.setText("Not set");
@@ -188,6 +198,9 @@ public class EventDetailsFragment extends Fragment {
                 eventId = event.getDocumentId();
                 finalEvent = event;
                 Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
+                eventId = event.getDocumentId();
+                finalEvent = event;
+                Log.i("loadEventDetails", "about to call checkUserInList, with finalEventId saved as: " + finalEvent.getDocumentId());
 
                 // setupButtonListeners();
                 Log.i("loadEventDetails", "checkUserInList being called on event");
@@ -209,10 +222,10 @@ public class EventDetailsFragment extends Fragment {
         Log.d("checkUserInList", "About to call OrganizerDb.checkUserInEvent with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
         // OrganizerDatabase.checkUserInEvent(event.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
         OrganizerDatabase.checkUserInEvent(finalEvent.getDocumentId(), userDeviceId, new OrganizerDatabase.OnUserCheckListener() {
-        @Override
+            @Override
             public void onUserInList(boolean inList) {
                 if (inList) {
-                    setButtonState("Unjoin Event", Color.GRAY, false);
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
                 }
                 else {
                     checkEventDates();  // then check event dates
@@ -236,7 +249,8 @@ public class EventDetailsFragment extends Fragment {
 
             if ((regDeadlineDate != null && regDeadlineDate.before(currentDate)) ||
                     (eventDate != null && eventDate.before(currentDate))) {
-                setButtonState("Event Passed", Color.GRAY, false);
+                // setButtonState("Event Passed", Color.RED, false);
+                setButtonState("Event Passed", R.color.unjoin_event, false);
             }
             else {
                 checkWaitListCapacity();  // Check if waitlist capacity is full
@@ -255,7 +269,8 @@ public class EventDetailsFragment extends Fragment {
                 if (finalEvent.getWaitListCapacity() != null
                         && finalEvent.getWaitListCapacity() != 0
                         && (finalEvent.getWaitListCapacity() - waitListCount) <= 0) {
-                    setButtonState("Wait List Full", Color.GRAY, false);
+                    // setButtonState("Wait List Full", Color.GRAY, false);
+                    setButtonState("Wait List Full", R.color.unjoin_event, false);
                 } else {
                     setButtonState("Join", Color.BLUE, true);
                     joinButton.setOnClickListener(v -> handleJoinButtonClick());
@@ -406,8 +421,7 @@ public class EventDetailsFragment extends Fragment {
                 if (getContext() == null) return;
 
                 if (success) {
-                    joinButton.setText("Unjoin");
-                    joinButton.setBackgroundColor(Color.GRAY);
+                    setButtonState("Unjoin", R.color.unjoin_event, false);
                     Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
@@ -512,6 +526,54 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+    private void loadUserPins(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Events").document(eventId).collection("waitingList")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<float[]> coordinates = new ArrayList<>();
+                    for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                        Double latitude = document.getDouble("latitude");
+                        Double longitude = document.getDouble("longitude");
+
+                        if (latitude != null && longitude != null) {
+                            // Convert latitude/longitude to pixel positions
+                            float[] pixelCoordinates = convertGeoToPixel(latitude.floatValue(), longitude.floatValue());
+                            coordinates.add(pixelCoordinates);
+                        } else {
+                            Log.e("Firestore", "Missing coordinates for user: " + document.getId());
+                        }
+                    }
+
+                    // Display all pins on the map
+                    displayPinsOnMap(coordinates);
+                })
+                .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
+    }
+
+    private float[] convertGeoToPixel(float latitude, float longitude) {
+        // Get dimensions of the map image
+        int imageWidth = worldmap.getWidth();
+        int imageHeight = worldmap.getHeight();
+
+        // Normalize latitude and longitude to pixel positions
+        float x = (longitude + 180) / 360 * imageWidth; // Normalize longitude to [0, 360]
+        float y = (90 - latitude) / 180 * imageHeight;  // Normalize latitude to [0, 180]
+
+        return new float[]{x, y};
+    }
+
+    private void displayPinsOnMap(List<float[]> coordinates) {
+        WorldMapPinsOverlay pinsOverlay = getView().findViewById(R.id.pins_overlay);
+        if (pinsOverlay != null) {
+            pinsOverlay.setPinCoordinates(coordinates); // Pass all coordinates to overlay
+        } else {
+            Log.e("EventDetailsFragment", "Pins overlay not found!");
+        }
+    }
+
+
 
     /**
      * Sets the visibility of the UI elements based on the type of activity the user is in (Entrant or Organizer).
@@ -528,6 +590,7 @@ public class EventDetailsFragment extends Fragment {
             viewParticipantsButton.setVisibility(View.GONE);
             editEventButton.setVisibility(View.GONE);
             viewQRCodeButton.setVisibility(View.GONE);
+            worldmap.setVisibility(View.GONE);
             customNotificationButton.setVisibility(View.GONE); // Hide for entrants
         } else if (getActivity() instanceof OrganizerActivity) {
             isInEntrantActivity = false;
@@ -539,6 +602,11 @@ public class EventDetailsFragment extends Fragment {
             viewQRCodeButton.setVisibility(View.VISIBLE);
             customNotificationButton.setVisibility(View.VISIBLE); // Show for organizers
             setupButtonListeners(); // Ensure Organizer buttons have listeners
+            worldmap.setVisibility(View.VISIBLE);
+            if(eventId != null) {
+                loadUserPins(eventId);
+            }
+
         } else {
             isInEntrantActivity = false;
             isInOrganizerActivity = false;

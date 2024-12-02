@@ -9,6 +9,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,8 +20,14 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
-
+  
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public interface OnUserLoadedListener {
+        void onUserLoaded(User user);
+        void onUserLoadError(String error);
+    }
+
     /**
      * Loads a User from Firestore using the specified device ID and provides the result
      * through the provided listener.
@@ -67,8 +74,8 @@ public class UserDatabase {
      * @return The created User instance.
      */
     public static Task<User> createUserInDatabase(String deviceId, String email, boolean isAdmin,
-                                                   boolean isEntrant, boolean isOrganizer, String name,
-                                                   String phoneNum, boolean isOptedOut) {
+                                                  boolean isEntrant, boolean isOrganizer, String name,
+                                                  String phoneNum, boolean isOptedOut) {
         validateUserInputs(deviceId, email, name); // Step 1: Validation
 
         User user = createUserObject(deviceId, email, isAdmin, isEntrant, isOrganizer, name, phoneNum, isOptedOut); // Step 2: Create User Object
@@ -261,8 +268,9 @@ public class UserDatabase {
 
         db.collection("Events").document(eventId)
                 .collection("waitingList").document(userDeviceId)
-                .set(locationData)
+                .set(locationData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(e -> listener.onError("Failed to save location: " + e.getMessage()));
+
     }
 }

@@ -26,13 +26,18 @@ public class FinalListFragment extends Fragment {
     private UsersAdapter adapter;
     private List<User> finalList;
     private String eventId;
+    private View emptyStateContainer;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.event_participants_finallist, container, false);
+
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        emptyStateContainer = view.findViewById(R.id.emptyStateLayout);
+
         finalList = new ArrayList<>();
         adapter = new UsersAdapter(finalList, getContext());
         recyclerView.setAdapter(adapter);
@@ -62,6 +67,7 @@ public class FinalListFragment extends Fragment {
     private void loadFinalList() {
         if (eventId == null || eventId.isEmpty()) {
             Log.e("FinalListFragment", "Event ID is missing. Cannot load final list.");
+            toggleEmptyState(true);
             return;
         }
 
@@ -73,8 +79,11 @@ public class FinalListFragment extends Fragment {
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
                     Log.d("FinalListFragment", "No users found in the final list.");
+                    toggleEmptyState(true);
                     return;
                 }
+
+                toggleEmptyState(false);
 
                 // Fetch User details for each user ID
                 for (String userId : userIdsList) {
@@ -106,7 +115,18 @@ public class FinalListFragment extends Fragment {
                     Log.e("FinalListFragment", "Error loading user IDs: " + error);
                     Toast.makeText(getContext(), "Error loading final list: " + error, Toast.LENGTH_SHORT).show();
                 }
+                toggleEmptyState(true);
             }
         });
+    }
+
+    private void toggleEmptyState(boolean isEmpty) {
+        if (isEmpty) {
+            emptyStateContainer.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateContainer.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }

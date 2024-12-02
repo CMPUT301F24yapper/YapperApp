@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -24,6 +26,7 @@ public class EntrantNotificationsFragment extends Fragment {
     private NotificationAdapter notificationAdapter;
     private List<Notification> notificationList;
     private String userDeviceId;
+    private TextView noNotificationsText;
 
     @Nullable
     @Override
@@ -34,6 +37,7 @@ public class EntrantNotificationsFragment extends Fragment {
 
         notificationsRecyclerView = view.findViewById(R.id.notifications_recycler_view);
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        noNotificationsText = view.findViewById(R.id.no_notifications_text);
         notificationList = new ArrayList<>();
         notificationAdapter = new NotificationAdapter(notificationList);
         notificationsRecyclerView.setAdapter(notificationAdapter);
@@ -50,6 +54,7 @@ public class EntrantNotificationsFragment extends Fragment {
                 notificationList.clear();
                 notificationList.addAll(notifications);
                 notificationAdapter.notifyDataSetChanged();
+                toggleEmptyState();
             }
 
             @Override
@@ -58,6 +63,18 @@ public class EntrantNotificationsFragment extends Fragment {
             }
         });
     }
+    private void toggleEmptyState() {
+        View noNotificationsLayout = getView().findViewById(R.id.no_notifications_layout);
+
+        if (notificationList.isEmpty()) {
+            noNotificationsLayout.setVisibility(View.VISIBLE);
+            notificationsRecyclerView.setVisibility(View.GONE);
+        } else {
+            noNotificationsLayout.setVisibility(View.GONE);
+            notificationsRecyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+
 
 
 }
