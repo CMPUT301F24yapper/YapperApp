@@ -447,7 +447,6 @@ public class OrganizerDatabase {
      * @param registrationDeadline The registration deadline for the event.
      * @param waitListCapacity Capacity of the waiting list.
      * @param organizerId The ID of the organizer creating the event.
-     * @return The created Event instance.
      */
     public static void createEventInDatabase(int capacity, String dateTime, String description,
                                              String facilityLocation, String facilityName, boolean isGeolocationEnabled,

@@ -233,7 +233,6 @@ public class AdminDatabase {
      *
      * @param eventId The unique id for the event, created from the QR code.
      * @return a task that is null when this action is complete
-     * @throws Exception if we failed to get a user
      */
     public static Task<Void> removeEvent(String eventId) {
         WriteBatch batch = db.batch();
