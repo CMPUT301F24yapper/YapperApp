@@ -22,24 +22,20 @@
 
             <!-- Back Button and Title -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_gravity="center">
 
-                <ImageView
-                    android:id="@+id/back_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/backbutton" />
 
                 <TextView
                     android:id="@+id/new_event_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Event"
-                    android:textSize="22sp"
-                    android:layout_marginStart="16dp"
+                    android:textSize="40sp"
+                    android:layout_gravity="center"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -57,7 +53,7 @@
                 android:layout_height="200dp"
                 android:layout_marginTop="8dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/event_poster" />
+                android:src="@drawable/event_image" />
             <Button
                 android:id="@+id/choose_poster_button"
                 android:layout_width="match_parent"
