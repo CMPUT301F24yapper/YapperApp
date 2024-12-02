@@ -515,4 +515,64 @@ public class EntrantDatabase {
         void onFieldUpdated(Object value);
         void onError(String error);
     }
+
+    public static void loadRegisteredEventsFromFinalLists(String userId, OnEventsLoadedListener listener) {
+        db.collection("Events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onEventsLoaded(new ArrayList<>());
+                        return;
+                    }
+
+                    List<Event> eventList = new ArrayList<>();
+                    AtomicInteger pendingEvents = new AtomicInteger(queryDocumentSnapshots.size());
+
+                    for (DocumentSnapshot eventDoc : queryDocumentSnapshots) {
+                        String eventId = eventDoc.getId();
+
+                        // Check if user exists in finalList
+                        eventDoc.getReference()
+                                .collection("finalList")
+                                .document(userId)
+                                .get()
+                                .addOnSuccessListener(finalListDoc -> {
+                                    if (finalListDoc.exists()) {
+                                        try {
+                                            Event event = new Event(
+                                                    eventDoc.getLong("capacity") != null ? eventDoc.getLong("capacity").intValue() : 0,
+                                                    eventDoc.getString("date_Time"),
+                                                    eventDoc.getString("description"),
+                                                    eventDoc.getString("facilityLocation"),
+                                                    eventDoc.getString("facilityName"),
+                                                    eventDoc.getBoolean("isGeolocationEnabled"),
+                                                    eventDoc.getString("name"),
+                                                    eventDoc.getString("organizerId"),
+                                                    eventDoc.getString("registrationDeadline"),
+                                                    eventDoc.getLong("waitListCapacity") != null ? eventDoc.getLong("waitListCapacity").intValue() : null,
+                                                    new ArrayList<>(), new ArrayList<>(),
+                                                    new ArrayList<>(), new ArrayList<>()
+                                            );
+                                            event.setDocumentId(eventId);
+                                            eventList.add(event);
+                                        } catch (WriterException e) {
+                                            Log.e("Database", "Error creating event", e);
+                                        }
+                                    }
+
+                                    if (pendingEvents.decrementAndGet() == 0) {
+                                        listener.onEventsLoaded(eventList);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Database", "Error checking finalList for event " + eventId, e);
+                                    if (pendingEvents.decrementAndGet() == 0) {
+                                        listener.onEventsLoaded(eventList);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError("Error loading events: " + e.getMessage()));
+    }
+
 }

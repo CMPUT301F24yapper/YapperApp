@@ -20,11 +20,7 @@ import ca.yapper.yapperapp.Adapters.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
-/**
- * Fragment for the entrants page that shows events the user has registered for.
- */
 public class RegisteredEventsFragment extends Fragment {
-
     private RecyclerView recyclerView;
     private EventsAdapter adapter;
     private List<Event> eventList;
@@ -32,15 +28,6 @@ public class RegisteredEventsFragment extends Fragment {
     private TextView emptyTextView;
     private ImageView emptyImageView;
 
-    /**
-     * Inflates the fragments layout, sets up views/UI elements, and starts obtaining/displaying user events
-     *
-     * @param inflater LayoutInflater used to inflate the fragment layout.
-     * @param container The parent view that this fragment's UI is attached to.
-     * @param savedInstanceState Previous state data, if any.
-     * @return The root view of the fragment.
-     *
-     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -60,17 +47,8 @@ public class RegisteredEventsFragment extends Fragment {
         return view;
     }
 
-
-    /**
-     * This function updates the UI for the registered events page. Along with change the
-     * page depending on if the page is empty or not.
-     */
     private void loadEvents() {
-        EntrantDatabase.loadEventsList(userDeviceId, EntrantDatabase.EventListType.REGISTERED, new EntrantDatabase.OnEventsLoadedListener() {
-            /**
-             * This function updates the UI to display/remove messages for empty pages
-             * @param events a list of events
-             */
+        EntrantDatabase.loadRegisteredEventsFromFinalLists(userDeviceId, new EntrantDatabase.OnEventsLoadedListener() {
             @Override
             public void onEventsLoaded(List<Event> events) {
                 if (getContext() == null) return;
@@ -81,19 +59,14 @@ public class RegisteredEventsFragment extends Fragment {
                 if (eventList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
                     emptyTextView.setVisibility(View.VISIBLE);
-                    emptyImageView.setVisibility(View.VISIBLE); // Show the ImageView
+                    emptyImageView.setVisibility(View.VISIBLE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyTextView.setVisibility(View.GONE);
-                    emptyImageView.setVisibility(View.GONE); // Hide the ImageView
+                    emptyImageView.setVisibility(View.GONE);
                 }
             }
 
-            /**
-             * This function takes a given error and prints a message for it
-             *
-             * @param error a given error
-             */
             @Override
             public void onError(String error) {
                 if (getContext() == null) return;
