@@ -13,27 +13,27 @@
         android:layout_height="wrap_content"
         android:background="@color/yapper_purple"
         android:orientation="vertical"
-        android:paddingTop="48dp"
-        android:paddingBottom="48dp">
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Custom Notification"
             android:textColor="@color/white"
-            android:textSize="28sp"
+            android:textSize="24sp"
             android:gravity="center"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="Send notifications to your event attendees"
             android:textColor="@color/white"
             android:gravity="center"
             android:alpha="0.9"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- Content Section -->
@@ -41,7 +41,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:layout_marginTop="-32dp">
 
         <!-- Tab Layout in Card -->
         <com.google.android.material.card.MaterialCardView
