@@ -3,42 +3,92 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <!-- LinearLayout to center the No Notifications Icon and Text -->
+
     <LinearLayout
-        android:id="@+id/no_notifications_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone">
+        android:orientation="vertical">
 
-        <!-- No Notifications Icon -->
-        <ImageView
-            android:id="@+id/no_notifications_icon"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/no_notification"
-            android:contentDescription="No Notifications Icon"
-            android:layout_marginBottom="16dp" />
 
-        <!-- No Notifications Text -->
-        <TextView
-            android:id="@+id/no_notifications_text"
-            android:layout_width="wrap_content"
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="No Notifications"
-            android:textSize="20sp"
-            android:textColor="@android:color/black"
-            android:gravity="center" />
+            android:background="@color/yapper_purple"
+            android:orientation="vertical"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notification History"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="View your event notifications"
+                android:textColor="@color/white"
+                android:alpha="0.9"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+
+
+
+
+
+        <!-- LinearLayout to center the No Notifications Icon and Text -->
+        <LinearLayout
+            android:id="@+id/no_notifications_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <!-- No Notifications Icon -->
+            <ImageView
+                android:id="@+id/no_notifications_icon"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/no_notification"
+                android:contentDescription="No Notifications Icon"
+                android:layout_marginBottom="16dp" />
+
+            <!-- No Notifications Text -->
+            <TextView
+                android:id="@+id/no_notifications_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="No Notifications"
+                android:textSize="20sp"
+                android:textColor="@android:color/black"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- RecyclerView for the notifications list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/notifications_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp"
+            android:paddingLeft="16dp"
+            android:scrollbars="vertical" />
+
+
+
     </LinearLayout>
 
-    <!-- RecyclerView for the notifications list -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/notifications_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="8dp"
-        android:paddingLeft="16dp"
-        android:scrollbars="vertical" />
 </FrameLayout>
+
+
+
+
+

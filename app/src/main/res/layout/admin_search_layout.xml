@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:background="@android:color/white"
-        android:layout_marginBottom="7dp"
         app:tabTextColor="@android:color/black"
         app:tabSelectedTextColor="@android:color/black"
         app:tabIndicatorHeight="3dp"

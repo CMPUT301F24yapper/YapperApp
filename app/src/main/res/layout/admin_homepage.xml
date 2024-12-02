@@ -1,133 +1,230 @@
-<!-- res/layout/activity_main_content.xml -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FFF1F8"> <!-- Light pink background -->
+    android:background="@color/background"
+    android:clipToPadding="false"
+    android:paddingBottom="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:orientation="vertical">
 
-        <!-- Number of Total Events -->
-        <TextView
-            android:id="@+id/total_events_label"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Number of Total Events"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:paddingTop="24dp"
-            android:paddingBottom="8dp"
-            android:textColor="#000000" />
+            android:background="@color/yapper_purple"
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp"
+            android:paddingHorizontal="16dp">
 
-        <TextView
-            android:id="@+id/total_events"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="X"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:paddingBottom="24dp"
-            android:textColor="#000000" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Admin Dashboard"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold" />
 
-        <!-- Number of Organizers -->
-        <TextView
-            android:id="@+id/organizers_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="24dp"
-            android:paddingBottom="8dp"
-            android:text="Number of Facilities"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="View your app statistics"
+                android:textColor="@color/white"
+                android:alpha="0.9"
+                android:textSize="16sp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/organizers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Y"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:paddingBottom="24dp"
-            android:textColor="#000000" />
-
-        <!-- Number of Users -->
-        <TextView
-            android:id="@+id/users_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Number of Users"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingTop="24dp"
-            android:paddingBottom="8dp"
-            android:textColor="#000000" />
-
-        <TextView
-            android:id="@+id/users"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Z"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:paddingBottom="24dp"
-            android:textColor="#000000" />
-
-        <!-- Biggest Events Title -->
-
-        <!-- Biggest Events List Header -->
-        <TextView
-            android:id="@+id/biggest_events_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:paddingTop="24dp"
-            android:paddingBottom="8dp"
-            android:text="Biggest Events"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
+        <!-- Total Events Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Event"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textColor="#000000" />
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
-                android:text="Total Users"
-                android:textColor="#000000"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Events"
+                    android:textSize="16sp"
+                    android:textColor="@color/yapper_purple"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/total_events"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
         </LinearLayout>
 
-        <!-- Biggest Events Data -->
+        <!-- Total Facilities Card -->
         <LinearLayout
-            android:id="@+id/events_list_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Facilities"
+                    android:textSize="16sp"
+                    android:textColor="@color/yapper_purple"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/organizers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
+        </LinearLayout>
+
+        <!-- Total Users Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Users"
+                    android:textSize="16sp"
+                    android:textColor="@color/yapper_purple"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/users"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_gravity="center_vertical"
+                android:tint="@color/yapper_purple"/>
+        </LinearLayout>
+
+        <!-- Biggest Events Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="8dp">
-            <!-- Dynamic content will be added here in the Java code -->
-        </LinearLayout>
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:padding="24dp"
+            android:background="@drawable/rounded_card_background"
+            android:elevation="4dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Biggest Events"
+                android:textSize="18sp"
+                android:textColor="@color/yapper_purple"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- Header Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Event Name"
+                    android:textStyle="bold"
+                    android:textColor="@color/yapper_purple"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Capacity"
+                    android:textStyle="bold"
+                    android:textColor="@color/yapper_purple"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/events_list_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <!-- Events will be added here dynamically -->
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
