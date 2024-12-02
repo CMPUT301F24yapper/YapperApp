@@ -3,6 +3,7 @@ package ca.yapper.yapperapp.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
+import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerCreateEditEventFragment;
 import ca.yapper.yapperapp.OrganizerFragments.OrganizerHomeFragment;
 import ca.yapper.yapperapp.ProfileFragment;
@@ -39,6 +41,9 @@ public class OrganizerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NotificationListener notificationListener = new NotificationListener(this);
+        notificationListener.startListening();
+        Log.d("MainActivity", "NotificationListener initialized and started");
         //EdgeToEdge.enable(this);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         setContentView(R.layout.organizer_activity_layout);
