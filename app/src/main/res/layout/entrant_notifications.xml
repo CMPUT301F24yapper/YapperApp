@@ -3,6 +3,33 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/yapper_purple"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:paddingHorizontal="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notification History"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="View your event notifications"
+            android:textColor="@color/white"
+            android:alpha="0.9"
+            android:textSize="16sp" />
+    </LinearLayout>
+
     <!-- LinearLayout to center the No Notifications Icon and Text -->
     <LinearLayout
         android:id="@+id/no_notifications_layout"
