@@ -22,7 +22,11 @@ import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * This is the fragment that allows admins to delete user profiles
+ */
 public class AdminRemoveProfileFragment extends Fragment {
+
     private String userId;
     private TextView profileName, profileEmail, profilePhone, profileFacility, profileAddress;
     private TextView adminStatus, entrantStatus, organizerStatus, deviceIdText, notificationStatus;
@@ -33,6 +37,17 @@ public class AdminRemoveProfileFragment extends Fragment {
     private View facilitySection;
     private TextView facilityHeader;
 
+
+    /**
+     *
+     * Inflates the fragment layout, sets up UI components,
+     * and loads user details.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,6 +64,12 @@ public class AdminRemoveProfileFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function initializes all the references to the UI elements for the profile and admin functionality
+     *
+     * @param view the parent view
+     */
     private void initializeViews(View view) {
         profileName = view.findViewById(R.id.profile_name);
         profileEmail = view.findViewById(R.id.profile_email);
@@ -73,6 +94,10 @@ public class AdminRemoveProfileFragment extends Fragment {
         removeFacilityButton.setVisibility(View.GONE);
     }
 
+
+    /**
+     * This function obtains the user details from the database and updates the UI elements accordingly
+     */
     private void loadUserDetails() {
         UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
             @Override

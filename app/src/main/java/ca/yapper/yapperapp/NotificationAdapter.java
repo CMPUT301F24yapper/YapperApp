@@ -20,16 +20,34 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
+/**
+ * This is the adapter for notifications entrants can view on their notification page
+ */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notificationList;
 
     private Context context;
 
+
+    /**
+     * Constructor for the adapter
+     *
+     * @param notificationList a list of notifications
+     */
     public NotificationAdapter(List<Notification> notificationList) {
         this.notificationList = notificationList;
     }
 
+
+    /**
+     * This function inflates a layout and creates a new view for a notifications
+     *
+     * @param parent The parent view group for the new view
+     * @param viewType The view type
+     *
+     * @return the new view
+     */
     @NonNull
     @Override
     public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -39,6 +57,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return new NotificationViewHolder(itemView);
     }
 
+
+    /**
+     * This function displays the event information for the notification and deals with accepting/rejecting notifications
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param position index of item in list
+     */
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         Notification notification = notificationList.get(position);
@@ -69,6 +94,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.itemView.setAlpha(notification.isRead() ? 0.6f : 1.0f);
     }
 
+
+    /**
+     * This function changes the fragment to a specific event fragment based on what event the notification was for.
+     *
+     * @param notification a given notification
+     */
     private void navigateToEventDetails(Notification notification) {
         String eventId = notification.getEventId();
         if (eventId == null || eventId.isEmpty()) {
@@ -90,6 +121,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
+
+    /**
+     * This function deals with notification acceptance and moves users to final lists
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param notification a given notification
+     * @param position the index of an item in the list
+     */
     private void handleAcceptNotification(NotificationViewHolder holder, Notification notification, int position) {
         String eventId = notification.getEventId();
         String userId = notification.getUserToId();
@@ -109,6 +148,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         });
     }
 
+
+    /**
+     * This function deals with notification rejection and moves users to cancelled lists
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param notification a given notification
+     * @param position the index of an item in the list
+     */
     private void handleRejectNotification(NotificationViewHolder holder, Notification notification, int position) {
         String eventId = notification.getEventId();
         String userId = notification.getUserToId();
@@ -134,17 +181,35 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         });
     }
 
+
+    /**
+     * This function changes the notifications status to read
+     *
+     * @param holder The ViewHolder which will represents the data at this position
+     * @param notification a given notification
+     * @param position the index of an item in the list
+     */
     private void markNotificationAsRead(NotificationViewHolder holder, Notification notification, int position) {
         notification.markAsRead();
         notificationList.remove(position);
         notifyItemRemoved(position);
     }
 
+
+    /**
+     * Returns the size of the list that displays the events
+     *
+     * @return size of the notification list
+     */
     @Override
     public int getItemCount() {
         return notificationList == null ? 0 : notificationList.size();
     }
 
+
+    /**
+     * ViewHolder used for the notification
+     */
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {
         TextView eventName, message, date;
         LinearLayout selectionButtons;

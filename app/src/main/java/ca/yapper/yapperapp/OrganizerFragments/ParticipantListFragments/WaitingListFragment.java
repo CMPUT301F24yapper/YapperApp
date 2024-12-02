@@ -51,8 +51,9 @@ public class WaitingListFragment extends Fragment {
     private TextView emptyTextView;
     private ImageView emptyImageView;
 
+
     /**
-     * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
+     * Inflates the fragment layout,  RecyclerView, adapter, and UI components,
      * and loads the waiting list for the specified event. Sets up a draw button to move users to the selected list.
      *
      * @param inflater LayoutInflater used to inflate the fragment layout.
@@ -90,6 +91,7 @@ public class WaitingListFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Loads the capacity of the event from Firestore, setting the maximum number of participants allowed.
      */
@@ -105,6 +107,7 @@ public class WaitingListFragment extends Fragment {
                 Toast.makeText(getContext(), "Error loading capacity: " + errorMessage, Toast.LENGTH_SHORT).show();    }
     });
     }
+
 
     /**
      * Refreshes the waiting list by reloading data from Firestore and updating the RecyclerView.
@@ -160,6 +163,7 @@ public class WaitingListFragment extends Fragment {
         });
     }
 
+
     /**
      * Loads the waiting list from the "waitingList" subcollection of the event document in Firestore.
      * Updates the RecyclerView adapter with the retrieved users.
@@ -168,10 +172,7 @@ public class WaitingListFragment extends Fragment {
         refreshList();
     }
 
-    /**
-     * Draws multiple users from the waiting list, filling available slots in the selected list
-     * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
-     */
+
     /**
      * Draws multiple users from the waiting list, filling available slots in the selected list
      * until the event's capacity is reached. Updates Firestore and the UI with the moved users.
@@ -244,6 +245,7 @@ public class WaitingListFragment extends Fragment {
         });
     }
 
+
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      * Displays a confirmation message and updates the UI.
@@ -264,6 +266,7 @@ public class WaitingListFragment extends Fragment {
             }
         });
     }
+
 
     /**
      * Refreshes all fragments displaying participant lists for the event,

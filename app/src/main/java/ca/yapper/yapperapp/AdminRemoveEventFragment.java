@@ -20,7 +20,11 @@ import ca.yapper.yapperapp.Databases.AdminDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
+/**
+ * This is the fragment that allows admins to delete events
+ */
 public class AdminRemoveEventFragment extends Fragment {
+
     private String eventId;
     private TextView eventTitle, eventDate, facilityName, facilityLocation, organizerName,
             eventDescription, eventCapacity, waitlistCapacity;
@@ -28,6 +32,17 @@ public class AdminRemoveEventFragment extends Fragment {
     private ImageView eventImage;
     private TextView changePicture, removePicture;
 
+
+    /**
+     *
+     * Inflates the fragment layout, sets up UI components,
+     * and loads event details.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -44,6 +59,12 @@ public class AdminRemoveEventFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function initializes all the references to the UI elements
+     *
+     * @param view the parent view
+     */
     private void initializeViews(View view) {
         eventTitle = view.findViewById(R.id.event_title);
         eventDate = view.findViewById(R.id.event_date);
@@ -60,6 +81,10 @@ public class AdminRemoveEventFragment extends Fragment {
         removePicture = view.findViewById(R.id.remove_picture);
     }
 
+
+    /**
+     * This function obtains the event details from the database and updates the UI elements accordingly
+     */
     private void loadEventDetails() {
         OrganizerDatabase.loadEventFromDatabase(eventId, new OrganizerDatabase.OnEventLoadedListener() {
             @Override
@@ -90,6 +115,10 @@ public class AdminRemoveEventFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function sets up the functionality for each button
+     */
     private void setupButtons() {
         removeEventButton.setOnClickListener(v -> handleEventDeletion());
         removeQRDataButton.setOnClickListener(v -> handleQRDataRemoval());
@@ -97,6 +126,10 @@ public class AdminRemoveEventFragment extends Fragment {
         removePicture.setOnClickListener(v -> handleRemovePicture());
     }
 
+
+    /**
+     * This function handles removing an event from the database and switching fragments afterwards(Updating UI elements)
+     */
     private void handleEventDeletion() {
         AdminDatabase.removeEvent(eventId).addOnSuccessListener(aVoid -> {
             FragmentManager fm = getParentFragmentManager();

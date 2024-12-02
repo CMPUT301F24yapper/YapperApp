@@ -52,6 +52,7 @@ public class SelectedListFragment extends Fragment {
     private LinearLayout emptyStateLayout;
     private String organizerId;
 
+
     /**
      * Inflates the fragment layout, initializes Firestore, RecyclerView, adapter, and UI components,
      * and loads the selected list for the specified event. Sets up a redraw button for re-selection.
@@ -118,16 +119,21 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
     /**
      * Refreshes the selected list by reloading data from Firestore and updating the RecyclerView.
      */
     public void refreshList() {
         if (getContext() == null) {return;}
-        // get refreshed list
         selectedList.clear();
         adapter.notifyDataSetChanged();
 
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "selectedList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            /**
+             * This function is for toggling the empty state once users are added to the list
+             *
+             * @param userIdsList List of user Id in the subcollection
+             */
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
@@ -136,18 +142,19 @@ public class SelectedListFragment extends Fragment {
                     return;
                 }
                 showEmptyState(false);
-                AtomicInteger loadedUsersCount = new AtomicInteger(0);  // Track loaded users
+                AtomicInteger loadedUsersCount = new AtomicInteger(0);
 
                 for (String userId : userIdsList) {
-                    // For each userId, fetch the corresponding User object
                     UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        /**
+                         * This function updates the cancelled list when users are obtained
+                         * @param user a given user
+                         */
                         @Override
                         public void onUserLoaded(User user) {
                             selectedList.add(user);
-                            adapter.notifyDataSetChanged();  // Notify the adapter about new data
-                            // Check if all users are loaded
+                            adapter.notifyDataSetChanged();
                             if (loadedUsersCount.incrementAndGet() == userIdsList.size()) {
-                                // Perform post-loading operations here
                                 finalizeRefreshList();
                             }
                         }
@@ -155,7 +162,6 @@ public class SelectedListFragment extends Fragment {
                         public void onUserLoadError(String error) {
                             if (getContext() == null) return;
                             Log.e("SelectedList", "Error loading user: " + error);
-                            // Check even on failure if all users are processed
                             if (loadedUsersCount.incrementAndGet() == userIdsList.size()) {
                                 finalizeRefreshList();
                             }
@@ -172,8 +178,11 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function updates the UI of the list, and check various aspects of the selected list.
+     */
     private void finalizeRefreshList() {
-        // Perform UI updates and checks
         loadEventCapacity();
         if (selectedList.isEmpty()) {
             Toast.makeText(getContext(), "No users in selected list", Toast.LENGTH_SHORT).show();
@@ -184,11 +193,9 @@ public class SelectedListFragment extends Fragment {
 
         if (selectedList.size() < eventCapacity) {
             redrawButton.setVisibility(View.VISIBLE);
-            // redrawButton.setOnClickListener(v -> redrawApplicant());
         } else {
             redrawButton.setVisibility(View.GONE); }
 
-        // Check if there are any "Pending" users in the selected list
         boolean hasPending = false;
 
         // Track how many users have been checked
@@ -208,9 +215,7 @@ public class SelectedListFragment extends Fragment {
                     else {
                         Log.i("finalizeRefreshList", "In for loop, isPendingStatusForUser: User x is NOT pending: " + user.getDeviceId());
                     }
-                    // Increment the count of checked users
                     if (checkedUsersCount.incrementAndGet() == selectedList.size()) {
-                        // All users have been checked, update UI
                         updatePendingUI(isPending);
                     }
                 }
@@ -222,15 +227,19 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function updates the visibility of the UI elements associated with the pending and redraw buttons
+     *
+     * @param hasPending a variable indicating if the list has users with the pending status
+     */
     private void updatePendingUI(boolean hasPending) {
-        // Show the Dump Pending Applicant button if there are pending users
         if (hasPending) {
             dumpPendingButton.setVisibility(View.VISIBLE);
         } else {
             dumpPendingButton.setVisibility(View.GONE);
         }
 
-        // Show the Redraw button if there are seats left in the selected list
         if (selectedList.size() < eventCapacity) {
             redrawButton.setVisibility(View.VISIBLE);
         } else {
@@ -238,8 +247,11 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function moves users who are pending to the cancelled list and removes them from selected
+     */
     private void dumpPendingApplicant() {
-        // Disable the button to prevent multiple clicks while processing
         dumpPendingButton.setEnabled(false);
 
         for (User user : selectedList) {
@@ -247,7 +259,6 @@ public class SelectedListFragment extends Fragment {
                 @Override
                 public void onStatusLoaded(boolean isPending) {
                     if (isPending) {
-                        // pendingUsers.add(user); }// Add pending users to the list
                         moveUserToCancelledList(user);
                         selectedList.remove(user);
                     }
@@ -260,6 +271,12 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
+    /**'
+     * This function moves a user to the final list
+     *
+     * @param user a give user
+     */
     private void moveUserToFinalList(User user) {
         OrganizerDatabase.moveUserBetweenSubcollections(eventId, user.getDeviceId(), "selectedList", "finalList");
         EntrantDatabase.addEventToRegisteredEvents(user.getDeviceId(), eventId);
@@ -275,6 +292,7 @@ public class SelectedListFragment extends Fragment {
         }
     }
 
+
     /**
      * Loads the selected list from the "selectedList" subcollection of the event document in Firestore.
      * Updates the RecyclerView adapter with the retrieved users.
@@ -282,6 +300,7 @@ public class SelectedListFragment extends Fragment {
     private void loadSelectedList() {
         refreshList();
     }
+
 
     /**
      * Allows re-selection of participants by randomly choosing from the waiting list and moving users to the selected list,
@@ -306,12 +325,18 @@ public class SelectedListFragment extends Fragment {
         moveUserToWaitingList(selectedUser); **/
     }
 
+
     /**
      * Draws multiple users from the waiting list if the selected list has space remaining,
      * moving users from the waiting list to the selected list in Firestore.
      */
     private void drawFromWaitingList() {
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "waitingList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            /**
+             * This function is for indicating if the waiting list is empty
+             *
+             * @param userIdsList List of user Id in the subcollection
+             */
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
@@ -359,12 +384,6 @@ public class SelectedListFragment extends Fragment {
     }
 
 
-    /**
-     * Moves a user from the waiting list to the selected list in Firestore.
-     *
-     * @param user The user to be moved.
-     * @param onComplete Runnable executed once the move is complete.
-     */
     /**
      * Moves a user from the waiting list to the selected list in Firestore.
      *
@@ -429,6 +448,12 @@ public class SelectedListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function moves a user to the cancelled list
+     *
+     * @param user a given user
+     */
     private void moveUserToCancelledList(User user) {
         OrganizerDatabase.moveUserBetweenSubcollections(eventId, user.getDeviceId(), "selectedList", "cancelledList");
         // status change
