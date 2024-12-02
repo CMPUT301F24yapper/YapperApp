@@ -37,9 +37,7 @@ public class AdminActivityUITest {
         onView(withId(R.id.nav_admin_profile)).check(matches(isDisplayed()));
     }
 
-    /**
-     * Test: Verify Navigation to Search Fragment.
-     */
+
     @Test
     public void testNavigateToSearchFragment() {
         onView(withId(R.id.nav_admin_search)).perform(click());
