@@ -127,15 +127,22 @@ public class OrganizerActivity extends AppCompatActivity {
                 }); **/
 
         popup.setOnMenuItemClickListener(item -> {
+            Intent intent = null;
+
             if (item.getItemId() == R.id.switch_to_entrant) {
-                startActivity(new Intent(this, EntrantActivity.class));
-                finish();
-                return true;
+                intent = new Intent(this, EntrantActivity.class);
+
             } else if (item.getItemId() == R.id.switch_to_admin) {
-                startActivity(new Intent(this, AdminActivity.class));
+                intent = new Intent(this, AdminActivity.class);
+
+            }
+            if (intent != null) {
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;
             }
+
             return false;
         });
 
