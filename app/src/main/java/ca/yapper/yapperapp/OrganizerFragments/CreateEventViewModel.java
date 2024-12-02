@@ -4,6 +4,9 @@ import android.net.Uri;
 
 import androidx.lifecycle.ViewModel;
 
+/**
+ * Creates an event view model
+ */
 public class CreateEventViewModel extends ViewModel {
     public String eventName;
     public String eventDescription;

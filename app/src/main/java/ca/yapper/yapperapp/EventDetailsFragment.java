@@ -6,7 +6,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
@@ -28,6 +30,9 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.load.engine.Resource;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -76,6 +81,7 @@ public class EventDetailsFragment extends Fragment {
     private ImageView worldmap;
     private Button customNotificationButton;
 
+
     /**
      * Inflates the layout for the event details, initializes views, and loads event details from the database.
      * It also sets visibility for buttons based on the activity (Entrant or Organizer).
@@ -112,6 +118,7 @@ public class EventDetailsFragment extends Fragment {
         return view;
     }
 
+
     /**
      * Initializes all the UI elements (TextViews, Buttons) from the fragment layout.
      *
@@ -137,6 +144,7 @@ public class EventDetailsFragment extends Fragment {
 
         worldmap = view.findViewById(R.id.world_map);
     }
+
 
     /**
      * Loads the details of the event from the Firestore database and populates the corresponding UI elements.
@@ -219,6 +227,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Checks if the user is already in the event's waiting list or selected list and updates the button state accordingly.
      */
@@ -244,6 +253,10 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function checks if events registration dates or event dates have passed
+     */
     private void checkEventDates() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
@@ -265,6 +278,11 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
+    /**
+     * This function checks if the event waiting list capacity is full or if the event is still joinable.
+     * The function then updates the join event button accordingly.
+     */
     private void checkWaitListCapacity() {
         // check if full
         // OrganizerDatabase.getWaitingListCount(event.getDocumentId(), new OrganizerDatabase.OnWaitListCountLoadedListener() {
@@ -288,6 +306,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Sets up button listeners based on the activity type (Entrant or Organizer).
      *
@@ -310,6 +329,7 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
     /**
      * Handles the join button click. If the user clicks "Join", it checks if geolocation is required.
      * If geolocation is required, it prompts the user to confirm. If not, it proceeds to join the event.
@@ -331,6 +351,7 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+
     /**
      * Sets the state of the join button (text and background color).
      *
@@ -342,6 +363,7 @@ public class EventDetailsFragment extends Fragment {
         joinButton.setBackgroundColor(color);
         joinButton.setEnabled(enabled);
     }
+
 
     /**
      * Handles the "View Participants" button click. Opens a new fragment to display the list of participants.
@@ -358,6 +380,7 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
+
     /**
      * Handles the "Edit Event" button click. (This feature is currently to be implemented.)
      */
@@ -373,10 +396,10 @@ public class EventDetailsFragment extends Fragment {
                 .commit();
     }
 
+
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
      */
-
     private void viewQRCodeButtonClick() {
         OrganizerDatabase.checkQRCodeExists(eventId).addOnSuccessListener(exists -> {
             if (!exists) {
@@ -395,6 +418,7 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
     /**
      * Shows a dialog to warn the user that geolocation is required for this event.
      * If the user confirms, the event will be joined.
@@ -408,31 +432,49 @@ public class EventDetailsFragment extends Fragment {
                 .show();
     }
 
+
     /**
      * Joins the user to the event. It adds the user to the event's waiting list and to the user's list of joined events.
      * If successful, it updates the join button to display "Unjoin" and shows a success message.
      */
-    private void joinEvent() {
-            if (userDeviceId == null) {
-                Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (geolocationEnabled && !geolocationPermitted) {
-                showGeolocationWarningDialog();
-                return;
-            }
-            Log.d("joinEvent()", "about to call EntrantDb.joinEvent() with eventId & userId: " + finalEvent.getDocumentId() + userDeviceId);
-            EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
-                if (getContext() == null) return;
+    private boolean isJoiningEvent = false;
 
-                if (success) {
-                    setButtonState("Unjoin", R.color.unjoin_event, false);
-                    Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
-                }
-            });
+    private void joinEvent() {
+        if (isJoiningEvent) {
+            Log.d("joinEvent", "Join event already in progress.");
+            return;
         }
+        isJoiningEvent = true;
+
+        // Validate user device ID
+        if (userDeviceId == null) {
+            Toast.makeText(getContext(), "Error: Device ID not found", Toast.LENGTH_SHORT).show();
+            isJoiningEvent = false;
+            return;
+        }
+
+        // Check geolocation permissions
+        if (geolocationEnabled && !geolocationPermitted) {
+            showGeolocationWarningDialog();
+            isJoiningEvent = false;
+            return;
+        }
+
+        Log.d("joinEvent", "Calling EntrantDb.joinEvent() with eventId and userId");
+
+        EntrantDatabase.joinEvent(finalEvent.getDocumentId(), userDeviceId, success -> {
+            if (getContext() == null) return;
+
+            if (success) {
+                setButtonState("Unjoin", R.color.unjoin_event, false);
+                Toast.makeText(getContext(), "Successfully joined the event!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Error joining the event. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+            isJoiningEvent = false;
+        });
+    }
+
 
     /**
      * Unjoins the user from the event. It removes the user from both the event's waiting list and their list of joined events.
@@ -457,39 +499,81 @@ public class EventDetailsFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function obtains the users location(coordinates) after requesting permission from them.
+     */
     @SuppressLint("MissingPermission")
     private void getUserLocation() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+            isJoiningEvent = false;
             return;
         }
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        // Call UserDatabase to save the location
-                        UserDatabase.saveLocationToFirestore(finalEvent.getDocumentId(), userDeviceId, latitude, longitude, new UserDatabase.OnLocationSavedListener() {
-                            @Override
-                            public void onSuccess() {
-                                Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
-                                joinEvent(); // Proceed to join the event
-                            }
 
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    } else {
-                        Toast.makeText(getContext(), "Unable to fetch location. Try again.", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to retrieve location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        // Create a location request
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5000) // Set interval to 5 seconds for fresh updates
+                .setFastestInterval(2000); // Fastest interval to receive updates
+
+        // Request location updates
+        fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    Toast.makeText(getContext(), "Unable to fetch location. Try again.", Toast.LENGTH_SHORT).show();
+                    isJoiningEvent = false;
+                    return;
+                }
+
+                // Get the latest location
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+
+                    Log.d("UserLocation", "Fetched Latitude: " + latitude + ", Longitude: " + longitude);
+
+                    // Save the location to Firestore
+                    saveUserLocation(latitude, longitude);
+
+                    // Stop location updates after fetching the first fresh location
+                    fusedLocationClient.removeLocationUpdates(this);
+                }
+            }
+        }, Looper.getMainLooper());
     }
 
+    private void saveUserLocation(double latitude, double longitude) {
+        UserDatabase.saveLocationToFirestore(
+                finalEvent.getDocumentId(),
+                userDeviceId,
+                latitude,
+                longitude,
+                new UserDatabase.OnLocationSavedListener() {
+                    @Override
+                    public void onSuccess() {
+                        //Toast.makeText(getContext(), "Location saved successfully!", Toast.LENGTH_SHORT).show();
+                        Log.d("UserLocation", "Location saved to Firestore.");
+                        joinEvent(); // Proceed to join the event
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Toast.makeText(getContext(), "Failed to save location: " + error, Toast.LENGTH_SHORT).show();
+                        Log.e("UserLocation", "Error saving location: " + error);
+                        isJoiningEvent = false;
+                    }
+                });
+    }
+
+
+    /**
+     * This function checks if location permissions have been given, and asked for them if not.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
@@ -498,6 +582,8 @@ public class EventDetailsFragment extends Fragment {
             getUserLocation();
         }
     }
+
+
     /**
      * Handles the "Custom Notification" button click.
      * Navigates to the CustomNotificationFragment, passing the event ID as an argument.
@@ -520,7 +606,14 @@ public class EventDetailsFragment extends Fragment {
     }
 
 
-
+    /**
+     * This function deals with a given permission request
+     *
+     * @param requestCode The request code. A tag.
+     * @param permissions The requested permissions
+     * @param grantResults value indicating if permission has been granted or not
+     *
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1001) {
@@ -531,10 +624,17 @@ public class EventDetailsFragment extends Fragment {
             }
         }
     }
+
+
+    /**
+     * This function Obtains a given events coordinates and displays them on a map for the organizer
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     */
     private void loadUserPins(String eventId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Events").document(eventId).collection("waitingList")
+        db.collection("Events").document(eventId).collection("userLocations")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     List<float[]> coordinates = new ArrayList<>();
@@ -557,18 +657,51 @@ public class EventDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("Firestore", "Failed to load user pins: " + e.getMessage()));
     }
 
-    private float[] convertGeoToPixel(float latitude, float longitude) {
-        // Get dimensions of the map image
-        int imageWidth = worldmap.getWidth();
-        int imageHeight = worldmap.getHeight();
 
-        // Normalize latitude and longitude to pixel positions
-        float x = (longitude + 180) / 360 * imageWidth; // Normalize longitude to [0, 360]
-        float y = (90 - latitude) / 180 * imageHeight;  // Normalize latitude to [0, 180]
+    /**
+     * This function converts user coordinates to a pixel value
+     *
+     * @param latitude the latitude of the user location
+     * @param longitude the longitude of the user location
+     * @return a coordinate converted to a pixel location
+     */
+    private float[] convertGeoToPixel(float latitude, float longitude) {
+        int imageViewWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        int imageViewHeight = (int) (250 * Resources.getSystem().getDisplayMetrics().density); // Assuming height in dp
+
+        int originalMapWidth = 725;
+        int originalMapHeight = 360;
+
+        float scaleFactorWidth = (float) imageViewWidth / originalMapWidth;
+        float scaleFactorHeight = (float) imageViewHeight / originalMapHeight;
+
+        float scaleFactor = Math.min(scaleFactorWidth, scaleFactorHeight);
+
+        float normalizedLongitude = (longitude + 180) / 360;
+        float normalizedLatitude = (latitude + 90) / 180;
+
+        float x = normalizedLongitude * originalMapWidth * scaleFactor;
+        float y = normalizedLatitude * originalMapHeight * scaleFactor;
+
+        float verticalOffset = 90 * Resources.getSystem().getDisplayMetrics().density;  // Default offset
+        if (latitude < 0) {
+            verticalOffset += (Math.abs(latitude) / 90) * 90 * Resources.getSystem().getDisplayMetrics().density;
+        }
+
+        y -= verticalOffset;
+
+        x = Math.max(0, Math.min(imageViewWidth, x));
+        y = Math.max(0, Math.min(imageViewHeight, y));
 
         return new float[]{x, y};
     }
 
+
+    /**
+     * This function updates the map to display the pins which are user coordinates
+     *
+     * @param coordinates a list of user coordinates
+     */
     private void displayPinsOnMap(List<float[]> coordinates) {
         WorldMapPinsOverlay pinsOverlay = getView().findViewById(R.id.pins_overlay);
         if (pinsOverlay != null) {

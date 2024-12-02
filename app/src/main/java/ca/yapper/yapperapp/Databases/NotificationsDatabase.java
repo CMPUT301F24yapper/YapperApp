@@ -17,6 +17,9 @@ import java.util.Map;
 import ca.yapper.yapperapp.NotificationListener;
 import ca.yapper.yapperapp.UMLClasses.Notification;
 
+/**
+ * Class holding all the notification related functions that interact with the database.
+ */
 public class NotificationsDatabase {
     private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
@@ -24,14 +27,25 @@ public class NotificationsDatabase {
     private static ListenerRegistration listenerRegistration;
     private static Date lastNotificationTime;
 
+    /**
+     * Interface for handling notification loading methods
+     */
     public interface OnNotificationsLoadedListener {
         void onNotificationsLoaded(List<Notification> notifications);
         void onError(String error);
     }
 
     /**
-     * Saves the notification to Firestore under the "Notifications" collection.
+     * Function that saves the notification to Firestore under the "Notifications" collection.
      * Sets the Firestore document ID for future reference.
+     *
+     * @param dateTimeStamp when the notification was made
+     * @param userToId id of user getting the notification
+     * @param userFromId id of user sending the notification
+     * @param title title of notification
+     * @param message contents of the notification
+     * @param notificationType the type of notification
+     * @param isRead the status of the notification(if it's been read or not)
      */
     public static void saveToDatabase(Date dateTimeStamp, String userToId, String userFromId,
                                       String title, String message, String notificationType,
@@ -55,6 +69,12 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> Log.e("NotificationError", "Error adding notification", e));
     }
 
+    /**
+     * Function that loads notifications that haven't been read, for a given user.
+     *
+     * @param userDeviceId The device ID of the user.
+     * @param listener listener to handle outcome of loading a notification
+     */
     public static void loadNotifications(String userDeviceId, OnNotificationsLoadedListener listener) {
         db.collection("Notifications")
                 .whereEqualTo("userToId", userDeviceId)
@@ -74,11 +94,23 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> listener.onError("Error loading notifications: " + e.getMessage()));
     }
 
+    /**
+     * Function that changes notifications from unread to read.
+     *
+     * @param notificationId id of a specific notification
+     * @return a Task with the result of the operation
+     */
     public static Task<Void> markNotificationAsRead(String notificationId) {
         return db.collection("Notifications").document(notificationId)
                 .update("isRead", true);
     }
 
+    /**
+     * This function sends a notification to a user by adding it in the database
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param notification a given notification
+     */
     public static void sendNotificationToUser(String userId, Notification notification) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Users").document(userId)
@@ -87,6 +119,12 @@ public class NotificationsDatabase {
                 .addOnFailureListener(e -> Log.e("NotificationsDB", "Error sending notification", e));
     }
 
+    /**
+     * This function initializes a listener checking for newly read notification
+     *
+     * @param deviceId The Id for users device.
+     * @param callback handles the notifications we get
+     */
     public static void startNotificationListener(String deviceId, NotificationListener.NotificationCallback callback) {
         Log.d(TAG, "Starting Firestore notification listener for device: " + deviceId);
 
@@ -122,6 +160,9 @@ public class NotificationsDatabase {
                 });
     }
 
+    /**
+     * This function removes the notification listener
+     */
     public static void stopNotificationListener() {
         Log.d(TAG, "Stopping Firestore notification listener");
         if (listenerRegistration != null) {

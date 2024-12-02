@@ -22,6 +22,9 @@ import ca.yapper.yapperapp.Databases.NotificationsDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.R;
 
+/**
+ * This is the fragment for custom notifications
+ */
 public class CustomNotificationFragment extends Fragment {
 
     private EditText notificationTextBox;
@@ -30,6 +33,13 @@ public class CustomNotificationFragment extends Fragment {
     private String eventId;
     private String selectedList = "waitingList"; // Default to "waitingList"
 
+    /**
+     * This function creates a new fragment with different arguments
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @param eventName The given event name
+     * @return returns a fragment with different arguments
+     */
     public static CustomNotificationFragment newInstance(String eventId, String eventName) {
         CustomNotificationFragment fragment = new CustomNotificationFragment();
         Bundle args = new Bundle();
@@ -39,7 +49,15 @@ public class CustomNotificationFragment extends Fragment {
         return fragment;
     }
 
-
+    /**
+     *
+     * Inflates the fragment layout, initializes UI elements, and obtains arguments.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,18 +80,17 @@ public class CustomNotificationFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Sets up and configures the layout for the tab on custom notifications
+     */
     private void setupTabLayout() {
-        // Add tabs
         notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Waiting"));
         notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Selected"));
         notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Final"));
         notificationTabLayout.addTab(notificationTabLayout.newTab().setText("Cancelled"));
-
-        // Set default selected tab
         notificationTabLayout.selectTab(notificationTabLayout.getTabAt(0));
-
-        // Handle tab selection
         notificationTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
@@ -101,7 +118,9 @@ public class CustomNotificationFragment extends Fragment {
         });
     }
 
-
+    /**
+     * This function obtains user ids for an events sub collection and sends custom notifications to those users
+     */
     private void sendNotification() {
         String notificationMessage = notificationTextBox.getText().toString().trim();
 

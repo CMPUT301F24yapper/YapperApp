@@ -39,7 +39,6 @@ public class MissedOutFragment extends Fragment {
     private List<Event> eventList;
     private FirebaseFirestore db;
     private String userDeviceId;
-
     private TextView emptyTextView;
     private ImageView emptyImageView;
 
@@ -72,8 +71,16 @@ public class MissedOutFragment extends Fragment {
         return view;
     }
 
+    /**
+     * This function is used to see events for the 3rd tab at the top of the entrant home page, along with change the
+     * page depending on if the page is empty or not.
+     */
     private void loadEventsFromFirebaseDebug() {
         EntrantDatabase.loadEventsList(userDeviceId, EntrantDatabase.EventListType.MISSED, new EntrantDatabase.OnEventsLoadedListener() {
+                    /**
+                     * This function updates the UI to display/remove messages for empty pages
+                     * @param events a list of events
+                     */
                     @Override
                     public void onEventsLoaded(List<Event> events) {
                         if (getContext() == null) return;
