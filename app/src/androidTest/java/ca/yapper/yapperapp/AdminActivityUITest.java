@@ -64,5 +64,14 @@ public class AdminActivityUITest {
         onView(withId(R.id.bottom_navigation)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testAdminHomeFragmentDefaultView() {
+        onView(withId(R.id.fragment_container)).check(matches(isDisplayed()));
+        // Specific elements from AdminHomeFragment
+        onView(withId(R.id.total_events_label)).check(matches(isDisplayed()));
+        onView(withId(R.id.total_events)).check(matches(isDisplayed()));
+    }
+
+
 
 }
