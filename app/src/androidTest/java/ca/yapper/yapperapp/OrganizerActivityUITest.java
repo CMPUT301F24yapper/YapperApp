@@ -35,5 +35,18 @@ public class OrganizerActivityUITest {
         onView(withId(R.id.my_events_title)).check(matches(isDisplayed()));
     }
 
+    /**
+     * Test: Create/Edit Event Page - Verify title and save button are displayed.
+     */
+    @Test
+    public void testCreateEditEventPage() {
+        onView(withId(R.id.nav_organizer_createevent)).perform(click());
+        onView(withId(R.id.new_event_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.save_event_button)).perform(scrollTo()).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Test: Create/Edit Event Page - Enter event name and save.
+     */
 
 }
