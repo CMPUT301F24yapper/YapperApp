@@ -49,4 +49,22 @@ public class OrganizerActivityUITest {
      * Test: Create/Edit Event Page - Enter event name and save.
      */
 
+    @Test
+    public void testEnterEventNameAndSave() {
+        onView(withId(R.id.nav_organizer_createevent)).perform(click());
+        onView(withId(R.id.event_name_input)).perform(scrollTo(), typeText("Test Event"));
+        onView(withId(R.id.save_event_button)).perform(scrollTo(), click());
+    }
+
+    /**
+     * Test: Profile Page - Verify profile picture and name input are displayed.
+     */
+    @Test
+    public void testProfilePage() {
+        onView(withId(R.id.nav_organizer_profile)).perform(click());
+        onView(withId(R.id.profile_image)).check(matches(isDisplayed()));
+        onView(withId(R.id.edit_name)).check(matches(isDisplayed()));
+    }
+
+
 }
