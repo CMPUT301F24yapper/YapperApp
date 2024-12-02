@@ -27,11 +27,6 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <ImageView
-                    android:id="@+id/back_button"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/backbutton" />
 
                 <TextView
                     android:id="@+id/new_event_title"
@@ -57,7 +52,7 @@
                 android:layout_height="200dp"
                 android:layout_marginTop="8dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/event_poster" />
+                android:src="@drawable/event_image" />
             <Button
                 android:id="@+id/choose_poster_button"
                 android:layout_width="match_parent"
