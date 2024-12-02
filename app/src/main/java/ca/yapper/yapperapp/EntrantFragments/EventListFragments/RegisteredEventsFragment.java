@@ -20,7 +20,11 @@ import ca.yapper.yapperapp.Adapters.EventsAdapter;
 import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 
+/**
+ * Registered events fragment contains the functionality for an entrants registered events
+ */
 public class RegisteredEventsFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private EventsAdapter adapter;
     private List<Event> eventList;
@@ -28,6 +32,16 @@ public class RegisteredEventsFragment extends Fragment {
     private TextView emptyTextView;
     private ImageView emptyImageView;
 
+
+    /**
+     *
+     * Inflates the fragment layout and initializes UI references and loads events.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,6 +61,10 @@ public class RegisteredEventsFragment extends Fragment {
         return view;
     }
 
+    /**
+     * This function obtains the users registered events from the database and updates the UI elements
+     * accordingly. It also changes the page if no events are in the list and displays an empty icon.
+     */
     private void loadEvents() {
         EntrantDatabase.loadRegisteredEventsFromFinalLists(userDeviceId, new EntrantDatabase.OnEventsLoadedListener() {
             @Override

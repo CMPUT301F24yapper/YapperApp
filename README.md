@@ -7,6 +7,8 @@ Our TA feedback was to better implement the testing component (more UI tests),
 Look to source code in Repo.
 
 ## 3. Code Documentation:
+Source Code contains comments at the top of each method.
+Generated Javadocs File: [Javadocs](https://drive.google.com/drive/u/4/folders/1Qoqg7wmWQTU7dWtox3jd7IVcYeWaUrmn)
 
 ## 4. Test Cases:
 Our app includes unit tests, integrated with GitHub Actions, using Mockito to mock dependencies for isolated testing. We also perform UI tests with Espresso, which can be run locally on an emulator. To ensure consistent UI test results, animations must be switched off through the Developer Options in the Android emulator.

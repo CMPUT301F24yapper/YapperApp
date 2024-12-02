@@ -161,7 +161,13 @@ public class OrganizerDatabase {
         void onError(String errorMessage);
     }
 
-
+    /**
+     * This function removes a given user from the selected list of a given event.
+     *
+     * @param eventId The id for the event
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of the operation
+     */
     public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
 
         db.collection("Events")
