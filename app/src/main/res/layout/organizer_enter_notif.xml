@@ -1,42 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="@color/background">
 
-    <!-- Tab Layout -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/notificationTabLayout"
+    <!-- Purple Section containing both header and tabs -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#E0B0FF"/>
+        android:background="@color/yapper_purple"
+        android:orientation="vertical">
 
-    <!-- Text Input Field -->
-    <EditText
-        android:id="@+id/notificationTextBox"
+        <!-- Header Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Custom Notification"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:gravity="center"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Send notifications to your event attendees"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:alpha="0.9"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Tab Layout -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/notificationTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabTextColor="#FFFFFF"
+            app:tabSelectedTextColor="#FFFFFF"
+            app:tabIndicatorColor="#FFFFFF"
+            android:background="@color/yapper_purple"/>
+    </LinearLayout>
+
+    <!-- Rest of content -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:hint="Type your notification"
-        android:textColorHint="#808080"
-        android:padding="12dp"
-        android:textColor="#000000"
-        android:inputType="text"
-        android:gravity="center"
-        android:background="@drawable/rounded_border"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Send Notification Button -->
-    <Button
-        android:id="@+id/sendNotificationButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send Notification"
-        android:backgroundTint="#E0B0FF"
-        android:textColor="@android:color/black"
-        android:padding="12dp"
-        android:elevation="4dp"
-        android:layout_gravity="center" />
+        <!-- Text Input Field in Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="8dp"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:hint="Type your notification message">
+
+                <EditText
+                    android:id="@+id/notificationTextBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine"
+                    android:background="@null"
+                    android:padding="16dp"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Send Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sendNotificationButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Send Notification"
+            android:textSize="16sp"
+            android:padding="16dp"
+            app:cornerRadius="16dp"
+            android:backgroundTint="@color/yapper_purple"/>
+    </LinearLayout>
 </LinearLayout>
