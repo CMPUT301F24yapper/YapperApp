@@ -66,5 +66,14 @@ public class OrganizerActivityUITest {
         onView(withId(R.id.edit_name)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testNavigateToHomePage() {
+        // Navigate to Home Page
+        onView(withId(R.id.nav_organizer_home)).perform(click());
+
+        // Verify the Home Page title is displayed
+        onView(withId(R.id.my_events_title)).check(matches(isDisplayed()));
+    }
+
 
 }
