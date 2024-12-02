@@ -32,6 +32,7 @@ public class OrganizerActivity extends AppCompatActivity {
     // private CollectionReference eventsRef = db.collection("Events");
     private String deviceId;
 
+
     /**
      * Initializes the activity, setting up the layout and enabling Edge-to-Edge for UI.
      * Sets up BottomNavigationView for navigating between sections: Home, Create Event, and Profile.

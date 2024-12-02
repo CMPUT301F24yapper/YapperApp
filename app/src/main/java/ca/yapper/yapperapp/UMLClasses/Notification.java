@@ -25,8 +25,6 @@ public class Notification {
     private String eventId;
 
 
-
-
     /**
      * Default constructor required for Firebase deserialization.
      */
@@ -78,6 +76,7 @@ public class Notification {
                 eventName // Pass eventName here
         );
     }
+
 
     /**
      * Marks the notification as read in Firestore and updates the local read status.

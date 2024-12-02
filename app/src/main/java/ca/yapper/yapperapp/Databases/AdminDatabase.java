@@ -19,6 +19,9 @@ import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
+/**
+ * Class holding all the admin related functions that interact with the database.
+ */
 public class AdminDatabase {
     
     private static  FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
@@ -26,8 +29,14 @@ public class AdminDatabase {
     public static void setFirestoreInstance(FirebaseFirestore firestore) {
         db = firestore;
     }
-    
-    
+
+
+    /**
+     * This function obtains statistics from the database(used in the admin home page).
+     * The statistics gathered are the total number of events, users and organizers/facilities.
+     *
+     * @return a task with a map of the obtained statistics mentioned above.
+     */
     public static Task<Map<String, Long>> getAdminStats() {
         TaskCompletionSource<Map<String, Long>> tcs = new TaskCompletionSource<>();
         Map<String, Long> stats = new HashMap<>();
@@ -54,6 +63,15 @@ public class AdminDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * This function obtains the five largest events from the database, based on total users.
+     * It does this by adding up the counts from waiting, selected and cancelled lists. Then the
+     * events are ordered from largest to smallest.
+     *
+     * @return a task with a list of the five largest events as maps. Each map contains the name
+     * and count for the event.
+     */
     public static Task<List<Map<String, Object>>> getBiggestEvents() {
         TaskCompletionSource<List<Map<String, Object>>> tcs = new TaskCompletionSource<>();
 
@@ -103,6 +121,15 @@ public class AdminDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * This function obtains all the events from the database and turns them into event objects.
+     * It does this by iterating through the events from the event collection in the database,
+     * assigning the information obtained, then storing the event into a list. If an obtained value
+     * is invalid, then its skipped.
+     *
+     * @return a database call that returns a list of events
+     */
     public static Task<List<Event>> getAllEvents() {
         return db
                 .collection("Events")
@@ -151,6 +178,14 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * This function obtains all the users from the database and turns them into user objects.
+     * It does this by iterating through the users from the users collection in the database,
+     * assigning the information obtained, then storing the user into a list.
+     *
+     * @return a database reference that returns a list of all the users in the database
+     */
     public static Task<List<User>> getAllUsers() {
         return db
                 .collection("Users")
@@ -189,6 +224,16 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * Function for removing events from the database, along with their references. It does this
+     * by deleting the event from Events collection in the database. Then it iterates through
+     * all the users and removes the references to the given event from the users
+     * event subcollections.
+     *
+     * @param eventId The unique id for the event, created from the QR code.
+     * @return a task that is null when this action is complete
+     */
     public static Task<Void> removeEvent(String eventId) {
         WriteBatch batch = db.batch();
 
@@ -226,6 +271,15 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * Function for removing users from the database, along with their references. It does this
+     * by deleting the user from Users collection in the database. Then it iterates through
+     * all the events and removes the references to the given user from the event subcollections.
+     *
+     * @param userId The unique id for the user, created from the device id.
+     * @return a task that is null when this action is complete
+     */
     public static Task<Void> removeUser(String userId) {
         WriteBatch batch = db.batch();
 
@@ -274,6 +328,13 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * Gets all the images from the database. Obtains images from both the event posters and
+     * user profile images.
+     *
+     * @return A list of images
+     */
     public static Task<List<ImageData>> getAllImages() {
         TaskCompletionSource<List<ImageData>> tcs = new TaskCompletionSource<>();
         List<ImageData> allImages = new ArrayList<>();
@@ -304,6 +365,16 @@ public class AdminDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * Function that removes an image from the database. It does this by setting the image field
+     * to null.
+     *
+     * @param documentId The id of the images document, either from an event or profile.
+     * @param documentType Type of document storing the image.
+     * @param fieldName name of the field where the image is going to be deleted from
+     * @return A task that is completed once the field is updated.
+     */
     public static Task<Void> deleteImage(String documentId, String documentType, String fieldName) {
         Map<String, Object> updates = new HashMap<>();
         updates.put(fieldName, null);
@@ -314,6 +385,13 @@ public class AdminDatabase {
                 .update(updates);
     }
 
+
+    /**
+     * Obtains the profile image from the users document in the database.
+     *
+     * @param userId users id given by their device id
+     * @return a task with the profile image URL or null if the user doesn't have a profile picture
+     */
     public static Task<String> getProfileImage(String userId) {
         TaskCompletionSource<String> tcs = new TaskCompletionSource<>();
 
@@ -334,6 +412,14 @@ public class AdminDatabase {
         return tcs.getTask();
     }
 
+
+    /**
+     * Function that removes a facility from the database, and also updates the related events.
+     * Replaces facility references in events with "[Facility removed]".
+     *
+     * @param userId The user id that is attached to the facility. (The facility Owner)
+     * @return a task that is sucessful once the facility fields have been cleared.
+     */
     public static Task<Void> removeFacility(String userId) {
         WriteBatch batch = db.batch();
 
@@ -359,11 +445,22 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * Interface for facility detail loading methods and errors associated with it
+     */
     public interface OnFacilityDetailsLoadedListener {
         void onFacilityLoaded(String facilityName, String facilityAddress);
         void onError(String error);
     }
 
+
+    /**
+     * This function obtains facility details such as facility name and address from a specific organizer
+     *
+     * @param userId The id for the user, created from the device id.
+     * @param listener handles the outcome of loading the facility details
+     */
     public static void getFacilityDetails(String userId, OnFacilityDetailsLoadedListener listener) {
         db.collection("Users").document(userId)
                 .get()
@@ -375,6 +472,13 @@ public class AdminDatabase {
                 .addOnFailureListener(e -> listener.onError(e.getMessage()));
     }
 
+
+    /**
+     * This function obtains the organizers name from their ID, by going through their profile.
+     *
+     * @param organizerId The id for the organizer, created from the device id.
+     * @param listener handles the outcome of obtaining organizer names
+     */
     public static void getOrganizerName(String organizerId, OnNameLoadedListener listener) {
         db.collection("Users")
                 .document(organizerId)
@@ -390,10 +494,21 @@ public class AdminDatabase {
                 .addOnFailureListener(e -> listener.onNameLoaded("Unknown"));
     }
 
+
+    /**
+     * Interface for name loading classes
+     */
     public interface OnNameLoadedListener {
         void onNameLoaded(String name);
     }
 
+
+    /**
+     * This function removes QR Code data from a given event.
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that removes the QR Code data on success, otherwise failure
+     */
     public static Task<Void> removeQRCodeData(String eventId) {
         return db.collection("Events")
                 .document(eventId)
@@ -403,6 +518,13 @@ public class AdminDatabase {
                 });
     }
 
+
+    /**
+     * This function removes the event poster from a given event.
+     *
+     * @param eventId The id for the event
+     * @return a call to the database that removes the event poster on success, otherwise failure
+     */
     public static Task<Void> removeEventPoster(String eventId) {
         return db.collection("Events")
                 .document(eventId)

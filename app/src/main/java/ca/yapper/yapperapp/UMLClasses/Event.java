@@ -70,6 +70,7 @@ public class Event {
         this.waitingList = waitingList != null ? waitingList : new ArrayList<>();
     }
 
+
     /**
      * Loads an event from Firestore based on the event ID and returns it through a listener.
      *
@@ -163,6 +164,7 @@ public class Event {
         //} catch (WriterException e) {
             //return null; } } **/
 
+
     /**
      * Initializes Firestore subcollections for the event with placeholder data.
      *
@@ -176,6 +178,7 @@ public class Event {
         //db.collection("Events").document(eventId).collection("selectedList").add(placeholderData);
         //db.collection("Events").document(eventId).collection("finalList").add(placeholderData);
         //db.collection("Events").document(eventId).collection("cancelledList").add(placeholderData); }
+
 
     /**
      * Interface for handling the result of loading an event from Firestore.

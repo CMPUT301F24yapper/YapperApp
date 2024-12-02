@@ -38,6 +38,7 @@ public class SignupActivity extends AppCompatActivity {
     private static final String channel_Name = "event_notifications";
     private static final String channel_desc = "Notifications related to event participation";
 
+
     /**
      * Initializes the activity, sets up notifications for user roles, and checks if the user
      * already exists in Firestore.
@@ -95,6 +96,7 @@ public class SignupActivity extends AppCompatActivity {
                 Toast.makeText(this, "Error connecting to database.", Toast.LENGTH_SHORT).show();
             });
     }
+
 
     /**
      * Initializes sign-up form views for new users and sets up the listener for the sign-up button.

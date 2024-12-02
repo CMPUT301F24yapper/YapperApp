@@ -20,6 +20,9 @@ import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.User;
 import ca.yapper.yapperapp.UsersAdapter;
 
+/**
+ * The fragment for organizers to view the users in the cancelled list
+ */
 public class CancelledListFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -28,6 +31,15 @@ public class CancelledListFragment extends Fragment {
     private String eventId;
     private View emptyStateContainer;
 
+
+    /**
+     * Inflates the fragments layout, sets up views, initializes arrays and starts updating the UI for users.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -58,11 +70,19 @@ public class CancelledListFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function updates the UI
+     */
     public void refreshList() {
         if (getContext() == null) return;
         loadCancelledList();
     }
 
+
+    /**
+     * This function is for validating the cancelled list and updating the UI
+     */
     private void loadCancelledList() {
         if (getContext() == null || eventId == null || eventId.isEmpty()) {
             Log.e("CancelledListFragment", "Context or Event ID is null. Cannot load cancelled list.");
@@ -73,6 +93,11 @@ public class CancelledListFragment extends Fragment {
         adapter.notifyDataSetChanged();
 
         OrganizerDatabase.loadUserIdsFromSubcollection(eventId, "cancelledList", new OrganizerDatabase.OnUserIdsLoadedListener() {
+            /**
+             * This function is for toggling the empty state once users are added to the list
+             *
+             * @param userIdsList List of user Id in the subcollection
+             */
             @Override
             public void onUserIdsLoaded(ArrayList<String> userIdsList) {
                 if (userIdsList.isEmpty()) {
@@ -86,6 +111,10 @@ public class CancelledListFragment extends Fragment {
                 // Fetch User details for each user ID
                 for (String userId : userIdsList) {
                     EntrantDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
+                        /**
+                         * This function updates the cancelled list when users are obtained
+                         * @param user a given user
+                         */
                         @Override
                         public void onUserLoaded(User user) {
                             if (getContext() == null) return;
@@ -118,6 +147,12 @@ public class CancelledListFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function checks if the list is empty and updates the UI to display different views
+     *
+     * @param isEmpty a value indicating if the list is empty
+     */
     private void toggleEmptyState(boolean isEmpty) {
         if (isEmpty) {
             emptyStateContainer.setVisibility(View.VISIBLE);

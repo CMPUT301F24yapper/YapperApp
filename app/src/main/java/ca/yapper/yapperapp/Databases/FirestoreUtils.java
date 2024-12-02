@@ -9,22 +9,41 @@ import java.util.ArrayList;
 
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * Class holding all the Firestore utility related functions that interact with the database.
+ */
 public class FirestoreUtils {
     private static FirebaseFirestore dbInstance;
     private static boolean isMockMode = false;
 
+
+    /**
+     * Makes the instance of firestore a mock instance. For testing purposes.
+     *
+     * @param mockFirestore the mock instance of firestore we want to use
+     */
     public static void useMockInstance(FirebaseFirestore mockFirestore) {
         dbInstance = mockFirestore;
         isMockMode = true;
         System.out.println("FirestoreUtils: Using mock Firestore instance");
     }
 
+
+    /**
+     * Changes current instance of firestore back to the actual one after testing has been done.
+     */
     public static void useRealInstance() {
         dbInstance = FirebaseFirestore.getInstance();
         isMockMode = false;
         System.out.println("FirestoreUtils: Using real Firestore instance");
     }
 
+
+    /**
+     * Function to obtain an instance of the firestore database
+     *
+     * @return the instance of the database
+     */
     public static FirebaseFirestore getFirestoreInstance() {
         if (dbInstance == null) {
             synchronized (FirestoreUtils.class) {
@@ -37,6 +56,15 @@ public class FirestoreUtils {
         return dbInstance;
     }
 
+
+    /**
+     * Function to check if certain boolean fields in the database are true.
+     *
+     * @param collection the firestore collection we wish to check
+     * @param documentId the document we wish to check
+     * @param field the document we wish to check
+     * @return a task that is true if the field we wish to check exists and is true.
+     */
     public static Task<Boolean> checkDocumentField(String collection, String documentId, String field) {
         TaskCompletionSource<Boolean> tcs = new TaskCompletionSource<>();
         getFirestoreInstance().collection(collection).document(documentId).get()
@@ -52,16 +80,37 @@ public class FirestoreUtils {
         return tcs.getTask();
     }
 
+
+    /**
+     * Returns true if we are using mock instance of firestore
+     * @return true if in mock mode, otherwise false
+     */
     public static boolean isMockMode() {
         return isMockMode;
     }
 
+
+    /**
+     * Validates the current environment. Checks if we are set to the mock instance and throws
+     * an error if true.
+     *
+     * @throws IllegalStateException if the firestore instance is a mock one
+     */
     public static void validateEnvironment() {
         if (isMockMode) {
             throw new IllegalStateException("Mock Firestore instance should not be used in production!");
         }
     }
 
+
+    /**
+     * The function obtains a document and makes a user object with it. Throwing an
+     * IllegalArgumentException if we are missing certain fields.
+     *
+     * @param doc a snapshot of a user document from the database, with the users data
+     * @return a new user with the information from the snapshot
+     * @throws IllegalArgumentException if we are missing device id, email or admin.
+     */
     public static User parseUserFromSnapshot(DocumentSnapshot doc) {
         // Ensure all required fields are present
         if (!doc.contains("deviceId") || !doc.contains("entrantEmail") || !doc.contains("Admin")) {

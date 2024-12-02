@@ -22,7 +22,11 @@ import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
 
+/**
+ * This is the fragment that allows admins to delete user profiles
+ */
 public class AdminRemoveProfileFragment extends Fragment {
+
     private String userId;
     private TextView profileName, profileEmail, profilePhone, profileFacility, profileAddress;
     private TextView adminStatus, entrantStatus, organizerStatus, deviceIdText, notificationStatus;
@@ -33,6 +37,17 @@ public class AdminRemoveProfileFragment extends Fragment {
     private View facilitySection;
     private TextView facilityHeader;
 
+
+    /**
+     *
+     * Inflates the fragment layout, sets up UI components,
+     * and loads user details.
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,6 +64,12 @@ public class AdminRemoveProfileFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * This function initializes all the references to the UI elements for the profile and admin functionality
+     *
+     * @param view the parent view
+     */
     private void initializeViews(View view) {
         profileName = view.findViewById(R.id.profile_name);
         profileEmail = view.findViewById(R.id.profile_email);
@@ -73,6 +94,10 @@ public class AdminRemoveProfileFragment extends Fragment {
         removeFacilityButton.setVisibility(View.GONE);
     }
 
+
+    /**
+     * This function obtains the user details from the database and updates the UI elements accordingly
+     */
     private void loadUserDetails() {
         UserDatabase.loadUserFromDatabase(userId, new EntrantDatabase.OnUserLoadedListener() {
             @Override
@@ -103,6 +128,12 @@ public class AdminRemoveProfileFragment extends Fragment {
                 });
 
                 AdminDatabase.getFacilityDetails(userId, new AdminDatabase.OnFacilityDetailsLoadedListener() {
+                    /**
+                     * This function changes the visibility of UI elements depending on a users role
+                     *
+                     * @param facilityName the facilities name
+                     * @param facilityAddress the facilities address
+                     */
                     @Override
                     public void onFacilityLoaded(String facilityName, String facilityAddress) {
                         boolean isOrganizer = !TextUtils.isEmpty(facilityName) && !TextUtils.isEmpty(facilityAddress);
@@ -135,12 +166,21 @@ public class AdminRemoveProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function sets up button functionality for the different elements an admin could delete from
+     * a users profile page.
+     */
     private void setupButtons() {
         removeProfileButton.setOnClickListener(v -> handleUserDeletion());
         removeFacilityButton.setOnClickListener(v -> handleFacilityRemoval());
         removeProfilePictureButton.setOnClickListener(v -> handleProfilePictureRemoval());
     }
 
+
+    /**
+     * This function deletes a user from the database, and switches fragments accordingly
+     */
     private void handleUserDeletion() {
         AdminDatabase.removeUser(userId).addOnSuccessListener(aVoid -> {
             FragmentManager fm = getParentFragmentManager();
@@ -152,6 +192,10 @@ public class AdminRemoveProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function deletes a facility from the database, and switches fragments accordingly
+     */
     private void handleFacilityRemoval() {
         AdminDatabase.removeFacility(userId).addOnSuccessListener(aVoid -> {
             FragmentManager fm = getParentFragmentManager();
@@ -163,6 +207,10 @@ public class AdminRemoveProfileFragment extends Fragment {
         });
     }
 
+
+    /**
+     * This function deletes a profile picture from the database and updates the UI accordingly
+     */
     private void handleProfilePictureRemoval() {
         UserDatabase.updateUserField(userId, "profileImage", null, new EntrantDatabase.OnFieldUpdateListener() {
             @Override

@@ -7,11 +7,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import ca.yapper.yapperapp.EntrantFragments.EventListFragments.JoinedEventsFragment;
 import ca.yapper.yapperapp.EntrantFragments.EventListFragments.MissedOutFragment;
 import ca.yapper.yapperapp.EntrantFragments.EventListFragments.RegisteredEventsFragment;
+
 /**
  * A {@link FragmentStateAdapter} that returns a fragment corresponding to
  * one of the sections/tabs/pages.
  * */
 public class ViewPagerAdapter extends FragmentStateAdapter {
+
+
     /**
      * Constructor for ViewPagerAdapter
      *
@@ -20,7 +23,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public ViewPagerAdapter(@NonNull Fragment fragment) {
         super(fragment);
     }
-    /** *
+
+
+    /**
      * Creates a fragment for the given position.
      *
      * @param position the position of the fragment to be created
@@ -40,6 +45,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 return new RegisteredEventsFragment();
         }
     }
+
+
     /**
      * Returns the number of fragments.
      *

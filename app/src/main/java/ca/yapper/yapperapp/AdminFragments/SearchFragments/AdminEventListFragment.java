@@ -21,13 +21,28 @@ import ca.yapper.yapperapp.R;
 import ca.yapper.yapperapp.UMLClasses.Event;
 import ca.yapper.yapperapp.Databases.AdminDatabase;
 
+/**
+ * Fragment to display the event stored in the database as lists that only admins can browse.
+ */
 public class AdminEventListFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private AdminEventAdapter adapter;
     private List<Event> eventList;
     private EditText searchBar;
     private LinearLayout emptyStateLayout;
 
+
+    /**
+     * Inflates the fragments layout, sets up views, and starts search function, all relating to
+     * events from the app
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     *
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,12 +62,20 @@ public class AdminEventListFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * Displays stored events specific to the fragment and updates UI
+     */
     @Override
     public void onResume() {
         super.onResume();
         loadEvents();
     }
 
+
+    /**
+     * Obtains event information from all events and updates the list adapters.
+     */
     private void loadEvents() {
         AdminDatabase.getAllEvents()
                 .addOnSuccessListener(events -> {
@@ -63,6 +86,11 @@ public class AdminEventListFragment extends Fragment {
                 });
     }
 
+
+    /**
+     * Function that sets up the search functionality for admin lists of events
+     * Uses the listener to detect changes in text and update whats shown on the lists accordingly.
+     */
     private void setupSearch() {
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -79,6 +107,12 @@ public class AdminEventListFragment extends Fragment {
         });
     }
 
+
+    /**
+     *  Function that filters event list based on searchText string and updates the UI with
+     *  an adapter.
+     * @param searchText Text from user search bar input, used to filter the event list.
+     */
     private void filterEvents(String searchText) {
         List<Event> filteredList = new ArrayList<>();
         for (Event event : eventList) {
@@ -90,6 +124,12 @@ public class AdminEventListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         updateEmptyState();
     }
+
+
+    /**
+     * Function to check if list is empty and change visibility accordingly. If list is empty,
+     * it will display a custom message.
+     */
     private void updateEmptyState() {
         if (eventList.isEmpty()) {
             emptyStateLayout.setVisibility(View.VISIBLE);

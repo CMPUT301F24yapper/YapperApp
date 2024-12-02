@@ -24,6 +24,9 @@ import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.EventDetailsFragment;
 import ca.yapper.yapperapp.R;
 
+/**
+ * The fragment for entrants to scan QR Codes.
+ */
 public class EntrantQRCodeScannerFragment extends Fragment {
 
     private BarcodeView barcodeScan;
@@ -32,6 +35,18 @@ public class EntrantQRCodeScannerFragment extends Fragment {
     private Bundle eventData;
     private BarcodeCallback scanningResult;
 
+
+    /**
+     *
+     * Inflates the fragments layout, sets up views, sets up camera permissions and starts the QR Code scanner
+     *
+     * @param inflater LayoutInflater used to inflate the fragment layout.
+     * @param container The parent view that this fragment's UI is attached to.
+     * @param savedInstanceState Previous state data, if any.
+     * @return The root view of the fragment.
+     *
+     * @return
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,6 +62,10 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         return view;
     }
 
+
+    /**
+     * Method for updates
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -68,6 +87,11 @@ public class EntrantQRCodeScannerFragment extends Fragment {
                 }
 
                 EntrantDatabase.getEventByQRCode(documentId, new EntrantDatabase.OnEventFoundListener() {
+                    /**
+                     * This function changes fragments when an event is detected by the QR code scanner
+                     *
+                     * @param eventId an existing event id
+                     */
                     @Override
                     public void onEventFound(String eventId) {
                         eventData = new Bundle();
@@ -95,6 +119,15 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         barcodeScan.decodeContinuous(scanningResult);
     }
 
+
+    /**
+     * This function initializes the barcode view and sets camera settings including which camera is opened
+     * NOTE: if the wrong camera is opened or a black screen appears, change the 1 in settings.setRequestedCameraId(1); and
+     * settings.getRequestedCameraId() != 1 to 0.
+     *
+     * @param view the barcode views parent view
+     * @throws CameraAccessException For when the camera fails to start or cannot be accessed
+     */
     private void initializeScan(View view) throws CameraAccessException {
         barcodeScan = view.findViewById(R.id.barcode_view);
         settings = barcodeScan.getCameraSettings();
@@ -108,11 +141,20 @@ public class EntrantQRCodeScannerFragment extends Fragment {
         barcodeScan.setCameraSettings(settings);
     }
 
+
+    /**
+     * The screen overlay for the QR Code scanner
+     * @param view The parent view for the screen overlay to use
+     */
     private void showOverlay(View view){
         overlay = view.findViewById(R.id.viewfinder);
         overlay.setCameraPreview(barcodeScan);
     }
 
+
+    /**
+     * This function checks if the user has given camera permissions, and if not obtains them.
+     */
     private void checkCameraPermissions() {
         String[] permissions = {"android.permission.CAMERA"};
         if (ContextCompat.checkSelfPermission(getContext(), "android.permission.CAMERA") != 0) {
