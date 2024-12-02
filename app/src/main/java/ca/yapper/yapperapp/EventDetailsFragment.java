@@ -248,7 +248,7 @@ public class EventDetailsFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                //Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
+                ///Toast.makeText(getContext(), "Error checking user list: " + error, Toast.LENGTH_SHORT).show();
             }
         });
     }
