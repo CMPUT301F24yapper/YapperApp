@@ -125,25 +125,22 @@ public class EntrantActivity extends AppCompatActivity {
                     popup.getMenu().findItem(R.id.switch_to_admin).setVisible(false);
                 });
 
-        /**
-        // Check if user is admin before showing admin option
-        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        FirebaseFirestore.getInstance().collection("Users").document(deviceId).get()
-                .addOnSuccessListener(document -> {
-                    Boolean isAdmin = document.getBoolean("Admin");
-                    popup.getMenu().findItem(R.id.switch_to_admin).setVisible(isAdmin != null && isAdmin);
-                }); **/
-
         popup.setOnMenuItemClickListener(item -> {
+            Intent intent = null;
+
             if (item.getItemId() == R.id.switch_to_organizer) {
-                startActivity(new Intent(this, OrganizerActivity.class));
-                finish();
-                return true;
+                intent = new Intent(this, OrganizerActivity.class);
             } else if (item.getItemId() == R.id.switch_to_admin) {
-                startActivity(new Intent(this, AdminActivity.class));
+                intent = new Intent(this, AdminActivity.class);
+            }
+
+            if (intent != null) {
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;
             }
+
             return false;
         });
 
