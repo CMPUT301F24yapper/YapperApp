@@ -205,44 +205,58 @@ public class SelectedListFragment extends Fragment {
         Log.i("SelectedListFragment", "dumpPendingApplicant being called");
         dumpPendingButton.setEnabled(false);
 
-        List<User> pendingUsers = new ArrayList<>();
-        List<Task<Void>> tasks = new ArrayList<>();
+        if (selectedList.isEmpty()) {
+            Toast.makeText(getContext(), "No users in selected list", Toast.LENGTH_SHORT).show();
+            dumpPendingButton.setEnabled(true);
+            return;
+        }
 
-        // List to track users to remove from the selected list
         List<User> usersToRemove = new ArrayList<>();
+        AtomicInteger checksCompleted = new AtomicInteger(0);
+        int totalChecks = selectedList.size();
 
-
-        // Loop through the selected list to check for pending users
         for (User user : selectedList) {
-
             OrganizerDatabase.isPendingStatusForUser(user.getDeviceId(), eventId, new OrganizerDatabase.OnIsPendingStatusCheckedListener() {
                 @Override
                 public void onStatusLoaded(boolean isPending) {
                     if (isPending) {
-                        // Add user to removal list
                         usersToRemove.add(user);
                         moveUserToCancelledList(user.getDeviceId());
                         sendCancelledNotif(user.getDeviceId());
                         updateInvitationStatus(user.getDeviceId());
                     }
+                    checkIfAllProcessed();
                 }
 
                 @Override
                 public void onError(String error) {
-                    // implement error logic
+                    Log.e("dumpPendingApplicant", "Error checking pending status for user " + user.getDeviceId() + ": " + error);
+                    checkIfAllProcessed();
+                }
+
+                private void checkIfAllProcessed() {
+                    if (checksCompleted.incrementAndGet() == totalChecks) {
+                        onAllPendingChecksCompleted(usersToRemove);
+                    }
                 }
             });
         }
+    }
 
-        // After all async operations finish, update the RecyclerView
-        // (Make sure to check that all tasks are completed before notifying RecyclerView)
-        if (usersToRemove.size() > 0) {
-            for (User user : usersToRemove) {
-                selectedList.remove(user);
+    private void onAllPendingChecksCompleted(List<User> usersToRemove) {
+        if (getActivity() == null) return;
+        getActivity().runOnUiThread(() -> {
+            if (!usersToRemove.isEmpty()) {
+                selectedList.removeAll(usersToRemove);
+                adapter.notifyDataSetChanged();
+                selectedCountTextView.setText("Selected Count: " + selectedList.size());
+                refreshAllFragments();
+                Toast.makeText(getContext(), "Pending users have been removed.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "No pending users to remove.", Toast.LENGTH_SHORT).show();
             }
-            adapter.notifyDataSetChanged(); // Notify adapter to update RecyclerView
-            selectedCountTextView.setText("Selected Count: " + selectedList.size());  // Update selected count
-        }
+            dumpPendingButton.setEnabled(true);
+        });
     }
 
     private void movePendingUsersToCancelledList(List<User> pendingUsers) {
