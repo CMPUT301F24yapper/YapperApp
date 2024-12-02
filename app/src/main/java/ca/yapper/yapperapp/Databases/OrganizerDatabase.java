@@ -821,14 +821,24 @@ public class OrganizerDatabase {
                 .set(timestamp)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("OrganizerDatabase", "User added to final list.");
-                    listener.onComplete(true);
+
+                    // Update invitation status in the selected list
+                    db.collection("Events").document(eventId).collection("selectedList").document(userId)
+                            .update("invitationStatus", "Accepted")
+                            .addOnSuccessListener(updateVoid -> {
+                                Log.d("OrganizerDatabase", "Invitation status updated to 'Accepted' in selected list.");
+                                listener.onComplete(true);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("OrganizerDatabase", "Error updating invitation status in selected list.", e);
+                                listener.onComplete(false);
+                            });
                 })
                 .addOnFailureListener(e -> {
                     Log.e("OrganizerDatabase", "Error adding user to final list.", e);
                     listener.onComplete(false);
                 });
     }
-
 
     /**
      * This function adds users to the cancelled list for a given event
