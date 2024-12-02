@@ -21,13 +21,10 @@ import ca.yapper.yapperapp.UMLClasses.User;
 
 public class UserDatabase {
 
-    private static FirebaseFirestore db;
+    private static FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
 
-    private static FirebaseFirestore getDb() {
-        if (db == null) {
-            db = FirestoreUtils.getFirestoreInstance();
-        }
-        return db;
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
     }
 
     public interface OnUserLoadedListener {

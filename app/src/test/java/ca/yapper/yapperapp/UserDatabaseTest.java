@@ -3,13 +3,43 @@ package ca.yapper.yapperapp;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import ca.yapper.yapperapp.Databases.FirestoreUtils;
 import ca.yapper.yapperapp.Databases.UserDatabase;
 import ca.yapper.yapperapp.UMLClasses.User;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.util.Map;
 
 public class UserDatabaseTest {
+    private static MockedStatic<FirestoreUtils> firestoreUtilsMock;
+
+    @BeforeClass
+    public static void setUpClass() {
+        // Mock the static method FirestoreUtils.getFirestoreInstance()
+        firestoreUtilsMock = Mockito.mockStatic(FirestoreUtils.class);
+
+        // Create a mock FirebaseFirestore instance
+        FirebaseFirestore mockFirestore = mock(FirebaseFirestore.class);
+
+        // When FirestoreUtils.getFirestoreInstance() is called, return the mockFirestore
+        firestoreUtilsMock.when(FirestoreUtils::getFirestoreInstance).thenReturn(mockFirestore);
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        // Close the mock to avoid memory leaks
+        if (firestoreUtilsMock != null) {
+            firestoreUtilsMock.close();
+        }
+    }
+
 
     @Test
     public void testValidateUserInputs_ValidInputs() {
