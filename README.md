@@ -13,7 +13,8 @@ Our app currently does not include unit tests because: most methods do not have 
 The Unit Tests, however, are integrated with Github Actions. We will write more for our PP4 submission. In terms of UI Tests, it can be run locally.
 
 ## 5. Object-Oriented Design:
-UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/912b9e82-ff8c-4975-bb94-7281f1569f15)
+UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/01760e36-bd5d-4c13-b936-9b3d89171d41)
+
 
 ## 6. Product Backlog:
 Look to Backlog. 
