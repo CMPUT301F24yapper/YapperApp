@@ -21,7 +21,11 @@ import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
     
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+    private static  FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
+    }
     
     
     public static Task<Map<String, Long>> getAdminStats() {

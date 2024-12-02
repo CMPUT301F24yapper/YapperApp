@@ -68,6 +68,7 @@ dependencies {
     //androidTestImplementation(libs.espresso.core.v351)
     //androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.6.1")
 
+    testImplementation ("org.mockito:mockito-inline:4.8.1")
     testImplementation ("junit:junit:4.13.2")
     androidTestImplementation ("androidx.test.ext:junit:1.1.5")
     androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
