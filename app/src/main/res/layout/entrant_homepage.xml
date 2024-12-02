@@ -44,7 +44,7 @@
             android:id="@+id/tab_missed_out"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Missed Out" />
+            android:text="All Events" />
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
