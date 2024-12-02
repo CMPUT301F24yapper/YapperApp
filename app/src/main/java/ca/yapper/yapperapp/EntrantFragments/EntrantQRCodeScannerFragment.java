@@ -1,11 +1,14 @@
 package ca.yapper.yapperapp.EntrantFragments;
 
+import android.content.Intent;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -14,7 +17,10 @@ import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.ViewfinderView;
 import com.journeyapps.barcodescanner.camera.CameraSettings;
+
+import ca.yapper.yapperapp.Activities.EntrantActivity;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
+import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.EventDetailsFragment;
 import ca.yapper.yapperapp.R;
 
@@ -54,27 +60,35 @@ public class EntrantQRCodeScannerFragment extends Fragment {
             String[] segments = QRScanResult.toString().split("/");
             String documentId = segments[segments.length - 1];
 
-            EntrantDatabase.getEventByQRCode(documentId, new EntrantDatabase.OnEventFoundListener() {
-                @Override
-                public void onEventFound(String eventId) {
-                    eventData = new Bundle();
-                    eventData.putString("0", eventId);
-                    EventDetailsFragment newFragment = new EventDetailsFragment();
-                    newFragment.setArguments(eventData);
-                    getParentFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, newFragment)
-                            .commit();
+            OrganizerDatabase.checkQRCodeExists(documentId).addOnSuccessListener(exists -> {
+                if (!exists) {
+                    Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getContext(), EntrantActivity.class));
+                    return;
                 }
 
-                @Override
-                public void onEventNotFound() {
-                    Log.d("QRScanner", "Event not found for QRCode: " + documentId);
-                }
+                EntrantDatabase.getEventByQRCode(documentId, new EntrantDatabase.OnEventFoundListener() {
+                    @Override
+                    public void onEventFound(String eventId) {
+                        eventData = new Bundle();
+                        eventData.putString("0", eventId);
+                        EventDetailsFragment newFragment = new EventDetailsFragment();
+                        newFragment.setArguments(eventData);
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, newFragment)
+                                .commit();
+                    }
 
-                @Override
-                public void onError(Exception e) {
-                    Log.e("QRScanner", "Error finding event", e);
-                }
+                    @Override
+                    public void onEventNotFound() {
+                        Log.d("QRScanner", "Event not found for QRCode: " + documentId);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e("QRScanner", "Error finding event", e);
+                    }
+                });
             });
         };
         barcodeScan.resume();

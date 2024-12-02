@@ -610,23 +610,6 @@ public class OrganizerDatabase {
                 });
     }
 
-    //redundant(?):
-    /**public static void removeUserFromSelectedList(String eventId, String userId, OnOperationCompleteListener listener) {
-        db.collection("Events")
-                .document(eventId)
-                .collection("selectedList")
-                .document(userId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("OrganizerDatabase", "User removed from Selected List.");
-                    listener.onComplete(true);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("OrganizerDatabase", "Error removing user from Selected List: " + e.getMessage());
-                    listener.onComplete(false);
-                });
-    }**/
-    // redundant(?):
     public static void addUserToFinalList(String eventId, String userId, OnOperationCompleteListener listener) {
         if (eventId == null || eventId.isEmpty()) {
             Log.e("OrganizerDatabase", "Event ID is null or empty.");
@@ -749,5 +732,18 @@ public class OrganizerDatabase {
                     }
                 })
                 .addOnFailureListener(e -> listener.onError("Error fetching status: " + e.getMessage()));
+    }
+}
+
+    public static Task<Boolean> checkQRCodeExists(String eventId) {
+        return db.collection("Events")
+                .document(eventId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        return task.getResult().get("qrCode_hashData") != null;
+                    }
+                    return false;
+                });
     }
 }

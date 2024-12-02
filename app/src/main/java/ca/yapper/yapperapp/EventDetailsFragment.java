@@ -179,10 +179,15 @@ public class EventDetailsFragment extends Fragment {
                 geolocationEnabled = event.isGeolocationEnabled();
                 if (geolocationEnabled) {
                     TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
-                    if (geoLocationRequired != null) {
                         geoLocationRequired.setVisibility(View.VISIBLE);
-                    }
+
+
                 }
+                else{
+                    TextView geoLocationRequired = view.findViewById(R.id.geo_location_required);
+                    geoLocationRequired.setVisibility(View.GONE);
+                }
+
 
                 String posterBase64 = event.getPosterBase64();
                 if (posterBase64 != null && !posterBase64.isEmpty()) {
@@ -371,14 +376,23 @@ public class EventDetailsFragment extends Fragment {
     /**
      * Handles the "View QR Code" button click. Opens a fragment to display the event's QR code.
      */
-    private void viewQRCodeButtonClick() {
-        QRCodeData = new Bundle();
-        QRCodeData.putString("0", finalEvent.getDocumentId());
-        QRCodeData.putString("0", finalEvent.getDocumentId());
 
-        OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
-        newFragment.setArguments(QRCodeData);
-        getParentFragmentManager().beginTransaction().replace(R.id.fragment_container, newFragment).commit();
+    private void viewQRCodeButtonClick() {
+        OrganizerDatabase.checkQRCodeExists(eventId).addOnSuccessListener(exists -> {
+            if (!exists) {
+                Toast.makeText(getContext(), "QR code data has been deleted", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            QRCodeData = new Bundle();
+            QRCodeData.putString("0", finalEvent.getDocumentId());
+
+            OrganizerQRCodeViewFragment newFragment = new OrganizerQRCodeViewFragment();
+            newFragment.setArguments(QRCodeData);
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, newFragment)
+                    .commit();
+        });
     }
 
     /**

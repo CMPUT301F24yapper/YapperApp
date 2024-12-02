@@ -1,5 +1,7 @@
 package ca.yapper.yapperapp.Databases;
 
+import android.util.Log;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -19,7 +21,11 @@ import ca.yapper.yapperapp.AdminImageAdapter.ImageData;
 
 public class AdminDatabase {
     
-    private static final FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+    private static  FirebaseFirestore db = FirestoreUtils.getFirestoreInstance();
+
+    public static void setFirestoreInstance(FirebaseFirestore firestore) {
+        db = firestore;
+    }
     
     
     public static Task<Map<String, Long>> getAdminStats() {
@@ -386,5 +392,23 @@ public class AdminDatabase {
 
     public interface OnNameLoadedListener {
         void onNameLoaded(String name);
+    }
+
+    public static Task<Void> removeQRCodeData(String eventId) {
+        return db.collection("Events")
+                .document(eventId)
+                .update("qrCode_hashData", null)
+                .addOnFailureListener(e -> {
+                    Log.e("AdminDatabase", "Error removing QR code data", e);
+                });
+    }
+
+    public static Task<Void> removeEventPoster(String eventId) {
+        return db.collection("Events")
+                .document(eventId)
+                .update("posterBase64", null)
+                .addOnFailureListener(e -> {
+                    Log.e("AdminDatabase", "Error removing event poster", e);
+                });
     }
 }
