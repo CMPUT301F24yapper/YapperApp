@@ -261,18 +261,48 @@ public class UserDatabase {
 
         Map<String, Object> locationData = new HashMap<>();
         locationData.put("latitude", latitude);
-        Log.d("UserDB", "Saving latitude: " + latitude);
-
         locationData.put("longitude", longitude);
-        Log.d("UserDB", "Saving longitude: " + longitude);
-
         locationData.put("timestamp", FieldValue.serverTimestamp());
 
-        db.collection("Events").document(eventId)
-                .collection("waitingList").document(userDeviceId)
-                .set(locationData, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(e -> listener.onError("Failed to save location: " + e.getMessage()));
+        Log.d("UserDB", "Saving latitude: " + latitude + ", longitude: " + longitude);
 
+        // Write to the userLocations collection
+        db.collection("Events").document(eventId)
+                .collection("userLocations").document(userDeviceId)
+                .set(locationData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("UserDB", "Successfully saved to userLocations.");
+
+                    // Check if the user already exists in the waitingList
+                    db.collection("Events").document(eventId)
+                            .collection("waitingList").document(userDeviceId)
+                            .get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    Log.d("UserDB", "User already exists in waitingList. Skipping write.");
+                                    listener.onSuccess(); // Notify success
+                                } else {
+                                    db.collection("Events").document(eventId)
+                                            .collection("waitingList").document(userDeviceId)
+                                            .set(locationData, SetOptions.merge())
+                                            .addOnSuccessListener(aVoid2 -> {
+                                                Log.d("UserDB", "Successfully saved to waitingList.");
+                                                listener.onSuccess();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("UserDB", "Failed to save to waitingList: " + e.getMessage());
+                                                listener.onError("Failed to save location to waitingList: " + e.getMessage());
+                                            });
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("UserDB", "Error checking waitingList: " + e.getMessage());
+                                listener.onError("Error checking waitingList: " + e.getMessage());
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UserDB", "Failed to save to userLocations: " + e.getMessage());
+                    listener.onError("Failed to save location to userLocations: " + e.getMessage());
+                });
     }
 }
