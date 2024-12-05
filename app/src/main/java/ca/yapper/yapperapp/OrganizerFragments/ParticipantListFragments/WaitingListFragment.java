@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import ca.yapper.yapperapp.Adapters.UsersInEventAdapter;
 import ca.yapper.yapperapp.Databases.EntrantDatabase;
 import ca.yapper.yapperapp.Databases.OrganizerDatabase;
 import ca.yapper.yapperapp.Databases.UserDatabase;
@@ -40,7 +41,8 @@ import ca.yapper.yapperapp.Adapters.UsersAdapter;
 public class WaitingListFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private UsersAdapter adapter;
+    //private UsersAdapter adapter;
+    private UsersInEventAdapter adapter;
     private List<User> usersWaitingList;
     private String eventId;
     private String eventName;
@@ -69,27 +71,36 @@ public class WaitingListFragment extends Fragment {
 
         organizerId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        if (getArguments() != null) {
+            eventId = getArguments().getString("eventId");
+            if (eventId == null) {
+                Log.e("WaitingListFragment", "eventId is null!");
+                return view;
+            }
+        }
+        else {
+            Log.e("WaitingListFragment", "Arguments bundle is null!");
+            return view; }
+
+        loadEventDetails();
+
+        // Initialize selectedList here
+        usersWaitingList = new ArrayList<>();  // Make sure selectedList is initialized
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new UsersInEventAdapter(usersWaitingList, eventId);
+        recyclerView.setAdapter(adapter);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
+
+        loadWaitingList();
 
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         emptyImageView = view.findViewById(R.id.emptyImageView);
         emptyTextView = view.findViewById(R.id.emptyTextView);
 
-        usersWaitingList = new ArrayList<>();
-        adapter = new UsersAdapter(usersWaitingList, getContext());
-        recyclerView.setAdapter(adapter);
-
         drawButton = view.findViewById(R.id.button_draw);
-
-        if (getArguments() != null) {
-            eventId = getArguments().getString("eventId");
-            loadEventDetails();
-            //loadEventCapacity();
-            loadWaitingList();
-        }
-
         drawButton.setOnClickListener(v -> drawMultipleApplicants());
+
         return view;
     }
 

@@ -52,7 +52,7 @@ public class EntrantHomeFragment extends Fragment {
                             tab.setText("Joined Events");
                             break;
                         case 2:
-                            tab.setText("Missed Out");
+                            tab.setText("All Events");
                             break;
                     }
                 }).attach();

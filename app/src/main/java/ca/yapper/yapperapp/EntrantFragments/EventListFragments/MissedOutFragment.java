@@ -97,6 +97,9 @@ public class MissedOutFragment extends Fragment {
                     }
 
                     @Override
+
+
+
                     public void onError(String error) {
                         if (getContext() == null) return;
                         Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
