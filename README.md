@@ -13,6 +13,12 @@ Generated Javadocs File: [Javadocs](https://drive.google.com/drive/u/4/folders/1
 ## 4. Test Cases:
 Our app includes unit tests, integrated with GitHub Actions, using Mockito to mock dependencies for isolated testing. We also perform UI tests with Espresso, which can be run locally on an emulator. To ensure consistent UI test results, animations must be switched off through the Developer Options in the Android emulator.
 
+Please comment out:
+
+##AdminActivityUITest
+Line: 61-67
+Line: 82-99
+
 ## 5. Object-Oriented Design:
 UML Diagram: ![Yapper UML drawio](https://github.com/user-attachments/assets/01760e36-bd5d-4c13-b936-9b3d89171d41)
 
